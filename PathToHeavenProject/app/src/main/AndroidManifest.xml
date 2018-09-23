@@ -21,7 +21,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDko74sNKQoQ-hQQKpKrQm5Boz3DNcwcps" />
 
-        <activity android:name=".MainActivity"
+        <activity android:name=".LoginActivity"
             android:label="Path To Heaven">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,6 +30,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".MapsActivity"/>
+        <activity android:name=".ChatMainPageActivity" />
+        <activity android:name=".FindUserActivity" />
+        <activity android:name=".MainActivity"/>
+        <activity android:name=".ChatActivity"></activity>
     </application>
 
 </manifest>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    tools:context=".LoginActivity"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textViewWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:padding="50dp"
+        android:gravity="center"
+        android:textSize="20dp"
+        android:text="Welcome! Register Here..." />
+
+    <EditText
+        android:id="@+id/nameOfUser"
+        android:layout_width="282dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:hint="Enter Name" />
+
+    <EditText
+        android:id="@+id/phoneNumber"
+        android:layout_width="282dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:hint="Enter Phone Number" />
+
+    <EditText
+        android:id="@+id/code"
+        android:layout_width="283dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:hint="Enter Code" />
+
+    <Button
+        android:id="@+id/send"
+        android:layout_width="282dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="#7abbf9"
+        android:text="Send Verification Code"
+        android:textColor="@color/common_google_signin_btn_text_dark_default" />
+
+
+</LinearLayout>
