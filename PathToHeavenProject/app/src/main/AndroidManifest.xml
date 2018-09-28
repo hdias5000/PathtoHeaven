@@ -8,7 +8,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -16,12 +15,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDko74sNKQoQ-hQQKpKrQm5Boz3DNcwcps" />
 
-        <activity android:name=".LoginActivity"
+        <activity
+            android:name=".LoginActivity"
             android:label="Path To Heaven">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,11 +28,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MapsActivity"/>
+        <activity android:name=".MapsActivity" />
         <activity android:name=".ChatMainPageActivity" />
         <activity android:name=".FindUserActivity" />
-        <activity android:name=".MainActivity"/>
-        <activity android:name=".ChatActivity"></activity>
+        <activity android:name=".MainActivity" />
+        <activity android:name=".ChatActivity" />
+        <activity android:name=".ProfilePageActivity"></activity>
     </application>
 
 </manifest>

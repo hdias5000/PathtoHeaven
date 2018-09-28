@@ -10,6 +10,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Button mapButton;
     private Button chatsButton;
+    private Button profileButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
 
         mapButton = findViewById(R.id.B_map);
         chatsButton = findViewById(R.id.B_chat);
+        profileButton = findViewById(R.id.B_profile);
 
         mapButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -32,6 +34,16 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), ChatMainPageActivity.class));
             }
         });
+
+        profileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               // startActivity(new Intent(getApplicationContext(), ProfilePageActivity.class));
+            }
+        });
+
+
+
     }
 
 }

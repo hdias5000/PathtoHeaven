@@ -116,7 +116,7 @@ public class LoginActivity extends AppCompatActivity {
                                     Map<String,Object> userMap= new HashMap<>();
                                     userMap.put("name", user.getDisplayName());
                                     userMap.put("phone", user.getPhoneNumber());
-                                    userMap.get("name");
+                                   // userMap.get("name");
                                     userUid.updateChildren(userMap);
                                 }
                                 userIsLoggedIn();
@@ -146,7 +146,7 @@ public class LoginActivity extends AppCompatActivity {
 
         // to double check user has logged in
         if(user != null){
-            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            startActivity(new Intent(getApplicationContext(), ProfilePageActivity.class));
             finish();
             return;
         }
