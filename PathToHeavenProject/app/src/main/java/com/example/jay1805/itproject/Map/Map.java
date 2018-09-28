@@ -18,8 +18,8 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
         mMap = googleMap;
         enableMyLocation();
 
-        mMap.setOnMarkerClickListener(this);
-        mMap.setOnMarkerDragListener(this);
+//        mMap.setOnMarkerClickListener(this);
+//        mMap.setOnMarkerDragListener(this);
     }
 
     @SuppressLint("MissingPermission")  // checked before object is created

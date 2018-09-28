@@ -41,8 +41,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
-
+///
     private GoogleApiClient client;
+   //////
     private LocationRequest locationRequest;
     private CurrentLocation currentLocation;
     private Map map;
@@ -57,9 +58,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        //////////////////////////////////////////////////////////////
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
         }
+        /////////////////////////////////////////////////////////////
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -67,7 +70,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         urlCreator = new URLCreator();
 
     }
-
+/////////////////////////////////////////////////////////////////
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
@@ -85,7 +88,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return;
         }
     }
-
+//////////////////////////////////////////////////////////////////
 
     /**
      * Manipulates the map once available.
@@ -106,7 +109,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     }
-
+    ///////////////////////////////////////////////////////////////
     protected synchronized void buildGoogleApiClient() {
         client = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -117,16 +120,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         client.connect();
 
     }
+    ///////////////////////////////////////////////////////////////
 
     @Override
     public void onLocationChanged(Location location) {
         currentLocation.changeCurrentLocation(location);
 
+
         if (client != null) {
             LocationServices.FusedLocationApi.removeLocationUpdates(client, this);
         }
     }
-
+    /////////////////////////////////////////////////////////////////////////////
     public boolean checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
@@ -139,6 +144,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return true;
         }
     }
+    /////////////////////////////////////////////////////////////////////////
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
