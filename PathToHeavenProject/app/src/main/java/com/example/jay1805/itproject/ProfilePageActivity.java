@@ -10,6 +10,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,7 +33,10 @@ public class ProfilePageActivity extends AppCompatActivity {
     private EditText HomeAddress;
     private TextView nameOfUser;
     private Button saveDetails;
+    private Button calenderBtn;
     private EditText dateEditText;
+    private RadioGroup rg;
+    private RadioButton rb;
     private Calendar myCalendar;
     private String name;
 
@@ -45,7 +50,9 @@ public class ProfilePageActivity extends AppCompatActivity {
         HomeAddress = (EditText) findViewById(R.id.home_address_editText);
         nameOfUser = (TextView) findViewById(R.id.theActualName);
         saveDetails = (Button) findViewById(R.id.save_button);
-        dateEditText  = (EditText) findViewById(R.id.dob_editText);
+        calenderBtn = (Button) findViewById(R.id.calender_button);
+        dateEditText  = (EditText) findViewById(R.id.date_editText);
+        rg = (RadioGroup) findViewById(R.id.user_type_rg);
         myCalendar =  Calendar.getInstance();
 
         final DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
@@ -62,20 +69,16 @@ public class ProfilePageActivity extends AppCompatActivity {
 
         };
 
-        dateEditText.setOnClickListener(new View.OnClickListener() {
+        calenderBtn.setOnClickListener(new View.OnClickListener() {
+
             @Override
-            public void onClick(View view) {
-                new DatePickerDialog(getApplicationContext(),
-                        date,
-                        myCalendar.get(Calendar.YEAR),
-                        myCalendar.get(Calendar.MONTH),
-                        myCalendar.get(Calendar.DAY_OF_MONTH)
-                ).show();
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                new DatePickerDialog(ProfilePageActivity.this, date, myCalendar
+                        .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                        myCalendar.get(Calendar.DAY_OF_MONTH)).show();
             }
         });
-
-
-
 
         userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
@@ -85,12 +88,6 @@ public class ProfilePageActivity extends AppCompatActivity {
                 if(dataSnapshot!=null) {
                     name = dataSnapshot.getValue().toString();
                     nameOfUser.setText(name);
-                    Context context = getApplicationContext();
-                    CharSequence text = name;
-                    int duration = Toast.LENGTH_SHORT;
-
-                    Toast toast = Toast.makeText(context, text, duration);
-                    toast.show();
                 }
             }
 
@@ -117,6 +114,8 @@ public class ProfilePageActivity extends AppCompatActivity {
                 if(dataSnapshot != null) {
                     Map<String,Object> userMap= new HashMap<>();
                     userMap.put("Home Address", HomeAddress.getText().toString());
+                    userMap.put("Date of Birth", dateEditText.getText().toString());
+                    userMap.put("User Type", rb.getText().toString());
                     userDB.updateChildren(userMap);
                 }
             }
@@ -129,9 +128,14 @@ public class ProfilePageActivity extends AppCompatActivity {
     }
 
     private void updateLabel() {
-        String myFormat = "MM/dd/yy"; //In which you need put here
-        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+        String myFormat = "dd/MM/yyyy"; //In which you need put here
+        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.UK);
 
         dateEditText.setText(sdf.format(myCalendar.getTime()));
+    }
+
+    public void CheckedRadioButton(View v) {
+        int radioID = rg.getCheckedRadioButtonId();
+        rb = (RadioButton) findViewById(radioID);
     }
 }
