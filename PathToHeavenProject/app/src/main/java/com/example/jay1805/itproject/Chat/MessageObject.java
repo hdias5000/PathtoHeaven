@@ -4,14 +4,19 @@ import java.util.ArrayList;
 
 public class MessageObject {
 
-    String messageId, message, senderId;
+    String messageId, message, senderId, senderUid;
     ArrayList<String> mediaUrlList;
 
-    public MessageObject(String messageId, String senderId, String message, ArrayList<String> mediaUrlList) {
+    public MessageObject(String messageId, String senderId, String senderUid, String message, ArrayList<String> mediaUrlList) {
+        this.senderUid = senderUid;
         this.messageId = messageId;
         this.senderId = senderId;
         this.message = message;
         this.mediaUrlList = mediaUrlList;
+    }
+
+    public String getSenderUid() {
+        return senderUid;
     }
 
     public ArrayList<String> getMediaUrlList() {
