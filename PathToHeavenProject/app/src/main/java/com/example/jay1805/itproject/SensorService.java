@@ -14,9 +14,6 @@ import android.util.Log;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 public class SensorService extends Service implements GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener,
         LocationListener{
@@ -29,31 +26,19 @@ public class SensorService extends Service implements GoogleApiClient.Connection
     }
 
     public SensorService() {
+
     }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-        startTimer();
+//        startTimer();
         Intent dialogIntent = new Intent(this, CurrentLocationActivity.class);
         dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(dialogIntent);
-//        begin();
         return START_STICKY;
     }
 
-
-//    private boolean checkLocationPermission() {
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION_CODE);
-//            } else {
-//                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION_CODE);
-//            }
-//            return false;
-//        } else {
-//            return true;
-//        }
-//    }
 
     @Override
     public void onDestroy() {
@@ -61,7 +46,7 @@ public class SensorService extends Service implements GoogleApiClient.Connection
         Log.i("EXIT", "ondestroy!");
         Intent broadcastIntent = new Intent("HD.RestartSensor");
         sendBroadcast(broadcastIntent);
-        stoptimertask();
+//        stoptimertask();
     }
 
 
@@ -104,41 +89,41 @@ public class SensorService extends Service implements GoogleApiClient.Connection
 
     /////////////////////////////////////////////////////////////////////////////////////////////BS
 
-    private Timer timer;
-    private TimerTask timerTask;
-    long oldTime=0;
-    public void startTimer() {
-        //set a new Timer
-        timer = new Timer();
-
-        //initialize the TimerTask's job
-        initializeTimerTask();
-
-        //schedule the timer, to wake up every 1 second
-        timer.schedule(timerTask, 1000, 1000); //
-    }
-
-    /**
-     * it sets the timer to print the counter every x seconds
-     */
-    public void initializeTimerTask() {
-        timerTask = new TimerTask() {
-            public void run() {
-                Log.i("in timer", "in timer ++++  "+ (counter++));
-            }
-        };
-    }
-
-    /**
-     * not needed
-     */
-    public void stoptimertask() {
-        //stop the timer, if it's not already null
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
-    }
+//    private Timer timer;
+//    private TimerTask timerTask;
+//    long oldTime=0;
+//    public void startTimer() {
+//        //set a new Timer
+//        timer = new Timer();
+//
+//        //initialize the TimerTask's job
+//        initializeTimerTask();
+//
+//        //schedule the timer, to wake up every 1 second
+//        timer.schedule(timerTask, 1000, 1000); //
+//    }
+//
+//    /**
+//     * it sets the timer to print the counter every x seconds
+//     */
+//    public void initializeTimerTask() {
+//        timerTask = new TimerTask() {
+//            public void run() {
+//                Log.i("in timer", "in timer ++++  "+ (counter++));
+//            }
+//        };
+//    }
+//
+//    /**
+//     * not needed
+//     */
+//    public void stoptimertask() {
+//        //stop the timer, if it's not already null
+//        if (timer != null) {
+//            timer.cancel();
+//            timer = null;
+//        }
+//    }
 
     @Nullable
     @Override

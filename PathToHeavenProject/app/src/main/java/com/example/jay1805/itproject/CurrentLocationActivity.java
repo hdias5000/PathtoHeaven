@@ -1,6 +1,7 @@
 package com.example.jay1805.itproject;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -9,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
@@ -102,6 +104,7 @@ public class CurrentLocationActivity extends AppCompatActivity implements
     @Override
     public void onLocationChanged(Location location) {
 //        currentLocation.changeCurrentLocation(location);
+        sendMessageToActivity(location,"");
 
         Log.d("CHECK","it's"+location.getLongitude());
         if (client != null) {
@@ -118,4 +121,16 @@ public class CurrentLocationActivity extends AppCompatActivity implements
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
+
+    private void sendMessageToActivity(Location l, String msg) {
+        Intent intent = new Intent("GPSLocationUpdates");
+        // You can also include some extra data.
+        intent.putExtra("Status", msg);
+        Bundle b = new Bundle();
+        b.putParcelable("Location", l);
+        intent.putExtra("Location", b);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
 }
