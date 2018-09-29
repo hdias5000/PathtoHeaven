@@ -22,6 +22,8 @@ public class CurrentLocation {
         this.currentLocationListener = null;
     }
 
+
+
     public void setCurrentLocationListener(CurrentLocationListener listener) {
         this.currentLocationListener = listener;
     }

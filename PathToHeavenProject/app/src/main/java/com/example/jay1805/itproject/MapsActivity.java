@@ -85,6 +85,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             map = new Map(googleMap);
             currentLocation = new CurrentLocation(map);
+            askForCurrentLocation();
         }
 
 
@@ -193,6 +194,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Toast.makeText(MapsActivity.this, message, Toast.LENGTH_LONG).show();
     }
 
+
+    private void askForCurrentLocation() {
+        Intent intent = new Intent("SEND NUDES");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
 
 
 }

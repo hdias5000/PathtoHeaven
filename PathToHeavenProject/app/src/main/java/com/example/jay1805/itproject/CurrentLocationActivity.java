@@ -1,7 +1,10 @@
 package com.example.jay1805.itproject;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -27,6 +30,7 @@ public class CurrentLocationActivity extends AppCompatActivity implements
     private LocationRequest locationRequest;
     private GoogleApiClient client;
     public static final int PERMISSION_REQUEST_LOCATION_CODE = 99;
+    private Location currentLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +39,9 @@ public class CurrentLocationActivity extends AppCompatActivity implements
             checkLocationPermission();
         }
         buildGoogleApiClient();
+        currentLocation = null;
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mMessageReceiver, new IntentFilter("SEND NUDES"));
         Log.d("CHECK1","onCreate");
     }
 
@@ -104,6 +111,7 @@ public class CurrentLocationActivity extends AppCompatActivity implements
     @Override
     public void onLocationChanged(Location location) {
 //        currentLocation.changeCurrentLocation(location);
+        currentLocation = location;
         sendMessageToActivity(location,"");
 
         Log.d("CHECK","it's"+location.getLongitude());
@@ -122,6 +130,17 @@ public class CurrentLocationActivity extends AppCompatActivity implements
 
     }
 
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            if (currentLocation != null) {
+//                Log.d("BS","I don't believe it"+lastKnownLoc.getLongitude());
+                sendMessageToActivity(currentLocation,"nudes");
+            }
+        }
+    };
+
 
     private void sendMessageToActivity(Location l, String msg) {
         Intent intent = new Intent("GPSLocationUpdates");
@@ -132,5 +151,26 @@ public class CurrentLocationActivity extends AppCompatActivity implements
         intent.putExtra("Location", b);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
+
+//    private void bs(){
+//        String CurretntUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//        DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("user").child(CurretntUid).child("latitude");
+//        db.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                dataSnapshot.getValue().toString();
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//
+//        DatabaseReference db2 = FirebaseDatabase.getInstance().getReference().child("user").child(CurretntUid);
+//        HashMap newMap = new HashMap<>();
+//        newMap.put("latitude", 30);
+//        db2.updateChildren(newMap);
+//    }
 
 }
