@@ -27,11 +27,20 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 
 import java.io.IOException;
 import java.util.List;
@@ -47,11 +56,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private CurrentLocation currentLocation;
     private Map map;
 
+    private PlaceAutocompleteFragment placeAutocompleteFragment;
+
+
     private URLCreator urlCreator;
     public static final int PERMISSION_REQUEST_LOCATION_CODE = 99;
 
     LatLng currentDestination;
-
+    Marker marker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +72,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
         }
+
+        placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
+        placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                final LatLng latLngLoc = place.getLatLng();
+                MarkerOptions mo = new MarkerOptions();
+                if(marker!=null){
+                    marker.remove();
+                }
+
+                mo.position(currentDestination);
+                mo.title("Your search results");
+
+                map.addMarker(mo,currentDestination);
+            }
+
+            @Override
+            public void onError(Status status) {
+                Toast.makeText(MapsActivity.this, ""+status.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -171,31 +206,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         double longitude = currentLocation.getLongitude();
 
         switch (v.getId()) {
-            case R.id.B_SEARCH:
-                map.clearMap();
-                EditText tf_location = (EditText) findViewById(R.id.TF_LOCATION);
-                String location = tf_location.getText().toString();
-                List<Address> addressList = null;
-                MarkerOptions mo = new MarkerOptions();
 
-                if (!location.equals("")) {
-                    Geocoder geocoder = new Geocoder(this);
-                    try {
-                        addressList = geocoder.getFromLocationName(location, 5);
-                        for (int i = 0; i < addressList.size(); i++) {
-                            Address myAddress = addressList.get(i);
-                            currentDestination = new LatLng(myAddress.getLatitude(), myAddress.getLongitude());
-                            mo.position(currentDestination);
-                            mo.title("Your search results");
-
-                            map.addMarker(mo,currentDestination);
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-                break;
             case R.id.B_Hospital:
                 showNearbyPlaces("hospital",latitude,longitude);
                 break;
