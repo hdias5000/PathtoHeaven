@@ -40,10 +40,6 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.MediaViewHol
         Glide.with(context).load(Uri.parse(mediaList.get(position))).into(holder.mMedia);
     }
 
-    //    @Override
-//    public void onBindViewHolder(@NonNull MediaViewHolder holder, int i) {
-//        Glide.with(context).load(Uri.parse(mediaList.get(i))).into(holder.mMedia);
-//    }
 
     @Override
     public int getItemCount() {
