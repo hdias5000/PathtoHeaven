@@ -40,7 +40,7 @@ dependencies {
     implementation 'com.github.stfalcon:frescoimageviewer:0.5.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
 
-    implementation (name:'sinch-android-rtc', version:'+', ext:'aar')
+    implementation(name: 'sinch-android-rtc', version: '+', ext: 'aar')
 }
 
 apply plugin: 'com.google.gms.google-services'
