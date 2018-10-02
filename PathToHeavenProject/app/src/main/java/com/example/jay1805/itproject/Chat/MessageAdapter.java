@@ -21,10 +21,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private static final int VIEW_TYPE_ME = 1;
     private static final int VIEW_TYPE_OTHER = 2;
 
-    //String user_name;
-    //String current_user;
-    //DatabaseReference user_name_DB;
-
     ArrayList<MessageObject> messageList;
 
     public MessageAdapter(ArrayList<MessageObject> Message) {
@@ -33,19 +29,6 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        //user_name_DB = FirebaseDatabase.getInstance().getReference().child("user").child(current_user).child("name");
-
-//        user_name_DB.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                user_name = dataSnapshot.getValue().toString();
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
 
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         RecyclerView.ViewHolder viewHolder = null;

@@ -3,6 +3,7 @@ package com.example.jay1805.itproject;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,12 +17,16 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -139,12 +144,7 @@ public class ProfilePageActivity extends AppCompatActivity {
     }
 
     private void InputingToDatabase() {
-
-        userDB.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot != null) {
-                    Map<String,Object> userMap= new HashMap<>();
+                    final Map userMap= new HashMap<>();
                     if(!HomeAddress.getText().toString().isEmpty()) {
                         userMap.put("Home Address", HomeAddress.getText().toString());
                     }
@@ -154,15 +154,25 @@ public class ProfilePageActivity extends AppCompatActivity {
                     if(!rb.getText().toString().isEmpty()) {
                         userMap.put("User Type", rb.getText().toString());
                     }
+                    if(!selectedImageUri.isEmpty()) {
+                        final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Profile Pictures");
+                        UploadTask uploadTask = filePath.putFile(Uri.parse(selectedImageUri));
+
+                        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        userMap.put("Profile Picture", uri.toString());
+                                        userDB.updateChildren(userMap);
+                                    }
+                                });
+                            }
+                        });
+                    }
+
                     userDB.updateChildren(userMap);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
     private void updateLabel() {
