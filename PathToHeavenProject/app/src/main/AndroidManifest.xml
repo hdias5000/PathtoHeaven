@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.ACCESS_COURSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -54,8 +56,8 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".CurrentLocationActivity" />
-        <activity android:name=".LaunchGPSActivity"></activity>
+        <activity android:name=".ProfilePageActivity" />
+        <activity android:name=".MyProfileActivity"></activity>
     </application>
 
 </manifest>
