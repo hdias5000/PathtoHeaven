@@ -8,6 +8,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.example.jay1805.itproject.Call.BaseActivity;
+import com.example.jay1805.itproject.Call.SinchService;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
@@ -23,12 +25,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.sinch.android.rtc.SinchError;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity implements SinchService.StartFailedListener {
 
     private EditText mPhoneNumber, mCode;
     public EditText mName;
@@ -130,16 +133,23 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+    @Override
+    protected void onServiceConnected() {
 
+        getSinchServiceInterface().setStartListener(this);
+    }
     private void userIsLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
         // to double check user has logged in
         if(user != null){
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
+            if (!getSinchServiceInterface().isStarted()) {
+                getSinchServiceInterface().startClient(user.getUid());
+            }
             finish();
             return;
         }
+
     }
 
     private void startPhoneNumberVerification() {
@@ -149,5 +159,15 @@ public class LoginActivity extends AppCompatActivity {
                 TimeUnit.SECONDS,
                 this,
                 mCallbacks);
+    }
+
+    @Override
+    public void onStartFailed(SinchError error) {
+
+    }
+
+    @Override
+    public void onStarted() {
+
     }
 }

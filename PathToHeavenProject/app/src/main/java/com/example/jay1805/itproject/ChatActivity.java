@@ -13,6 +13,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
+import com.example.jay1805.itproject.Call.BaseActivity;
+import com.example.jay1805.itproject.Call.CallScreenActivity;
+import com.example.jay1805.itproject.Call.SinchService;
 import com.example.jay1805.itproject.Chat.MediaAdapter;
 import com.example.jay1805.itproject.Chat.MessageAdapter;
 import com.example.jay1805.itproject.Chat.MessageObject;
@@ -27,17 +30,18 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.sinch.android.rtc.calling.Call;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends BaseActivity {
 
     private RecyclerView ChatView, MediaView;
     private RecyclerView.Adapter ChatViewAdapter, MediaViewAdapter;
     private RecyclerView.LayoutManager ChatViewLayoutManager, MediaViewLayoutManager;
-
+    private Button callButton;
     ArrayList<MessageObject> messageList;
     String chatID;
     DatabaseReference chatDB;
@@ -48,7 +52,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-
+        callButton = findViewById(R.id.callButton);
         chatID = getIntent().getExtras().getString("chatID");
         chatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
         nameOfSenderDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("name");
@@ -72,6 +76,7 @@ public class ChatActivity extends AppCompatActivity {
         initializeMessage();
         initializeMedia();
         getChatMessages();
+        callButton.setOnClickListener(buttonClickListener);
     }
 
     private void getChatMessages() {
@@ -190,6 +195,15 @@ public class ChatActivity extends AppCompatActivity {
                     updateDatabaseWithNewMessage(newMessageDB, newMessageMap);
             }
     }
+    private void callButtonClicked() {
+        Call call = getSinchServiceInterface().callUser(chatID);
+        String callId = call.getCallId();
+
+        Intent callScreen = new Intent(this, CallScreenActivity.class);
+        callScreen.putExtra(SinchService.CALL_ID, callId);
+        startActivity(callScreen);
+
+    }
 
     private void updateDatabaseWithNewMessage(DatabaseReference newMessageDB, Map newMessageMap) {
         newMessageDB.updateChildren(newMessageMap);
@@ -231,6 +245,28 @@ public class ChatActivity extends AppCompatActivity {
         intent.setAction(intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent,"Select Image(s)"), PICK_IMAGE_INTENT);
     }
+    private void stopButtonClicked() {
+        if (getSinchServiceInterface() != null) {
+            getSinchServiceInterface().stopClient();
+        }
+        finish();
+    }
+
+    private View.OnClickListener buttonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.callButton:
+                    callButtonClicked();
+                    break;
+
+                case R.id.stopButton:
+                    stopButtonClicked();
+                    break;
+
+            }
+        }
+    };
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
