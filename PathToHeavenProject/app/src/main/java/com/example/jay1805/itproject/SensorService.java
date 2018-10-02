@@ -67,7 +67,7 @@ public class SensorService extends Service{
         currentLocation = null;
         Log.d("LOCATION1","function call.");
 //        startFirebase();
-//        getLocationUpdates();
+        getLocationUpdates();
 
     }
 
@@ -108,6 +108,7 @@ public class SensorService extends Service{
         System.out.println(sharingID);
         System.out.println("Uploaded Sharing ID:    "+sharingID);
         Map map = new HashMap<>();
+
         map.put("latitude", Double.toString(currentLocation.getLatitude()));
 
         map.put("longitude", Double.toString(currentLocation.getLongitude()));
