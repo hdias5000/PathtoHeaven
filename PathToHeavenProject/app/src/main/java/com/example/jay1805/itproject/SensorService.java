@@ -17,10 +17,14 @@ import android.util.Log;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class SensorService extends Service{
 
     Context appContext;
-    FirebaseDatabase database;
+//    FirebaseDatabase database;
+    private String sharingID;
 
     public SensorService(Context applicationContext) {
         super();
@@ -59,30 +63,49 @@ public class SensorService extends Service{
 
         currentLocation = null;
         Log.d("LOCATION1","function call.");
+        startFirebase();
         getLocationUpdates();
+
     }
 
     private BroadcastReceiver startTracking = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            database = FirebaseDatabase.getInstance();
-            DatabaseReference ref = database.getReference("server/saving-data/fireblog");
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference ref = database.getReference().child("gps-sharing");
+            DatabaseReference newRef = ref.push();
+            sharingID = newRef.getKey();
+            updateLocation();
         }
     };
 
+    private void startFirebase(){
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference().child("gps-sharing");
+        DatabaseReference newRef = ref.push();
+        sharingID = newRef.getKey();
+//        updateLocation();
+    }
+
+    private void updateLocation(){
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference ref = database.getReference().child("gps-sharing").child(sharingID);
+        Map map = new HashMap<>();
+        map.put("latitude", Double.toString(currentLocation.getLatitude()));
+
+        map.put("longitude", Double.toString(currentLocation.getLongitude()));
+        ref.updateChildren(map);
+    }
+
 
     private void makeUseOfNewLocation(Location location){
-
-//Get a reference to the database, so your app can perform read and write operations//
-                    Log.d("LOCATION3","result");
-//                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference(path);
-                    if (location != null) {
-                        Log.d("LOCATION","C'est bien.");
-//Save the location data to the database//
-                        currentLocation = location;
-                        sendMessageToActivity(currentLocation, "");
-//                        ref.setValue(location);
-                    }
+        Log.d("LOCATION3","result");
+        if (location != null) {
+            Log.d("LOCATION","C'est bien.");
+            currentLocation = location;
+            sendMessageToActivity(currentLocation, "");
+            updateLocation();
+        }
     }
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
