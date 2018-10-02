@@ -130,8 +130,7 @@
                 android:layout_height="wrap_content"
                 android:text="Helper"
                 android:onClick="CheckedRadioButton"
-                android:id="@+id/helperButton"
-                android:checked="true"/>
+                android:id="@+id/helperButton" />
 
             <RadioButton
                 android:layout_width="wrap_content"

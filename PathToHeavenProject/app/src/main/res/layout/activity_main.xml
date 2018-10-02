@@ -22,26 +22,26 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="162dp"
+        android:layout_marginTop="132dp"
         android:text="Map" />
 
     <Button
-<<<<<<< HEAD
         android:id="@+id/B_profile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="310dp"
+        android:layout_marginTop="270dp"
         android:text="Profile" />
-=======
+
+    <Button
         android:id="@+id/findUser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/B_chat"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="0dp"
-        android:layout_marginBottom="214dp"
+        android:layout_marginStart="-4dp"
+        android:layout_marginBottom="261dp"
         android:text="Find User" />
 
     <Button
@@ -50,7 +50,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="117dp"
+        android:layout_marginBottom="128dp"
         android:text="Logout" />
->>>>>>> master
 </RelativeLayout>

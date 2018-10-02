@@ -145,9 +145,15 @@ public class ProfilePageActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot != null) {
                     Map<String,Object> userMap= new HashMap<>();
-                    userMap.put("Home Address", HomeAddress.getText().toString());
-                    userMap.put("Date of Birth", dateEditText.getText().toString());
-                    userMap.put("User Type", rb.getText().toString());
+                    if(!HomeAddress.getText().toString().isEmpty()) {
+                        userMap.put("Home Address", HomeAddress.getText().toString());
+                    }
+                    if(!dateEditText.getText().toString().isEmpty()) {
+                        userMap.put("Date of Birth", dateEditText.getText().toString());
+                    }
+                    if(!rb.getText().toString().isEmpty()) {
+                        userMap.put("User Type", rb.getText().toString());
+                    }
                     userDB.updateChildren(userMap);
                 }
             }
