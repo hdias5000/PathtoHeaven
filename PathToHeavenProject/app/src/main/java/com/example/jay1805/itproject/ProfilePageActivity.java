@@ -3,6 +3,8 @@ package com.example.jay1805.itproject;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +14,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -28,6 +31,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -46,6 +51,7 @@ public class ProfilePageActivity extends AppCompatActivity {
     private Calendar myCalendar;
     private String name;
     private ImageButton UploadImage;
+    private ImageView ImageViewer;
 
     private DatabaseReference userDB;
 
@@ -62,6 +68,7 @@ public class ProfilePageActivity extends AppCompatActivity {
         dateEditText  = (EditText) findViewById(R.id.date_editText);
         rg = (RadioGroup) findViewById(R.id.user_type_rg);
         myCalendar =  Calendar.getInstance();
+        ImageViewer = findViewById(R.id.imageViewer);
 
         final DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
 
@@ -121,6 +128,7 @@ public class ProfilePageActivity extends AppCompatActivity {
             public void onClick(View view) {
                 InputingToDatabase();
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                finish();
             }
         });
     }
@@ -134,6 +142,14 @@ public class ProfilePageActivity extends AppCompatActivity {
             if(requestCode == 1) {
                 if(data != null) {
                     selectedImageUri = data.getData().toString();
+                    InputStream inputStream;
+                    try {
+                        inputStream = getContentResolver().openInputStream(data.getData());
+                        Bitmap image = BitmapFactory.decodeStream(inputStream);
+                        ImageViewer.setImageBitmap(image);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
                     System.out.println(selectedImageUri);
                 }
                 else {
@@ -144,35 +160,35 @@ public class ProfilePageActivity extends AppCompatActivity {
     }
 
     private void InputingToDatabase() {
-                    final Map userMap= new HashMap<>();
-                    if(!HomeAddress.getText().toString().isEmpty()) {
-                        userMap.put("Home Address", HomeAddress.getText().toString());
-                    }
-                    if(!dateEditText.getText().toString().isEmpty()) {
-                        userMap.put("Date of Birth", dateEditText.getText().toString());
-                    }
-                    if(!rb.getText().toString().isEmpty()) {
-                        userMap.put("User Type", rb.getText().toString());
-                    }
-                    if(!selectedImageUri.isEmpty()) {
-                        final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Profile Pictures");
-                        UploadTask uploadTask = filePath.putFile(Uri.parse(selectedImageUri));
+        final Map userMap= new HashMap<>();
+        if(!HomeAddress.getText().toString().isEmpty()) {
+            userMap.put("Home Address", HomeAddress.getText().toString());
+        }
+        if(!dateEditText.getText().toString().isEmpty()) {
+            userMap.put("Date of Birth", dateEditText.getText().toString());
+        }
+        if(!rb.getText().toString().isEmpty()) {
+            userMap.put("User Type", rb.getText().toString());
+        }
+        if(!selectedImageUri.isEmpty()) {
+            final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Profile Pictures");
+            UploadTask uploadTask = filePath.putFile(Uri.parse(selectedImageUri));
 
-                        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                    @Override
-                                    public void onSuccess(Uri uri) {
-                                        userMap.put("Profile Picture", uri.toString());
-                                        userDB.updateChildren(userMap);
-                                    }
-                                });
-                            }
-                        });
-                    }
+            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            userMap.put("Profile Picture", uri.toString());
+                            userDB.updateChildren(userMap);
+                        }
+                    });
+                }
+            });
+        }
 
-                    userDB.updateChildren(userMap);
+        userDB.updateChildren(userMap);
     }
 
     private void updateLabel() {
