@@ -31,6 +31,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -85,9 +86,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if(marker!=null){
                     marker.remove();
                 }
+                map.clearMap();
+                currentDestination = latLngLoc;
 
                 mo.position(currentDestination);
                 mo.title("Your search results");
+                mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
                 map.addMarker(mo,currentDestination);
             }
@@ -222,19 +226,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 break;
 
             case R.id.B_to:
-//                mMap.clear();
-//
-//                MarkerOptions markerOptions = new MarkerOptions();
-//                markerOptions.position(new LatLng(endLatitude,endLongitude));
-//                markerOptions.title("Destination");
-//
-//
-//                float results[] = new float[10];
-//                Location.distanceBetween(latitude,longitude,endLatitude,endLongitude,results);
-//
 
-//                markerOptions.snippet("Distance = " +results[0]);
-//                mMap.addMarker(markerOptions);
                 Object dataTransfer[] = new Object[3];
                 String url = urlCreator.getDirectionsUrl(latitude, longitude, currentDestination.latitude, currentDestination.longitude);
                 Log.d("LOL",url);
@@ -244,23 +236,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 dataTransfer[2] = currentDestination;
                 getDirectionsData.execute(dataTransfer);
                 break;
-
-//            case R.id.LATDOWN:
-//                latitude--;
-//                changeCurrentLocation(latitude, longitude);
-//                break;
-//            case R.id.LATUP:
-//                latitude++;
-//                changeCurrentLocation(latitude, longitude);
-//                break;
-//            case R.id.LNGDOWN:
-//                longitude--;
-//                changeCurrentLocation(latitude, longitude);
-//                break;
-//            case R.id.LNGUP:
-//                longitude++;
-//                changeCurrentLocation(latitude, longitude);
-//                break;
         }
 
     }
