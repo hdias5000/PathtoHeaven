@@ -1,6 +1,7 @@
 package com.example.jay1805.itproject.Chat;
 
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private static final int VIEW_TYPE_ME = 1;
     private static final int VIEW_TYPE_OTHER = 2;
+    ViewGroup par;
 
     ArrayList<MessageObject> messageList;
 
@@ -29,7 +31,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
+        par = parent;
         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
         RecyclerView.ViewHolder viewHolder = null;
         switch (viewType) {
@@ -94,7 +96,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private void sendMessagetoStopTracking(){
         Intent intent = new Intent("STOP NUDES");
-//        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        LocalBroadcastManager.getInstance(par.getContext()).sendBroadcast(intent);
     }
 
     private void configureOtherChatViewHolder(final OtherChatViewHolder otherChatViewHolder, int position) {

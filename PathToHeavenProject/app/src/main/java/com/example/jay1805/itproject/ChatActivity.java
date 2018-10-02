@@ -285,10 +285,7 @@ public class ChatActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String message = intent.getStringExtra("ID");
             if (!currentShareID.equals( message)) {
-                System.out.println("BullSHITbabe");
-                System.out.println(message);
-                System.out.println(nameOfSender);
-                System.out.println(FirebaseAuth.getInstance().getUid());
+                System.out.println("Sent Sharing ID:    "+message);
 
                 Map map = new HashMap<>();
                 String messageId = chatDB.push().getKey();

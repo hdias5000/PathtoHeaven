@@ -66,8 +66,8 @@ public class SensorService extends Service{
 
         currentLocation = null;
         Log.d("LOCATION1","function call.");
-        startFirebase();
-        getLocationUpdates();
+//        startFirebase();
+//        getLocationUpdates();
 
     }
 
@@ -97,7 +97,8 @@ public class SensorService extends Service{
         Intent intent = new Intent("NUDE ID");
         intent.putExtra("ID", sharingID);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-//        updateLocation();
+        System.out.println("Actual Sharing ID:    "+sharingID);
+        updateLocation();
     }
 
     private void updateLocation(){
@@ -105,6 +106,7 @@ public class SensorService extends Service{
         DatabaseReference ref = database.getReference().child("gps-sharing").child(sharingID);
         System.out.println("BullSHIT");
         System.out.println(sharingID);
+        System.out.println("Uploaded Sharing ID:    "+sharingID);
         Map map = new HashMap<>();
         map.put("latitude", Double.toString(currentLocation.getLatitude()));
 
