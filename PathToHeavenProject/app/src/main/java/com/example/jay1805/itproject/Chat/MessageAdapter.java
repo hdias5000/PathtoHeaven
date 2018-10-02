@@ -1,6 +1,5 @@
 package com.example.jay1805.itproject.Chat;
 
-import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -84,6 +83,21 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             myChatViewHolder.mViewMedia.setVisibility(View.GONE);
         }
 
+        if(messageList.get(myChatViewHolder.getAdapterPosition()).getGPSShared().equals(false)) {
+            myChatViewHolder.helpMessageMine.setVisibility(View.GONE);
+        }
+
+        if(messageList.get(myChatViewHolder.getAdapterPosition()).getGPSShared().equals(true)) {
+            myChatViewHolder.message.setText("Click to Disable");
+        }
+
+        myChatViewHolder.helpMessageMine.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                System.out.println("My Bitch Work");
+            }
+        });
+
         myChatViewHolder.mViewMedia.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -105,6 +119,21 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         if(messageList.get(otherChatViewHolder.getAdapterPosition()).getMediaUrlList().isEmpty()) {
             otherChatViewHolder.mViewMedia.setVisibility(View.GONE);
         }
+
+        if(messageList.get(otherChatViewHolder.getAdapterPosition()).getGPSShared().equals(false)) {
+            otherChatViewHolder.helpMessageOther.setVisibility(View.GONE);
+        }
+
+        if(messageList.get(otherChatViewHolder.getAdapterPosition()).getGPSShared().equals(true)) {
+            otherChatViewHolder.message.setText("Click to view GPS location");
+        }
+
+        otherChatViewHolder.helpMessageOther.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                System.out.println("WORK!! Bitch");
+            }
+        });
 
         otherChatViewHolder.mViewMedia.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -138,6 +167,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         TextView message, sender;
         Button mViewMedia;
         public RelativeLayout theRelativeLayout;
+        Button helpMessageMine;
 
         public MyChatViewHolder(View view) {
             super(view);
@@ -145,6 +175,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             message = view.findViewById(R.id.message);
             sender = view.findViewById(R.id.sender);
             mViewMedia = view.findViewById(R.id.viewMedia);
+            helpMessageMine = view.findViewById(R.id.helpMessage_mine);
         }
     }
 
@@ -153,6 +184,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         TextView message, sender;
         Button mViewMedia;
         public RelativeLayout theRelativeLayout;
+        Button helpMessageOther;
 
         public OtherChatViewHolder(View view) {
             super(view);
@@ -160,6 +192,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             message = view.findViewById(R.id.message);
             sender = view.findViewById(R.id.sender);
             mViewMedia = view.findViewById(R.id.viewMedia);
+            helpMessageOther = view.findViewById(R.id.B_helpMessage_other);
         }
     }
 }

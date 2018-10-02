@@ -25,6 +25,7 @@ public class SensorService extends Service{
     Context appContext;
 //    FirebaseDatabase database;
     private String sharingID;
+    private boolean share = false;
 
     public SensorService(Context applicationContext) {
         super();
@@ -71,11 +72,8 @@ public class SensorService extends Service{
     private BroadcastReceiver startTracking = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            DatabaseReference ref = database.getReference().child("gps-sharing");
-            DatabaseReference newRef = ref.push();
-            sharingID = newRef.getKey();
-            updateLocation();
+            share = true;
+            startFirebase();
         }
     };
 
@@ -84,12 +82,17 @@ public class SensorService extends Service{
         DatabaseReference ref = database.getReference().child("gps-sharing");
         DatabaseReference newRef = ref.push();
         sharingID = newRef.getKey();
+        Intent intent = new Intent("NUDE ID");
+        intent.putExtra("ID", sharingID);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 //        updateLocation();
     }
 
     private void updateLocation(){
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference().child("gps-sharing").child(sharingID);
+        System.out.println("BullSHIT");
+        System.out.println(sharingID);
         Map map = new HashMap<>();
         map.put("latitude", Double.toString(currentLocation.getLatitude()));
 
@@ -104,7 +107,9 @@ public class SensorService extends Service{
             Log.d("LOCATION","C'est bien.");
             currentLocation = location;
             sendMessageToActivity(currentLocation, "");
-            updateLocation();
+            if (share) {
+                updateLocation();
+            }
         }
     }
 

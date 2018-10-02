@@ -135,7 +135,6 @@ public class CurrentLocationActivity extends AppCompatActivity implements
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
             if (currentLocation != null) {
-//                Log.d("BS","I don't believe it"+lastKnownLoc.getLongitude());
                 sendMessageToActivity(currentLocation,"nudes");
             }
         }
@@ -151,26 +150,5 @@ public class CurrentLocationActivity extends AppCompatActivity implements
         intent.putExtra("Location", b);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
-
-//    private void bs(){
-//        String CurretntUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-//        DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("user").child(CurretntUid).child("latitude");
-//        db.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                dataSnapshot.getValue().toString();
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
-//
-//        DatabaseReference db2 = FirebaseDatabase.getInstance().getReference().child("user").child(CurretntUid);
-//        HashMap newMap = new HashMap<>();
-//        newMap.put("latitude", 30);
-//        db2.updateChildren(newMap);
-//    }
 
 }
