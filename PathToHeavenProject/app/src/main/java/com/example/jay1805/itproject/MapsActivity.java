@@ -75,6 +75,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
+        placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").build());
+
         placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
