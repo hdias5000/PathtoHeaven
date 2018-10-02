@@ -230,7 +230,6 @@ public class ChatActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK) {
-            //System.out.println("hooooo");
             if(requestCode == PICK_IMAGE_INTENT) {
                 if(data.getClipData() == null) {
                     mediaUriList.add(data.getData().toString());

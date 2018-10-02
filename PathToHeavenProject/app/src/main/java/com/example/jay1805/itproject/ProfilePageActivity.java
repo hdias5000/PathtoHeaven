@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -39,6 +40,7 @@ public class ProfilePageActivity extends AppCompatActivity {
     private RadioButton rb;
     private Calendar myCalendar;
     private String name;
+    private ImageButton UploadImage;
 
     private DatabaseReference userDB;
 
@@ -47,6 +49,7 @@ public class ProfilePageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_page);
 
+        UploadImage = (ImageButton) findViewById(R.id.image_button);
         HomeAddress = (EditText) findViewById(R.id.home_address_editText);
         nameOfUser = (TextView) findViewById(R.id.theActualName);
         saveDetails = (Button) findViewById(R.id.save_button);
@@ -68,6 +71,17 @@ public class ProfilePageActivity extends AppCompatActivity {
             }
 
         };
+
+
+        UploadImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent,"Select Image"), 1);
+            }
+        });
 
         calenderBtn.setOnClickListener(new View.OnClickListener() {
 
@@ -104,6 +118,24 @@ public class ProfilePageActivity extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
             }
         });
+    }
+
+    String selectedImageUri;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK) {
+            if(requestCode == 1) {
+                if(data != null) {
+                    selectedImageUri = data.getData().toString();
+                    System.out.println(selectedImageUri);
+                }
+                else {
+                    System.out.println("NO IMAGE CHOSEN");
+                }
+            }
+        }
     }
 
     private void InputingToDatabase() {
