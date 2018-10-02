@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.jay1805.itproject">
 
-    <uses-permission android:name="android.permission.WRITE_CONTACTS"/>
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COURSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -37,6 +37,7 @@
         <activity android:name=".FindUserActivity" />
         <activity android:name=".MainActivity" />
         <activity android:name=".ChatActivity" />
+        <activity android:name=".LaunchGPSActivity" />
 
         <service
             android:name=".SensorService"
@@ -53,7 +54,8 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".CurrentLocationActivity"></activity>
+        <activity android:name=".CurrentLocationActivity" />
+        <activity android:name=".LaunchGPSActivity"></activity>
     </application>
 
 </manifest>

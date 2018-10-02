@@ -23,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        startActivity(new Intent(getApplicationContext(), LaunchGPSActivity.class));
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -44,12 +46,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ctx = this;
-        mSensorService = new SensorService(getCtx());
-        mServiceIntent = new Intent(getCtx(), mSensorService.getClass());
-        if (!isMyServiceRunning(mSensorService.getClass())) {
-            startService(mServiceIntent);
-        }
+//        ctx = this;
+//        mSensorService = new SensorService(getCtx());
+//        mServiceIntent = new Intent(getCtx(), mSensorService.getClass());
+//        if (!isMyServiceRunning(mSensorService.getClass())) {
+//            startService(mServiceIntent);
+//        }
     }
 
 
