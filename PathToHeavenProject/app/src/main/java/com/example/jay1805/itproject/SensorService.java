@@ -7,25 +7,33 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class SensorService extends Service{
+public class SensorService extends Service implements com.google.android.gms.location.LocationListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener{
 
+    private LocationRequest locationRequest;
+    private GoogleApiClient client;
     Context appContext;
-//    FirebaseDatabase database;
     private String sharingID;
     private boolean share = false;
+
 
     public SensorService(Context applicationContext) {
         super();
@@ -44,16 +52,6 @@ public class SensorService extends Service{
         return null;
     }
 
-//    public int onStartCommand(Intent intent, int flags, int startId) {
-//        super.onStartCommand(intent, flags, startId);
-//        LocalBroadcastManager.getInstance(this).registerReceiver(
-//                mMessageReceiver, new IntentFilter("SEND NUDES"));
-//
-//        currentLocation = null;
-//        Log.d("LOCATION1","function call.");
-//        getLocationUpdates();
-//        return START_STICKY;
-//    }
     @Override
     public void onCreate() {
         super.onCreate();
@@ -65,10 +63,22 @@ public class SensorService extends Service{
                 stopTracking, new IntentFilter("STOP NUDES"));
 
         currentLocation = null;
-        Log.d("LOCATION1","function call.");
-//        startFirebase();
-        getLocationUpdates();
 
+    }
+
+    @SuppressLint("MissingPermission")
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // 2. Create the GoogleApi object
+        client = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+
+        client.connect();
+
+        return START_STICKY;
     }
 
     private BroadcastReceiver startTracking = new BroadcastReceiver() {
@@ -104,9 +114,6 @@ public class SensorService extends Service{
     private void updateLocation(){
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference().child("gps-sharing").child(sharingID);
-        System.out.println("BullSHIT");
-        System.out.println(sharingID);
-        System.out.println("Uploaded Sharing ID:    "+sharingID);
         Map map = new HashMap<>();
 
         map.put("latitude", Double.toString(currentLocation.getLatitude()));
@@ -121,6 +128,7 @@ public class SensorService extends Service{
         if (location != null) {
             Log.d("LOCATION","C'est bien.");
             currentLocation = location;
+
             sendMessageToActivity(currentLocation, "");
             if (share) {
                 updateLocation();
@@ -133,7 +141,6 @@ public class SensorService extends Service{
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
             if (currentLocation != null) {
-//                Log.d("BS","I don't believe it"+lastKnownLoc.getLongitude());
                 sendMessageToActivity(currentLocation,"nudes");
             }
         }
@@ -149,29 +156,6 @@ public class SensorService extends Service{
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    @SuppressLint("MissingPermission")
-    public void getLocationUpdates(){
-        // Acquire a reference to the system Location Manager
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-// Define a listener that responds to location updates
-        LocationListener locationListener = new LocationListener() {
-            public void onLocationChanged(Location location) {
-                // Called when a new location is found by the network location provider.
-                makeUseOfNewLocation(location);
-            }
-
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-            public void onProviderEnabled(String provider) {}
-
-            public void onProviderDisabled(String provider) {}
-        };
-
-// Register the listener with the Location Manager to receive location updates
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-    }
-
 
     @Override
     public void onDestroy() {
@@ -179,53 +163,42 @@ public class SensorService extends Service{
         Log.i("EXIT", "ondestroy!");
         Intent broadcastIntent = new Intent("HD.RestartSensor");
         sendBroadcast(broadcastIntent);
-//        stoptimertask();
+        if (client!=null){
+
+            LocationServices.FusedLocationApi.removeLocationUpdates(client,  this);
+        }
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        if (currentLocation==null){
+            makeUseOfNewLocation(location);
+        } else if ((location.getLatitude() != currentLocation.getLatitude()) || (location.getLongitude() != currentLocation.getLongitude())){
+            makeUseOfNewLocation(location);
+        }
+    }
 
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        // 3. Create the LocationRequest
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(1000); // in milliseconds
+        locationRequest.setFastestInterval(1000); // in milliseconds
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+// 4. Register your listener
+        LocationServices.FusedLocationApi.requestLocationUpdates(client, locationRequest, this);
+    }
 
+    @Override
+    public void onConnectionSuspended(int i) {
 
+    }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////BS
-    //    private TimerTask timerTask;
-    //    long oldTime=0;
-    //    public void startTimer() {
-    //        //set a new Timer
-    //        timer = new Timer();
-    //
-    //        //initialize the TimerTask's job
-    //        initializeTimerTask();
-    //
-    //        //schedule the timer, to wake up every 1 second
-//    private Timer timer;
-    //        timer.schedule(timerTask, 1000, 1000); //
-    //    }
-    //    /**
-    //     * it sets the timer to print the counter every x seconds
-    //     */
-    //
-    //    public void initializeTimerTask() {
-    //        timerTask = new TimerTask() {
-    //            public void run() {
-    //                Log.i("in timer", "in timer ++++  "+ (counter++));
-    //            }
-    //        };
-    //    }
-    //
-    //    /**
-    //     * not needed
-    //     */
-    //    public void stoptimertask() {
-    //        //stop the timer, if it's not already null
-    //        if (timer != null) {
-    //            timer.cancel();
-    //            timer = null;
-    //        }
-    //    @Nullable
-    //    @Override
-    //    public IBinder onBind(Intent intent) {
-    //        return null;
-    //    }
-    //    }
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
 }
