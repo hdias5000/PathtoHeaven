@@ -1,5 +1,6 @@
 package com.example.jay1805.itproject.Chat;
 
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -94,7 +95,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         myChatViewHolder.helpMessageMine.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                System.out.println("My Bitch Work");
+                sendMessagetoStopTracking();
             }
         });
 
@@ -106,6 +107,11 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                         .show();
             }
         });
+    }
+
+    private void sendMessagetoStopTracking(){
+        Intent intent = new Intent("STOP NUDES");
+//        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     private void configureOtherChatViewHolder(final OtherChatViewHolder otherChatViewHolder, int position) {

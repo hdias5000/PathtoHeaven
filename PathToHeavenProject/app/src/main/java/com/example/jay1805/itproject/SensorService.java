@@ -61,6 +61,8 @@ public class SensorService extends Service{
                 mMessageReceiver, new IntentFilter("SEND NUDES"));
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 startTracking, new IntentFilter("UPLOAD NUDES"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                stopTracking, new IntentFilter("STOP NUDES"));
 
         currentLocation = null;
         Log.d("LOCATION1","function call.");
@@ -74,6 +76,16 @@ public class SensorService extends Service{
         public void onReceive(Context context, Intent intent) {
             share = true;
             startFirebase();
+        }
+    };
+
+    private BroadcastReceiver stopTracking = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            share = false;
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference ref = database.getReference().child("gps-sharing").child(sharingID);
+            ref.removeValue();
         }
     };
 
