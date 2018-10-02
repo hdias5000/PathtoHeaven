@@ -12,11 +12,6 @@ import android.widget.TextView;
 
 import com.example.jay1805.itproject.ChatActivity;
 import com.example.jay1805.itproject.R;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -41,26 +36,7 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatLi
 
     @Override
     public void onBindViewHolder(@NonNull final ChatListViewHolder holder, final int position) {
-
-        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-                    if(!childsnapshot.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                        for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
-                            if(chatsnapshot.getKey().equals(ChatList.get(position).getChatId())) {
-                                holder.mTitle.setText(childsnapshot.child("name").getValue().toString());
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        holder.mTitle.setText(ChatList.get(position).getChatId());
 
         holder.contactLayout.setOnClickListener(new View.OnClickListener() {
             @Override

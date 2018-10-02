@@ -76,7 +76,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void getChatMessages() {
 
-        nameOfSenderDB.addListenerForSingleValueEvent(new ValueEventListener() {
+        nameOfSenderDB.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 nameOfSender = dataSnapshot.getValue().toString();
@@ -94,7 +94,6 @@ public class ChatActivity extends AppCompatActivity {
                 if(dataSnapshot.exists()) {
                     String text = "";
                     String creatorId = "";
-                    String creator = "";
                     ArrayList<String> mediaUrlList = new ArrayList<>();
                     if (dataSnapshot.child("text").getValue() != null) {
                         text = dataSnapshot.child("text").getValue().toString();
@@ -102,15 +101,12 @@ public class ChatActivity extends AppCompatActivity {
                     if (dataSnapshot.child("creator").getValue() != null) {
                         creatorId = dataSnapshot.child("creator").getValue().toString();
                     }
-                    if (dataSnapshot.child("creatorID").getValue() != null) {
-                        creator = dataSnapshot.child("creatorID").getValue().toString();
-                    }
                     if (dataSnapshot.child("media").getChildrenCount()>0) {
                         for (DataSnapshot mediaSnapshot : dataSnapshot.child("media").getChildren()) {
                             mediaUrlList.add(mediaSnapshot.getValue().toString());
                         }
                     }
-                    MessageObject myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, text, mediaUrlList);
+                    MessageObject myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, text, mediaUrlList);
                     messageList.add(myMessage);
                     ChatViewLayoutManager.scrollToPosition(messageList.size()-1);
                     ChatViewAdapter.notifyDataSetChanged();
@@ -150,8 +146,6 @@ public class ChatActivity extends AppCompatActivity {
             final DatabaseReference newMessageDB = chatDB.child(messageId);
 
             final Map newMessageMap = new HashMap<>();
-
-            newMessageMap.put("creatorID", FirebaseAuth.getInstance().getUid());
 
             newMessageMap.put("creator", nameOfSender);
 

@@ -40,6 +40,28 @@ public class ChatMainPageActivity extends AppCompatActivity {
         Fresco.initialize(this);
 
         chatList = new ArrayList<>();
+        Button mLogout = findViewById(R.id.logout);
+        Button mFindUser = findViewById(R.id.FindUser);
+
+        mFindUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForResult(new Intent(getApplicationContext(), FindUserActivity.class), 1);
+            }
+        });
+
+        mLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                // make sure the user is who he says he is
+                Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
+                intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return;
+            }
+        });
 
         getPermissions();
         initializeRecyclerView();
