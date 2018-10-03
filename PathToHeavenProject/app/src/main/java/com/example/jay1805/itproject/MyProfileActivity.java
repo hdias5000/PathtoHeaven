@@ -2,9 +2,11 @@ package com.example.jay1805.itproject;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,6 +29,7 @@ public class MyProfileActivity extends AppCompatActivity {
     TextView DoB;
     TextView HomeAddress;
     TextView UserType;
+    TextView PhoneNumber;
 
     String currentUserUid;
     DatabaseReference userRef;
@@ -41,6 +44,7 @@ public class MyProfileActivity extends AppCompatActivity {
         DoB = findViewById(R.id.theRealDOB);
         HomeAddress = findViewById(R.id.theRealHomeAddress);
         UserType = findViewById(R.id.theRealUserType);
+        PhoneNumber = findViewById(R.id.theRealPhoneNumber);
 
         currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         userRef = FirebaseDatabase.getInstance().getReference().child("user").child(currentUserUid);
@@ -49,17 +53,10 @@ public class MyProfileActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot childSnapShot: dataSnapshot.getChildren()) {
-//                    if(childSnapShot.getKey().equals("Profile Picture")) {
-//                            String url = childSnapShot.getValue().toString();
-//                        InputStream in = null;
-//                        try {
-//                            in = new URL(url).openStream();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                        Bitmap bmp = BitmapFactory.decodeStream(in);
-//                            ProfilePic.setImageBitmap(bmp);
-//                    }
+                    if(childSnapShot.getKey().equals("Profile Picture")) {
+                        new DownloadImageTask(ProfilePic)
+                                .execute(childSnapShot.getValue().toString());
+                    }
                     if(childSnapShot.getKey().equals("name")) {
                         Name.setText(childSnapShot.getValue().toString());
                     }
@@ -72,6 +69,9 @@ public class MyProfileActivity extends AppCompatActivity {
                     if(childSnapShot.getKey().equals("User Type")) {
                         UserType.setText(childSnapShot.getValue().toString());
                     }
+                    if(childSnapShot.getKey().equals("phone")) {
+                        PhoneNumber.setText(childSnapShot.getValue().toString());
+                    }
                 }
             }
 
@@ -80,5 +80,30 @@ public class MyProfileActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
     }
 }
