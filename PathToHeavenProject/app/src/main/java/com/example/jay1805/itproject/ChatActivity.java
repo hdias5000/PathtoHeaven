@@ -290,7 +290,7 @@ public class ChatActivity extends BaseActivity {
         ChatView.setHasFixedSize(false);
         ChatViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
         ChatView.setLayoutManager(ChatViewLayoutManager);
-        ChatViewAdapter = new MessageAdapter(messageList);
+        ChatViewAdapter = new MessageAdapter(messageList, chatID);
         ChatView.setAdapter(ChatViewAdapter);
     }
 
@@ -331,8 +331,8 @@ public class ChatActivity extends BaseActivity {
         switch (view.getId()){
             case R.id.B_help:
                 LocalBroadcastManager.getInstance(this).registerReceiver(
-                        sendID, new IntentFilter("NUDE ID"));
-                Intent intent = new Intent("UPLOAD NUDES");
+                        sendID, new IntentFilter("GPS ID"));
+                Intent intent = new Intent("UPLOAD GPS");
                 LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
     }

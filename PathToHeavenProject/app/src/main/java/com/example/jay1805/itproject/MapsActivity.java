@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -32,6 +33,11 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private CurrentLocation currentLocation;
@@ -45,6 +51,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     LatLng currentDestination;
     Marker marker;
+    Marker markerOfElderly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +93,61 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
         lastKnownLoc = null;
+
+        String shareID;
+        Intent intent = getIntent();
+
+        if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID")) {
+
+            shareID = intent.getExtras().getString("Share ID");
+            System.out.println("Share ID is: " + shareID);
+            Log.d("SHAREID", shareID);
+            // Get a reference to our posts
+//            if (FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID) != null) {
+                DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID);
+//                if ((ref.child("latitude") != null) && (ref.child("longitude") != null)){
+                    ref.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            double newLatitude = 0;
+                            double newLongitude = 0;
+                            for (DataSnapshot childSnapshot: dataSnapshot.getChildren()){
+                                if (childSnapshot.getKey().toString().equals("latitude")){
+                                    newLatitude = Double.parseDouble(childSnapshot.getValue().toString());
+                                }
+                                if (childSnapshot.getKey().toString().equals("longitude")){
+                                    newLongitude = Double.parseDouble(childSnapshot.getValue().toString());
+                                }
+                            }
+
+                            if (markerOfElderly!=null){
+                                markerOfElderly.remove();
+                            }
+
+                            Log.d("Coord", "lat is: " +newLatitude);
+                            Log.d("Coord", "long is: " +newLongitude);
+                            LatLng latLng = new LatLng(newLatitude,newLongitude);
+                            MarkerOptions mo = new MarkerOptions();
+                            mo.position(latLng);
+                            mo.title("Location of Elderly");
+                            mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                            markerOfElderly = map.addMarker(mo,latLng);
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            makeToast("Tracking has Stopped");
+                        }
+                    });
+//                } else{
+//                    makeToast("missing coordinates");
+//                }
+//            } else{
+//                makeToast("String don't exist.");
+//            }
+
+        }
 
     }
 
@@ -151,9 +213,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 dataTransfer[1] = url;
                 dataTransfer[2] = currentDestination;
                 getDirectionsData.execute(dataTransfer);
+                sendMessageToActivity(url,currentDestination);
                 break;
         }
 
+    }
+
+    private void sendMessageToActivity(String url, LatLng dest) {
+        Intent intent = new Intent("New Route");
+        // You can also include some extra data.
+        intent.putExtra("url", url);
+        Bundle b = new Bundle();
+        b.putParcelable("dest", dest);
+        intent.putExtra("dest", b);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     private void showNearbyPlaces(String tag, double latitude, double longitude){
@@ -175,7 +248,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     private void askForCurrentLocation() {
-        Intent intent = new Intent("SEND NUDES");
+        Intent intent = new Intent("SEND GPS");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
