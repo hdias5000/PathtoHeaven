@@ -44,6 +44,13 @@
         android:id="@+id/viewMedia"
         android:layout_width="125dp"
         android:layout_height="match_parent"
+        android:layout_marginStart="-50dp"
         android:text="View Media" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="M"
+        android:id="@+id/B_helpMessage_other" />
 
 </LinearLayout>
