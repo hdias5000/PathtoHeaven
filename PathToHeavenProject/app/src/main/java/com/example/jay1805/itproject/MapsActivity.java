@@ -96,7 +96,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         String shareID;
         Intent intent = getIntent();
-        if (intent.getExtras().containsKey("Share ID")) {
+
+        if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID")) {
 
             shareID = intent.getExtras().getString("Share ID");
             System.out.println("Share ID is: " + shareID);
@@ -212,9 +213,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 dataTransfer[1] = url;
                 dataTransfer[2] = currentDestination;
                 getDirectionsData.execute(dataTransfer);
+                sendMessageToActivity(url,currentDestination);
                 break;
         }
 
+    }
+
+    private void sendMessageToActivity(String url, LatLng dest) {
+        Intent intent = new Intent("New Route");
+        // You can also include some extra data.
+        intent.putExtra("url", url);
+        Bundle b = new Bundle();
+        b.putParcelable("dest", dest);
+        intent.putExtra("dest", b);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     private void showNearbyPlaces(String tag, double latitude, double longitude){
@@ -236,7 +248,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     private void askForCurrentLocation() {
-        Intent intent = new Intent("SEND NUDES");
+        Intent intent = new Intent("SEND GPS");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

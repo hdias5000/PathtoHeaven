@@ -105,7 +105,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     private void sendMessagetoStopTracking(){
-        Intent intent = new Intent("STOP NUDES");
+        Intent intent = new Intent("STOP GPS");
         LocalBroadcastManager.getInstance(par.getContext()).sendBroadcast(intent);
     }
 

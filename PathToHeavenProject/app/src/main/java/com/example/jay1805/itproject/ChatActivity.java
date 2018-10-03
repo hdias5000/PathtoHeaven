@@ -274,8 +274,8 @@ public class ChatActivity extends AppCompatActivity {
         switch (view.getId()){
             case R.id.B_help:
                 LocalBroadcastManager.getInstance(this).registerReceiver(
-                        sendID, new IntentFilter("NUDE ID"));
-                Intent intent = new Intent("UPLOAD NUDES");
+                        sendID, new IntentFilter("GPS ID"));
+                Intent intent = new Intent("UPLOAD GPS");
                 LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
     }
