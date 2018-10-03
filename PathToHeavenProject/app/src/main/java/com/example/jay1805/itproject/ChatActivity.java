@@ -240,7 +240,7 @@ public class ChatActivity extends AppCompatActivity {
         ChatView.setHasFixedSize(false);
         ChatViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
         ChatView.setLayoutManager(ChatViewLayoutManager);
-        ChatViewAdapter = new MessageAdapter(messageList);
+        ChatViewAdapter = new MessageAdapter(messageList, chatID);
         ChatView.setAdapter(ChatViewAdapter);
     }
 

@@ -38,9 +38,10 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
         mMap.animateCamera(CameraUpdateFactory.zoomBy(1));
     }
 
-    public void addMarker(MarkerOptions markerOptions, LatLng latLng){
-        mMap.addMarker(markerOptions);
+    public Marker addMarker(MarkerOptions markerOptions, LatLng latLng){
+
         mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+        return mMap.addMarker(markerOptions);
 //        mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
     }
 
