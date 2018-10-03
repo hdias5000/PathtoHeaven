@@ -5,9 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -31,41 +33,53 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.sinch.android.rtc.calling.Call;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends BaseActivity {
 
     private RecyclerView ChatView, MediaView;
     private RecyclerView.Adapter ChatViewAdapter, MediaViewAdapter;
     private RecyclerView.LayoutManager ChatViewLayoutManager, MediaViewLayoutManager;
-
+    private Button callButton;
     ArrayList<MessageObject> messageList;
     String chatID;
     DatabaseReference chatDB;
     DatabaseReference nameOfSenderDB;
     String nameOfSender;
+    DatabaseReference myRef;
+    private String chatToId ;
     String currentShareID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-
+        callButton = findViewById(R.id.callButton);
         chatID = getIntent().getExtras().getString("chatID");
+        callButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                callButtonClicked();
+            }
+        });
         chatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
         nameOfSenderDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("name");
 
         Button mSend = findViewById(R.id.send);
         Button mAddMedia = findViewById(R.id.addMedia);
         mSend.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
             @Override
             public void onClick(View v) {
                 sendMessage();
             }
         });
+
+        myRef = FirebaseDatabase.getInstance().getReference("user");
 
         mAddMedia.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -162,6 +176,7 @@ public class ChatActivity extends AppCompatActivity {
     ArrayList<String> mediaIdList = new ArrayList<>();
     EditText mMessage;
 
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     private void sendMessage() {
         mMessage = findViewById(R.id.messageText);
             String messageId = chatDB.push().getKey();
@@ -211,6 +226,41 @@ public class ChatActivity extends AppCompatActivity {
             }
     }
 
+    private void callButtonClicked() {
+        System.out.println("here"+chatID);
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+
+                    if(!childsnapshot.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+
+                        for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
+
+                            if(chatsnapshot.getKey().equals(chatID)) {
+                                chatToId = childsnapshot.getKey().toString();
+                                System.out.println("chat to UID is "+chatToId);
+                                Call call = getSinchServiceInterface().callUser(chatToId);
+                                String callId = call.getCallId();
+
+                                Intent callScreen = new Intent(ChatActivity.this, CallScreenActivity.class);
+                                callScreen.putExtra(SinchService.CALL_ID, callId);
+                                startActivity(callScreen);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
     private void updateDatabaseWithNewMessage(DatabaseReference newMessageDB, Map newMessageMap) {
         newMessageDB.updateChildren(newMessageMap);
         mMessage.setText(null);
@@ -251,7 +301,14 @@ public class ChatActivity extends AppCompatActivity {
         intent.setAction(intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent,"Select Image(s)"), PICK_IMAGE_INTENT);
     }
+    private void stopButtonClicked() {
+        if (getSinchServiceInterface() != null) {
+            getSinchServiceInterface().stopClient();
+        }
+        finish();
+    }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
