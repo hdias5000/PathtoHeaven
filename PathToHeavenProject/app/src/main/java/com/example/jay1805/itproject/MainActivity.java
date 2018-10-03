@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         profileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               // startActivity(new Intent(getApplicationContext(), ProfilePageActivity.class));
+                startActivity(new Intent(getApplicationContext(), MyProfileActivity.class));
             }
         });
 
