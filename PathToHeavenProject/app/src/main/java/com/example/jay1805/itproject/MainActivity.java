@@ -16,8 +16,11 @@ public class MainActivity extends AppCompatActivity {
     private Button findUserButton;
     private Button logoutButton;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        startActivity(new Intent(getApplicationContext(), LaunchGPSActivity.class));
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         mapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -48,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), ChatMainPageActivity.class));
             }
         });
-
         profileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -71,5 +74,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
 
 }

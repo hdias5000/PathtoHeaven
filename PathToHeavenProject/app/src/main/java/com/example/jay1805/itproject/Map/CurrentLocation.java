@@ -7,11 +7,25 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class CurrentLocation {
+
+    public interface CurrentLocationListener{
+        void onLocationChange(Location newLoc);
+    }
+
     private Location lastLocation;
     private Map mMap;
+    private CurrentLocationListener currentLocationListener;
 
     public CurrentLocation(Map mMap) {
+
         this.mMap = mMap;
+        this.currentLocationListener = null;
+    }
+
+
+
+    public void setCurrentLocationListener(CurrentLocationListener listener) {
+        this.currentLocationListener = listener;
     }
 
 
@@ -28,6 +42,9 @@ public class CurrentLocation {
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
 
         mMap.changeCurrentLocationMarker(markerOptions, latLng);
+
+
+
     }
 
     public double getLatitude(){
