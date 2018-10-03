@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -15,7 +13,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.jay1805.itproject.Map.CurrentLocation;
@@ -23,13 +20,11 @@ import com.example.jay1805.itproject.Map.GetDirectionsData;
 import com.example.jay1805.itproject.Map.GetNearbyPlacesData;
 import com.example.jay1805.itproject.Map.Map;
 import com.example.jay1805.itproject.Map.URLCreator;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
-
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -37,16 +32,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.places.AutocompleteFilter;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
-import com.google.android.gms.location.places.ui.PlaceSelectionListener;
-
-import java.io.IOException;
-import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private CurrentLocation currentLocation;

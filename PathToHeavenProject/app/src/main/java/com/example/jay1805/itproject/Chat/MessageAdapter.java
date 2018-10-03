@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.example.jay1805.itproject.MapsActivity;
 import com.example.jay1805.itproject.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.stfalcon.frescoimageviewer.ImageViewer;
@@ -122,7 +123,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         otherChatViewHolder.helpMessageOther.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                System.out.println("WORK!! Bitch");
+                Intent intent = new Intent(par.getContext(), MapsActivity.class);
+                intent.putExtra("Share ID", shareID);
+                par.getContext().startActivity(intent);
             }
         });
 
