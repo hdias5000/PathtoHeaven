@@ -12,16 +12,21 @@ public class MainActivity extends AppCompatActivity {
 
     private Button mapButton;
     private Button chatsButton;
+    private Button profileButton;
     private Button findUserButton;
     private Button logoutButton;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        startActivity(new Intent(getApplicationContext(), LaunchGPSActivity.class));
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         mapButton = findViewById(R.id.B_map);
         chatsButton = findViewById(R.id.B_chat);
+        profileButton = findViewById(R.id.B_profile);
         findUserButton = findViewById(R.id.findUser);
         logoutButton = findViewById(R.id.logout_btn);
 
@@ -32,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(new Intent(getApplicationContext(), FindUserActivity.class), 1);
             }
         });
+
 
         mapButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,6 +52,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), ChatMainPageActivity.class));
             }
         });
+        profileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+               // startActivity(new Intent(getApplicationContext(), ProfilePageActivity.class));
+            }
+        });
+
 
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,5 +74,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
 
 }

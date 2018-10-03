@@ -1,10 +1,18 @@
 package com.example.jay1805.itproject;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+<<<<<<< HEAD
+=======
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
+>>>>>>> master
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -43,8 +51,12 @@ public class ChatActivity extends BaseActivity {
     DatabaseReference chatDB;
     DatabaseReference nameOfSenderDB;
     String nameOfSender;
+<<<<<<< HEAD
     DatabaseReference myRef;
     private String chatToId ;
+=======
+    String currentShareID;
+>>>>>>> master
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +94,8 @@ public class ChatActivity extends BaseActivity {
         initializeMessage();
         initializeMedia();
         getChatMessages();
+
+        currentShareID = "";
     }
 
     private void getChatMessages() {
@@ -120,7 +134,18 @@ public class ChatActivity extends BaseActivity {
                             mediaUrlList.add(mediaSnapshot.getValue().toString());
                         }
                     }
-                    MessageObject myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, text, mediaUrlList);
+
+
+                    MessageObject myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, text, mediaUrlList, false);
+                    if (dataSnapshot.child("isGpsShared").getValue() != null){
+                        if(dataSnapshot.child("isGpsShared").getValue().equals("false")) {
+                            myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, text, mediaUrlList, false);
+                        }
+                        else {
+                            myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, "Click here", mediaUrlList, true);
+                        }
+                    }
+                    //messageList.add(new MessageObject(messageId, nameOfSender, FirebaseAuth.getInstance().getCurrentUser().getUid(), "Click here", mediaUriList, true));
                     messageList.add(myMessage);
                     ChatViewLayoutManager.scrollToPosition(messageList.size()-1);
                     ChatViewAdapter.notifyDataSetChanged();
@@ -164,6 +189,8 @@ public class ChatActivity extends BaseActivity {
             newMessageMap.put("creatorID", FirebaseAuth.getInstance().getUid());
 
             newMessageMap.put("creator", nameOfSender);
+
+            newMessageMap.put("isGpsShared", "false");
 
             if(!mMessage.getText().toString().isEmpty())
                 newMessageMap.put("text", mMessage.getText().toString());
@@ -300,4 +327,34 @@ public class ChatActivity extends BaseActivity {
             }
         }
     }
+
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.B_help:
+                LocalBroadcastManager.getInstance(this).registerReceiver(
+                        sendID, new IntentFilter("NUDE ID"));
+                Intent intent = new Intent("UPLOAD NUDES");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+    }
+
+    private BroadcastReceiver sendID = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String message = intent.getStringExtra("ID");
+            if (!currentShareID.equals( message)) {
+                System.out.println("Sent Sharing ID:    "+message);
+
+                Map map = new HashMap<>();
+                String messageId = chatDB.push().getKey();
+                final DatabaseReference newMessageDB = chatDB.child(messageId);
+                map.put("creatorID", FirebaseAuth.getInstance().getCurrentUser().getUid());
+                map.put("creator", nameOfSender);
+                map.put("shareID", message);
+                map.put("isGpsShared", "true");
+                newMessageDB.updateChildren(map);
+                currentShareID = message;
+            }
+        }
+    };
 }
