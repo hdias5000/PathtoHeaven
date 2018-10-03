@@ -26,14 +26,6 @@
         android:text="Map" />
 
     <Button
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Call"
-        android:id="@+id/B_Call"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
-
-    <Button
         android:id="@+id/findUser"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

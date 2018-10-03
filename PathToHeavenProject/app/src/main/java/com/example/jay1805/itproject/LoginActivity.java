@@ -1,15 +1,15 @@
 package com.example.jay1805.itproject;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.example.jay1805.itproject.Call.BaseActivity;
-import com.example.jay1805.itproject.Call.SinchService;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
@@ -46,7 +46,14 @@ public class LoginActivity extends BaseActivity implements SinchService.StartFai
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         FirebaseApp.initializeApp(this);
-        userIsLoggedIn();
+
+        if (ContextCompat.checkSelfPermission(LoginActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(LoginActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(LoginActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(LoginActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(LoginActivity.this,
+                    new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION},
+                    1);
+        }
+
+        //userIsLoggedIn();
 
         mPhoneNumber = findViewById(R.id.phoneNumber);
         mCode = findViewById(R.id.code);
@@ -90,6 +97,12 @@ public class LoginActivity extends BaseActivity implements SinchService.StartFai
 
     }
 
+    @Override
+    protected void onServiceConnected() {
+
+        getSinchServiceInterface().setStartListener(this);
+    }
+
     private void verifyPhoneNumberWithCode(){
         // code = 6 number code
         PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mVerificationId, mCode.getText().toString());
@@ -101,20 +114,20 @@ public class LoginActivity extends BaseActivity implements SinchService.StartFai
         FirebaseAuth.getInstance().signInWithCredential(phoneAuthCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                if  (task.isSuccessful()){
+                if (task.isSuccessful()) {
 
                     final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
                     UserProfileChangeRequest changeDisplayName = new UserProfileChangeRequest.Builder().setDisplayName(mName.getText().toString()).build();
                     user.updateProfile(changeDisplayName);
 
-                    if(user != null) {
+                    if (user != null) {
                         final DatabaseReference userUid = FirebaseDatabase.getInstance().getReference().child("user").child(user.getUid());
                         userUid.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                if(!dataSnapshot.exists()) {
-                                    Map<String,Object> userMap= new HashMap<>();
+                                if (!dataSnapshot.exists()) {
+                                    Map<String, Object> userMap = new HashMap<>();
                                     userMap.put("name", user.getDisplayName());
                                     userMap.put("phone", user.getPhoneNumber());
                                     userMap.get("name");
@@ -133,18 +146,16 @@ public class LoginActivity extends BaseActivity implements SinchService.StartFai
             }
         });
     }
-    @Override
-    protected void onServiceConnected() {
 
-        getSinchServiceInterface().setStartListener(this);
-    }
     private void userIsLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        System.out.println(user.getUid()+"here");
         // to double check user has logged in
         if(user != null){
-            startActivity(new Intent(getApplicationContext(), MainActivity.class));
-            if (!getSinchServiceInterface().isStarted()) {
-                getSinchServiceInterface().startClient(user.getUid());
+            SinchService.SinchServiceInterface in = getSinchServiceInterface();
+            if (!in.isStarted()) {
+                getSinchServiceInterface().startClient(user.getUid().toString());
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
             }
             finish();
             return;

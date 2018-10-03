@@ -30,6 +30,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service android:name=".SinchService"></service>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDko74sNKQoQ-hQQKpKrQm5Boz3DNcwcps" />
@@ -48,7 +49,9 @@
         <activity android:name=".FindUserActivity" />
         <activity android:name=".MainActivity" />
         <activity android:name=".ChatActivity" />
-        <activity android:name=".CallActivity" android:screenOrientation="portrait" />
+        <activity android:name=".CallScreenActivity" />
+        <activity android:name=".IncomingCallScreenActivity"/>
+
     </application>
 
 </manifest>

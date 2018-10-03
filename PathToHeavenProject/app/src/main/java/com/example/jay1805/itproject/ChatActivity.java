@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -13,9 +12,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
-import com.example.jay1805.itproject.Call.BaseActivity;
-import com.example.jay1805.itproject.Call.CallScreenActivity;
-import com.example.jay1805.itproject.Call.SinchService;
 import com.example.jay1805.itproject.Chat.MediaAdapter;
 import com.example.jay1805.itproject.Chat.MessageAdapter;
 import com.example.jay1805.itproject.Chat.MessageObject;
@@ -47,6 +43,8 @@ public class ChatActivity extends BaseActivity {
     DatabaseReference chatDB;
     DatabaseReference nameOfSenderDB;
     String nameOfSender;
+    DatabaseReference myRef;
+    private String chatToId ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +52,12 @@ public class ChatActivity extends BaseActivity {
         setContentView(R.layout.activity_chat);
         callButton = findViewById(R.id.callButton);
         chatID = getIntent().getExtras().getString("chatID");
+        callButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                callButtonClicked();
+            }
+        });
         chatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
         nameOfSenderDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("name");
 
@@ -66,6 +70,8 @@ public class ChatActivity extends BaseActivity {
             }
         });
 
+        myRef = FirebaseDatabase.getInstance().getReference("user");
+
         mAddMedia.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -76,7 +82,6 @@ public class ChatActivity extends BaseActivity {
         initializeMessage();
         initializeMedia();
         getChatMessages();
-        callButton.setOnClickListener(buttonClickListener);
     }
 
     private void getChatMessages() {
@@ -195,13 +200,39 @@ public class ChatActivity extends BaseActivity {
                     updateDatabaseWithNewMessage(newMessageDB, newMessageMap);
             }
     }
-    private void callButtonClicked() {
-        Call call = getSinchServiceInterface().callUser(chatID);
-        String callId = call.getCallId();
 
-        Intent callScreen = new Intent(this, CallScreenActivity.class);
-        callScreen.putExtra(SinchService.CALL_ID, callId);
-        startActivity(callScreen);
+    private void callButtonClicked() {
+        System.out.println("here"+chatID);
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+
+                    if(!childsnapshot.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+
+                        for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
+
+                            if(chatsnapshot.getKey().equals(chatID)) {
+                                chatToId = childsnapshot.getKey().toString();
+                                System.out.println("chat to UID is "+chatToId);
+                                Call call = getSinchServiceInterface().callUser(chatToId);
+                                String callId = call.getCallId();
+
+                                Intent callScreen = new Intent(ChatActivity.this, CallScreenActivity.class);
+                                callScreen.putExtra(SinchService.CALL_ID, callId);
+                                startActivity(callScreen);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
     }
 
@@ -251,22 +282,6 @@ public class ChatActivity extends BaseActivity {
         }
         finish();
     }
-
-    private View.OnClickListener buttonClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.callButton:
-                    callButtonClicked();
-                    break;
-
-                case R.id.stopButton:
-                    stopButtonClicked();
-                    break;
-
-            }
-        }
-    };
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
