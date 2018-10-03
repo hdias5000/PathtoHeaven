@@ -14,7 +14,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
 
-<<<<<<< HEAD
     <uses-feature
         android:name="android.hardware.microphone"
         android:required="false" />
@@ -26,8 +25,6 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
 
-=======
->>>>>>> master
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -35,10 +32,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-<<<<<<< HEAD
         <service android:name=".SinchService"></service>
-=======
->>>>>>> master
+
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDko74sNKQoQ-hQQKpKrQm5Boz3DNcwcps" />
@@ -57,11 +52,11 @@
         <activity android:name=".FindUserActivity" />
         <activity android:name=".MainActivity" />
         <activity android:name=".ChatActivity" />
-<<<<<<< HEAD
+
         <activity android:name=".CallScreenActivity" />
         <activity android:name=".IncomingCallScreenActivity"/>
 
-=======
+
         <activity android:name=".LaunchGPSActivity" />
 
         <service
@@ -81,7 +76,7 @@
 
         <activity android:name=".ProfilePageActivity" />
         <activity android:name=".MyProfileActivity"></activity>
->>>>>>> master
+
     </application>
 
 </manifest>

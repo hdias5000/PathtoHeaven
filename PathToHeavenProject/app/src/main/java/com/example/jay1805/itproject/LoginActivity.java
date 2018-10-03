@@ -162,15 +162,12 @@ public class LoginActivity extends BaseActivity implements SinchService.StartFai
         System.out.println(user.getUid()+"here");
         // to double check user has logged in
         if(user != null){
-<<<<<<< HEAD
             SinchService.SinchServiceInterface in = getSinchServiceInterface();
             if (!in.isStarted()) {
                 getSinchServiceInterface().startClient(user.getUid().toString());
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
             }
-=======
             startActivity(new Intent(getApplicationContext(), ProfilePageActivity.class));
->>>>>>> master
             finish();
             return;
         }

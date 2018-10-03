@@ -5,14 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-<<<<<<< HEAD
-=======
+import android.support.annotation.RequiresApi;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
->>>>>>> master
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -51,12 +50,9 @@ public class ChatActivity extends BaseActivity {
     DatabaseReference chatDB;
     DatabaseReference nameOfSenderDB;
     String nameOfSender;
-<<<<<<< HEAD
     DatabaseReference myRef;
     private String chatToId ;
-=======
     String currentShareID;
->>>>>>> master
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +72,7 @@ public class ChatActivity extends BaseActivity {
         Button mSend = findViewById(R.id.send);
         Button mAddMedia = findViewById(R.id.addMedia);
         mSend.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
             @Override
             public void onClick(View v) {
                 sendMessage();
@@ -179,6 +176,7 @@ public class ChatActivity extends BaseActivity {
     ArrayList<String> mediaIdList = new ArrayList<>();
     EditText mMessage;
 
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     private void sendMessage() {
         mMessage = findViewById(R.id.messageText);
             String messageId = chatDB.push().getKey();
@@ -310,6 +308,7 @@ public class ChatActivity extends BaseActivity {
         finish();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
