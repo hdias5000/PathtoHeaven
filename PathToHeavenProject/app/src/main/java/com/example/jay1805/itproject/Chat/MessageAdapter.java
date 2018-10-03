@@ -124,7 +124,7 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(par.getContext(), MapsActivity.class);
-                intent.putExtra("Share ID", shareID);
+//                intent.putExtra("Share ID", shareID);
                 par.getContext().startActivity(intent);
             }
         });
