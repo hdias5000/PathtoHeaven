@@ -35,7 +35,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
     private String sharingID;
     private boolean share = false;
     private LatLng newDest;
-    private String newURL;
+    private String newURL = "";
 
 
     public SensorService(Context applicationContext) {
