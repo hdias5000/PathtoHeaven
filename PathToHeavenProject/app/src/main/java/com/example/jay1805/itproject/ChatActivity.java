@@ -238,7 +238,7 @@ public class ChatActivity extends BaseActivity {
                         for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
 
                             if(chatsnapshot.getKey().equals(chatID)) {
-                                chatToId = childsnapshot.getKey().toString();
+                                chatToId = childsnapshot.getKey();
                                 System.out.println("chat to UID is "+chatToId);
                                 Call call = getSinchServiceInterface().callUser(chatToId);
                                 String callId = call.getCallId();
@@ -263,6 +263,8 @@ public class ChatActivity extends BaseActivity {
 
     private void updateDatabaseWithNewMessage(DatabaseReference newMessageDB, Map newMessageMap) {
         newMessageDB.updateChildren(newMessageMap);
+//        finish();
+//        startActivity(getIntent());
         mMessage.setText(null);
         mediaUriList.clear();
         mediaIdList.clear();

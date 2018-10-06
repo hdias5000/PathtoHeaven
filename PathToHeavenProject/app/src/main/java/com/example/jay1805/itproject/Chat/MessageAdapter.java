@@ -75,16 +75,19 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         myChatViewHolder.message.setText(message.getMessage());
         myChatViewHolder.sender.setText(alphabet);
 
-        if(messageList.get(myChatViewHolder.getAdapterPosition()).getMediaUrlList().isEmpty()) {
+        if(messageList.get(position).getMediaUrlList().size() != 0) {
+            myChatViewHolder.mViewMedia.setVisibility(View.VISIBLE);
+        }
+        else {
             myChatViewHolder.mViewMedia.setVisibility(View.GONE);
         }
 
-        if(messageList.get(myChatViewHolder.getAdapterPosition()).getGPSShared().equals(false)) {
-            myChatViewHolder.helpMessageMine.setVisibility(View.GONE);
-        }
-
         if(messageList.get(myChatViewHolder.getAdapterPosition()).getGPSShared().equals(true)) {
+            myChatViewHolder.helpMessageMine.setVisibility(View.VISIBLE);
             myChatViewHolder.message.setText("Click to Disable");
+        }
+        else {
+            myChatViewHolder.helpMessageMine.setVisibility(View.GONE);
         }
 
         myChatViewHolder.helpMessageMine.setOnClickListener(new View.OnClickListener() {
@@ -118,16 +121,19 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         otherChatViewHolder.message.setText(message.getMessage());
         otherChatViewHolder.sender.setText(alphabet);
 
-        if(messageList.get(otherChatViewHolder.getAdapterPosition()).getMediaUrlList().isEmpty()) {
+        if(messageList.get(position).getMediaUrlList().size() != 0) {
+            otherChatViewHolder.mViewMedia.setVisibility(View.VISIBLE);
+        }
+        else {
             otherChatViewHolder.mViewMedia.setVisibility(View.GONE);
         }
 
-        if(messageList.get(otherChatViewHolder.getAdapterPosition()).getGPSShared().equals(false)) {
-            otherChatViewHolder.helpMessageOther.setVisibility(View.GONE);
-        }
-
         if(messageList.get(otherChatViewHolder.getAdapterPosition()).getGPSShared().equals(true)) {
+            otherChatViewHolder.helpMessageOther.setVisibility(View.VISIBLE);
             otherChatViewHolder.message.setText("Click to view GPS location");
+        }
+        else {
+            otherChatViewHolder.helpMessageOther.setVisibility(View.GONE);
         }
 
         otherChatViewHolder.helpMessageOther.setOnClickListener(new View.OnClickListener() {
