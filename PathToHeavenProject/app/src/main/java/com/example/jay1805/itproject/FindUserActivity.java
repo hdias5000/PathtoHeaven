@@ -71,7 +71,7 @@ public class FindUserActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()) {
                     String phone = "", name = "";
-                    for(DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                    for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
                         if(childSnapshot.child("phone").getValue() != null) {
                             phone = childSnapshot.child("phone").getValue().toString();
                         }

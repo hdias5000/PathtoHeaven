@@ -1,10 +1,16 @@
 package com.example.jay1805.itproject;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,40 +33,53 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.sinch.android.rtc.calling.Call;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends BaseActivity {
 
     private RecyclerView ChatView, MediaView;
     private RecyclerView.Adapter ChatViewAdapter, MediaViewAdapter;
     private RecyclerView.LayoutManager ChatViewLayoutManager, MediaViewLayoutManager;
-
+    private Button callButton;
     ArrayList<MessageObject> messageList;
     String chatID;
     DatabaseReference chatDB;
     DatabaseReference nameOfSenderDB;
     String nameOfSender;
+    DatabaseReference myRef;
+    private String chatToId ;
+    String currentShareID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-
+        callButton = findViewById(R.id.callButton);
         chatID = getIntent().getExtras().getString("chatID");
+        callButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                callButtonClicked();
+            }
+        });
         chatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
         nameOfSenderDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("name");
 
         Button mSend = findViewById(R.id.send);
         Button mAddMedia = findViewById(R.id.addMedia);
         mSend.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
             @Override
             public void onClick(View v) {
                 sendMessage();
             }
         });
+
+        myRef = FirebaseDatabase.getInstance().getReference("user");
 
         mAddMedia.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,6 +91,8 @@ public class ChatActivity extends AppCompatActivity {
         initializeMessage();
         initializeMedia();
         getChatMessages();
+
+        currentShareID = "";
     }
 
     private void getChatMessages() {
@@ -110,7 +131,18 @@ public class ChatActivity extends AppCompatActivity {
                             mediaUrlList.add(mediaSnapshot.getValue().toString());
                         }
                     }
-                    MessageObject myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, text, mediaUrlList);
+
+
+                    MessageObject myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, text, mediaUrlList, false);
+                    if (dataSnapshot.child("isGpsShared").getValue() != null){
+                        if(dataSnapshot.child("isGpsShared").getValue().equals("false")) {
+                            myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, text, mediaUrlList, false);
+                        }
+                        else {
+                            myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, "Click here", mediaUrlList, true);
+                        }
+                    }
+                    //messageList.add(new MessageObject(messageId, nameOfSender, FirebaseAuth.getInstance().getCurrentUser().getUid(), "Click here", mediaUriList, true));
                     messageList.add(myMessage);
                     ChatViewLayoutManager.scrollToPosition(messageList.size()-1);
                     ChatViewAdapter.notifyDataSetChanged();
@@ -144,6 +176,7 @@ public class ChatActivity extends AppCompatActivity {
     ArrayList<String> mediaIdList = new ArrayList<>();
     EditText mMessage;
 
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     private void sendMessage() {
         mMessage = findViewById(R.id.messageText);
             String messageId = chatDB.push().getKey();
@@ -154,6 +187,8 @@ public class ChatActivity extends AppCompatActivity {
             newMessageMap.put("creatorID", FirebaseAuth.getInstance().getUid());
 
             newMessageMap.put("creator", nameOfSender);
+
+            newMessageMap.put("isGpsShared", "false");
 
             if(!mMessage.getText().toString().isEmpty())
                 newMessageMap.put("text", mMessage.getText().toString());
@@ -191,8 +226,45 @@ public class ChatActivity extends AppCompatActivity {
             }
     }
 
+    private void callButtonClicked() {
+        System.out.println("here"+chatID);
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+
+                    if(!childsnapshot.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+
+                        for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
+
+                            if(chatsnapshot.getKey().equals(chatID)) {
+                                chatToId = childsnapshot.getKey();
+                                System.out.println("chat to UID is "+chatToId);
+                                Call call = getSinchServiceInterface().callUser(chatToId);
+                                String callId = call.getCallId();
+
+                                Intent callScreen = new Intent(ChatActivity.this, CallScreenActivity.class);
+                                callScreen.putExtra(SinchService.CALL_ID, callId);
+                                startActivity(callScreen);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
     private void updateDatabaseWithNewMessage(DatabaseReference newMessageDB, Map newMessageMap) {
         newMessageDB.updateChildren(newMessageMap);
+//        finish();
+//        startActivity(getIntent());
         mMessage.setText(null);
         mediaUriList.clear();
         mediaIdList.clear();
@@ -220,7 +292,7 @@ public class ChatActivity extends AppCompatActivity {
         ChatView.setHasFixedSize(false);
         ChatViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
         ChatView.setLayoutManager(ChatViewLayoutManager);
-        ChatViewAdapter = new MessageAdapter(messageList);
+        ChatViewAdapter = new MessageAdapter(messageList, chatID);
         ChatView.setAdapter(ChatViewAdapter);
     }
 
@@ -231,7 +303,14 @@ public class ChatActivity extends AppCompatActivity {
         intent.setAction(intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent,"Select Image(s)"), PICK_IMAGE_INTENT);
     }
+    private void stopButtonClicked() {
+        if (getSinchServiceInterface() != null) {
+            getSinchServiceInterface().stopClient();
+        }
+        finish();
+    }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -249,4 +328,34 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
     }
+
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.B_help:
+                LocalBroadcastManager.getInstance(this).registerReceiver(
+                        sendID, new IntentFilter("GPS ID"));
+                Intent intent = new Intent("UPLOAD GPS");
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+    }
+
+    private BroadcastReceiver sendID = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String message = intent.getStringExtra("ID");
+            if (!currentShareID.equals( message)) {
+                System.out.println("Sent Sharing ID:    "+message);
+
+                Map map = new HashMap<>();
+                String messageId = chatDB.push().getKey();
+                final DatabaseReference newMessageDB = chatDB.child(messageId);
+                map.put("creatorID", FirebaseAuth.getInstance().getCurrentUser().getUid());
+                map.put("creator", nameOfSender);
+                map.put("shareID", message);
+                map.put("isGpsShared", "true");
+                newMessageDB.updateChildren(map);
+                currentShareID = message;
+            }
+        }
+    };
 }

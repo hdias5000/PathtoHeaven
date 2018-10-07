@@ -1,20 +1,19 @@
 package com.example.jay1805.itproject;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.jay1805.itproject.Map.CurrentLocation;
@@ -22,70 +21,149 @@ import com.example.jay1805.itproject.Map.GetDirectionsData;
 import com.example.jay1805.itproject.Map.GetNearbyPlacesData;
 import com.example.jay1805.itproject.Map.Map;
 import com.example.jay1805.itproject.Map.URLCreator;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.io.IOException;
-import java.util.List;
-
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
-
-
-    private GoogleApiClient client;
-    private LocationRequest locationRequest;
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     private CurrentLocation currentLocation;
     private Map map;
+    private Location lastKnownLoc;
+
+    private PlaceAutocompleteFragment placeAutocompleteFragment;
+
 
     private URLCreator urlCreator;
-    public static final int PERMISSION_REQUEST_LOCATION_CODE = 99;
 
     LatLng currentDestination;
-
+    Marker marker;
+    Marker markerOfElderly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            checkLocationPermission();
-        }
+
+        placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
+        placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").build());
+
+        placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                final LatLng latLngLoc = place.getLatLng();
+                MarkerOptions mo = new MarkerOptions();
+                if(marker!=null){
+                    marker.remove();
+                }
+                map.clearMap();
+                currentDestination = latLngLoc;
+
+                mo.position(currentDestination);
+                mo.title("Your search results");
+                mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+
+                map.addMarker(mo,currentDestination);
+            }
+
+            @Override
+            public void onError(Status status) {
+                Toast.makeText(MapsActivity.this, ""+status.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         urlCreator = new URLCreator();
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
+        lastKnownLoc = null;
 
-    }
+        String shareID;
+        Intent intent = getIntent();
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_LOCATION_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                        if (client == null) {
-                            buildGoogleApiClient();
+        if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID")) {
+
+            shareID = intent.getExtras().getString("Share ID");
+            System.out.println("Share ID is: " + shareID);
+            Log.d("SHAREID", shareID);
+            // Get a reference to our posts
+//            if (FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID) != null) {
+                DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID);
+//                if ((ref.child("latitude") != null) && (ref.child("longitude") != null)){
+                    ref.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            double newLatitude = 0;
+                            double newLongitude = 0;
+                            for (DataSnapshot childSnapshot: dataSnapshot.getChildren()){
+                                if (childSnapshot.getKey().toString().equals("latitude")){
+                                    newLatitude = Double.parseDouble(childSnapshot.getValue().toString());
+                                }
+                                if (childSnapshot.getKey().toString().equals("longitude")){
+                                    newLongitude = Double.parseDouble(childSnapshot.getValue().toString());
+                                }
+                            }
+
+                            if (markerOfElderly!=null){
+                                markerOfElderly.remove();
+                            }
+
+                            Log.d("Coord", "lat is: " +newLatitude);
+                            Log.d("Coord", "long is: " +newLongitude);
+                            LatLng latLng = new LatLng(newLatitude,newLongitude);
+                            MarkerOptions mo = new MarkerOptions();
+                            mo.position(latLng);
+                            mo.title("Location of Elderly");
+                            mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                            markerOfElderly = map.addMarker(mo,latLng);
+
                         }
-                        map.enableMyLocation();
-                    }
-                } else {
-                    Toast.makeText(this, "Permission Denied!", Toast.LENGTH_LONG).show();
-                }
-                return;
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            makeToast("Tracking has Stopped");
+                        }
+                    });
+//                } else{
+//                    makeToast("missing coordinates");
+//                }
+//            } else{
+//                makeToast("String don't exist.");
+//            }
+
         }
+
     }
 
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            String message = intent.getStringExtra("Status");
+            Bundle b = intent.getBundleExtra("Location");
+            lastKnownLoc = (Location) b.getParcelable("Location");
+            if (lastKnownLoc != null) {
+                Log.d("BS","I don't believe it"+lastKnownLoc.getLongitude());
+                currentLocation.changeCurrentLocation(lastKnownLoc);
+            }
+        }
+    };
 
     /**
      * Manipulates the map once available.
@@ -99,103 +177,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            buildGoogleApiClient();
             map = new Map(googleMap);
             currentLocation = new CurrentLocation(map);
+            askForCurrentLocation();
         }
 
 
     }
-
-    protected synchronized void buildGoogleApiClient() {
-        client = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-
-        client.connect();
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        currentLocation.changeCurrentLocation(location);
-
-        if (client != null) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(client, this);
-        }
-    }
-
-    public boolean checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION_CODE);
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_LOCATION_CODE);
-            }
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        locationRequest = new LocationRequest();
-
-        locationRequest.setInterval(1000);
-        locationRequest.setFastestInterval(1000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//            LocationServices.FusedLocationApi.requestLocationUpdates(client, locationRequest, this);
-            LocationServices.FusedLocationApi.requestLocationUpdates(client,locationRequest,this);
-        }
-    }
-
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
 
     public void onClick(View v) {
         double latitude = currentLocation.getLatitude();
         double longitude = currentLocation.getLongitude();
 
         switch (v.getId()) {
-            case R.id.B_SEARCH:
-                map.clearMap();
-                EditText tf_location = (EditText) findViewById(R.id.TF_LOCATION);
-                String location = tf_location.getText().toString();
-                List<Address> addressList = null;
-                MarkerOptions mo = new MarkerOptions();
 
-                if (!location.equals("")) {
-                    Geocoder geocoder = new Geocoder(this);
-                    try {
-                        addressList = geocoder.getFromLocationName(location, 5);
-                        for (int i = 0; i < addressList.size(); i++) {
-                            Address myAddress = addressList.get(i);
-                            currentDestination = new LatLng(myAddress.getLatitude(), myAddress.getLongitude());
-                            mo.position(currentDestination);
-                            mo.title("Your search results");
-
-                            map.addMarker(mo,currentDestination);
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-                break;
             case R.id.B_Hospital:
                 showNearbyPlaces("hospital",latitude,longitude);
                 break;
@@ -209,19 +204,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 break;
 
             case R.id.B_to:
-//                mMap.clear();
-//
-//                MarkerOptions markerOptions = new MarkerOptions();
-//                markerOptions.position(new LatLng(endLatitude,endLongitude));
-//                markerOptions.title("Destination");
-//
-//
-//                float results[] = new float[10];
-//                Location.distanceBetween(latitude,longitude,endLatitude,endLongitude,results);
-//
 
-//                markerOptions.snippet("Distance = " +results[0]);
-//                mMap.addMarker(markerOptions);
                 Object dataTransfer[] = new Object[3];
                 String url = urlCreator.getDirectionsUrl(latitude, longitude, currentDestination.latitude, currentDestination.longitude);
                 Log.d("LOL",url);
@@ -230,26 +213,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 dataTransfer[1] = url;
                 dataTransfer[2] = currentDestination;
                 getDirectionsData.execute(dataTransfer);
+                sendMessageToActivity(url,currentDestination);
                 break;
-
-//            case R.id.LATDOWN:
-//                latitude--;
-//                changeCurrentLocation(latitude, longitude);
-//                break;
-//            case R.id.LATUP:
-//                latitude++;
-//                changeCurrentLocation(latitude, longitude);
-//                break;
-//            case R.id.LNGDOWN:
-//                longitude--;
-//                changeCurrentLocation(latitude, longitude);
-//                break;
-//            case R.id.LNGUP:
-//                longitude++;
-//                changeCurrentLocation(latitude, longitude);
-//                break;
         }
 
+    }
+
+    private void sendMessageToActivity(String url, LatLng dest) {
+        Intent intent = new Intent("New Route");
+        // You can also include some extra data.
+        intent.putExtra("url", url);
+        Bundle b = new Bundle();
+        b.putParcelable("dest", dest);
+        intent.putExtra("dest", b);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     private void showNearbyPlaces(String tag, double latitude, double longitude){
@@ -269,6 +246,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Toast.makeText(MapsActivity.this, message, Toast.LENGTH_LONG).show();
     }
 
+
+    private void askForCurrentLocation() {
+        Intent intent = new Intent("SEND GPS");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
 
 
 }
