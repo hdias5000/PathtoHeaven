@@ -1,6 +1,8 @@
 package com.example.jay1805.itproject.User;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.jay1805.itproject.ChatActivity;
 import com.example.jay1805.itproject.FindUserActivity;
 import com.example.jay1805.itproject.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -82,6 +85,8 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
 //                            }
 //                        });
 
+                        String chatIDKey = null;
+
                         for (DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
                             ToUserChatIDs.add(childSnapShot.getKey());
                         }
@@ -90,6 +95,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
                         for(String MyChatIDs : CurrentUserChatIDs) {
                             for(String ToChatIDs : ToUserChatIDs) {
                                 if(MyChatIDs.equals(ToChatIDs)) {
+                                    chatIDKey = MyChatIDs;
                                     chatExists = true;
                                 }
                             }
@@ -97,14 +103,22 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
 
                         if(chatExists.equals(false)) {
                             String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
-
+                            CurrentUserChatIDs.add(key);
+                            ToUserChatIDs.add(key);
+                            chatIDKey = key;
                             FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("chat").child(key).setValue(true);
                             FirebaseDatabase.getInstance().getReference().child("user").child(userList.get(position).getUid()).child("chat").child(key).setValue(true);
                         }
-//
-//                        else {
-//                            Toast.makeText(v.getContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
-//                        }
+
+                        else {
+                            Toast.makeText(v.getContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
+                        }
+
+                        Intent intent = new Intent(v.getContext(), ChatActivity.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("chatID", chatIDKey);
+                        intent.putExtras(bundle);
+                        v.getContext().startActivity(intent);
 
                     }
 

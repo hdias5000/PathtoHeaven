@@ -10,10 +10,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -39,12 +43,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChatActivity extends BaseActivity {
+public class ChatActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private RecyclerView ChatView, MediaView;
     private RecyclerView.Adapter ChatViewAdapter, MediaViewAdapter;
     private RecyclerView.LayoutManager ChatViewLayoutManager, MediaViewLayoutManager;
     private Button callButton;
+    private DrawerLayout myDrawerLayout;
+    private ActionBarDrawerToggle myToggle;
     ArrayList<MessageObject> messageList;
     String chatID;
     DatabaseReference chatDB;
@@ -71,6 +77,15 @@ public class ChatActivity extends BaseActivity {
 
         Button mSend = findViewById(R.id.send);
         Button mAddMedia = findViewById(R.id.addMedia);
+
+        myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+        myToggle = new ActionBarDrawerToggle(ChatActivity.this, myDrawerLayout, R.string.open, R.string.close);
+        myDrawerLayout.addDrawerListener(myToggle);
+        myToggle.syncState();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_viewID);
+        navigationView.setNavigationItemSelectedListener(this);
+
         mSend.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
             @Override
@@ -93,6 +108,47 @@ public class ChatActivity extends BaseActivity {
         getChatMessages();
 
         currentShareID = "";
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(myToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == R.id.Chats) {
+            startActivity(new Intent(getApplicationContext(), ChatMainPageActivity.class));
+        }
+
+        if (id == R.id.Profile) {
+            startActivity(new Intent(getApplicationContext(), MyProfileActivity.class));
+        }
+
+        if (id == R.id.Maps) {
+            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+        }
+
+        if (id == R.id.FindUser) {
+            startActivityForResult(new Intent(getApplicationContext(), FindUserActivity.class), 1);
+        }
+
+        if (id == R.id.Logout) {
+            FirebaseAuth.getInstance().signOut();
+            // make sure the user is who he says he is
+            Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
+            intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        }
+
+        return false;
     }
 
     private void getChatMessages() {
@@ -303,6 +359,7 @@ public class ChatActivity extends BaseActivity {
         intent.setAction(intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent,"Select Image(s)"), PICK_IMAGE_INTENT);
     }
+
     private void stopButtonClicked() {
         if (getSinchServiceInterface() != null) {
             getSinchServiceInterface().stopClient();
