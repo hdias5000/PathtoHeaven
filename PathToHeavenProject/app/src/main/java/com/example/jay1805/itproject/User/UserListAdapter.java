@@ -1,5 +1,6 @@
 package com.example.jay1805.itproject.User;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -7,7 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.jay1805.itproject.FindUserActivity;
 import com.example.jay1805.itproject.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -20,6 +23,8 @@ import java.util.ArrayList;
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserListViewHolder>{
 
     ArrayList<UserObject> userList;
+    ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
+    ArrayList<String> ToUserChatIDs = new ArrayList<String>();
 
     public UserListAdapter(ArrayList<UserObject> userList) {
         this.userList = userList;
@@ -32,60 +37,75 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
         RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutView.setLayoutParams(lp);
 
+        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
+                    CurrentUserChatIDs.add(childSnapShot.getKey());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
         UserListViewHolder rcv = new UserListViewHolder(layoutView);
         return rcv;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UserListViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final UserListViewHolder holder, final int position) {
         holder.mName.setText(userList.get(position).getName());
         holder.mPhone.setText(userList.get(position).getPhone());
 
         holder.contactLayout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(final View v) {
 
-                final ArrayList<String> chatIDs = new ArrayList<String>();
-
-                FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
+                FirebaseDatabase.getInstance().getReference().child("user").child(userList.get(position).getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for(DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
-                            chatIDs.add(childSnapShot.getKey());
+
+//                        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
+//                            @Override
+//                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                                for(DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
+//                                    CurrentUserChatIDs.add(childSnapShot.getKey());
+//                                }
+//                            }
+//
+//                            @Override
+//                            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//                            }
+//                        });
+
+                        for (DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
+                            ToUserChatIDs.add(childSnapShot.getKey());
                         }
-                    }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
-
-                FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        Boolean chatExists = true;
-                        for(DataSnapshot userSnapShot : dataSnapshot.getChildren()) {
-                            if(!userSnapShot.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                                if(userSnapShot.hasChild("chat")) {
-                                    for (DataSnapshot chatsnapshot: userSnapShot.child("chat").getChildren()) {
-                                        if((!chatIDs.contains(chatsnapshot.getKey())) || chatIDs.isEmpty()) {
-                                            chatExists = false;
-                                            break;
-                                        }
-                                    }
-                                }
-                                else {
-                                    chatExists = false;
+                        Boolean chatExists = false;
+                        for(String MyChatIDs : CurrentUserChatIDs) {
+                            for(String ToChatIDs : ToUserChatIDs) {
+                                if(MyChatIDs.equals(ToChatIDs)) {
+                                    chatExists = true;
                                 }
                             }
                         }
-                        if(chatExists == false) {
+
+                        if(chatExists.equals(false)) {
                             String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
 
                             FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("chat").child(key).setValue(true);
                             FirebaseDatabase.getInstance().getReference().child("user").child(userList.get(position).getUid()).child("chat").child(key).setValue(true);
                         }
+//
+//                        else {
+//                            Toast.makeText(v.getContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
+//                        }
+
                     }
 
                     @Override

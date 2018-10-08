@@ -9,10 +9,16 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -33,16 +39,20 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
     private CurrentLocation currentLocation;
     private Map map;
     private Location lastKnownLoc;
+    private DrawerLayout myDrawerLayout;
+    private ActionBarDrawerToggle myToggle;
 
     private PlaceAutocompleteFragment placeAutocompleteFragment;
 
@@ -85,6 +95,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Toast.makeText(MapsActivity.this, ""+status.toString(), Toast.LENGTH_SHORT).show();
             }
         });
+
+
+        myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+        myToggle = new ActionBarDrawerToggle(MapsActivity.this, myDrawerLayout, R.string.open, R.string.close);
+        myDrawerLayout.addDrawerListener(myToggle);
+        myToggle.syncState();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_viewID);
+        navigationView.setNavigationItemSelectedListener(this);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -149,6 +169,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         }
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(myToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == R.id.Chats) {
+            startActivity(new Intent(getApplicationContext(), ChatMainPageActivity.class));
+        }
+
+        if (id == R.id.Profile) {
+            startActivity(new Intent(getApplicationContext(), MyProfileActivity.class));
+        }
+
+        if (id == R.id.Maps) {
+            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+        }
+
+        if (id == R.id.FindUser) {
+            startActivityForResult(new Intent(getApplicationContext(), FindUserActivity.class), 1);
+        }
+
+        if (id == R.id.Logout) {
+            FirebaseAuth.getInstance().signOut();
+            // make sure the user is who he says he is
+            Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
+            intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            finish();
+        }
+
+        return false;
     }
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -251,6 +312,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Intent intent = new Intent("SEND GPS");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
-
 
 }
