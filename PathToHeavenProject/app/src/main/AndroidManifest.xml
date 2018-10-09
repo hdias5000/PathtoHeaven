@@ -24,7 +24,6 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -32,14 +31,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <service android:name=".SinchService"></service>
+        <service android:name=".SinchService" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDko74sNKQoQ-hQQKpKrQm5Boz3DNcwcps" />
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".OpenActivity"
             android:label="Path To Heaven">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -47,16 +46,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MapsActivity"/>
+        <activity android:name=".LoginActivity"/>
+        <activity android:name=".MapsActivity" />
         <activity android:name=".ChatMainPageActivity" />
         <activity android:name=".FindUserActivity" />
         <activity android:name=".MainActivity" />
         <activity android:name=".ChatActivity" />
-
         <activity android:name=".CallScreenActivity" />
-        <activity android:name=".IncomingCallScreenActivity"/>
-
-
+        <activity android:name=".IncomingCallScreenActivity" />
         <activity android:name=".LaunchGPSActivity" />
 
         <service
@@ -75,8 +72,7 @@
         </receiver>
 
         <activity android:name=".ProfilePageActivity" />
-        <activity android:name=".MyProfileActivity"></activity>
-
+        <activity android:name=".MyProfileActivity" />
     </application>
 
 </manifest>

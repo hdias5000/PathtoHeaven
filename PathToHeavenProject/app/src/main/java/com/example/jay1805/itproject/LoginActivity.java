@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class LoginActivity extends AppCompatActivity implements SinchService.StartFailedListener {
+public class LoginActivity extends BaseActivity implements SinchService.StartFailedListener {
 
     private EditText mPhoneNumber, mCode;
     public EditText mName;
@@ -42,7 +42,6 @@ public class LoginActivity extends AppCompatActivity implements SinchService.Sta
 
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
     String mVerificationId;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,8 +54,6 @@ public class LoginActivity extends AppCompatActivity implements SinchService.Sta
                     new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION},
                     1);
         }
-
-        userIsLoggedIn();
 
         mPhoneNumber = findViewById(R.id.phoneNumber);
         mCode = findViewById(R.id.code);
@@ -96,15 +93,13 @@ public class LoginActivity extends AppCompatActivity implements SinchService.Sta
 
             }
         };
-
-
     }
-//
-//    @Override
-//    protected void onServiceConnected() {
-//
-//        getSinchServiceInterface().setStartListener(this);
-//    }
+
+    @Override
+    protected void onServiceConnected() {
+
+        getSinchServiceInterface().setStartListener(this);
+    }
 
     private void verifyPhoneNumberWithCode(){
         // code = 6 number code
@@ -165,7 +160,6 @@ public class LoginActivity extends AppCompatActivity implements SinchService.Sta
             SinchService.SinchServiceInterface in = getSinchServiceInterface();
             if (!in.isStarted()) {
                 getSinchServiceInterface().startClient(user.getUid());
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
             }
             startActivity(new Intent(getApplicationContext(), ProfilePageActivity.class));
             finish();
@@ -185,7 +179,7 @@ public class LoginActivity extends AppCompatActivity implements SinchService.Sta
 
     @Override
     public void onStartFailed(SinchError error) {
-
+        Toast.makeText(this, error.toString(), Toast.LENGTH_LONG).show();
     }
 
     @Override
