@@ -159,7 +159,6 @@ public class LoginActivity extends BaseActivity implements SinchService.StartFai
 
     private void userIsLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        System.out.println(user.getUid()+"here");
         // to double check user has logged in
         if(user != null){
             SinchService.SinchServiceInterface in = getSinchServiceInterface();

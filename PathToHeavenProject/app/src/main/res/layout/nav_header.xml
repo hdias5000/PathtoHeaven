@@ -2,21 +2,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="176dp"
-    android:background="@color/colorAccent"
-    android:gravity="bottom"
-    android:padding="16dp"
+    android:layout_height="200dp"
+    android:background="@color/purple_500"
+    android:gravity="left"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@mipmap/ic_launcher_round"/>
+        android:layout_width="110dp"
+        android:layout_height="110dp"
+        android:layout_marginTop="15dp"
+        android:layout_gravity="left"
+        android:src="@mipmap/ic_launcher_round"
+        android:id="@+id/headerImage"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp"
+        android:id="@+id/headerTextView"
+        android:layout_marginTop="20dp"
+        android:textSize="30dp"
+        android:layout_marginLeft="10dp"
         android:text="Path to Heaven"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 

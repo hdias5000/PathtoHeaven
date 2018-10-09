@@ -127,7 +127,7 @@ public class ProfilePageActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 InputingToDatabase();
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                startActivity(new Intent(getApplicationContext(), MapsActivity.class));
                 finish();
             }
         });

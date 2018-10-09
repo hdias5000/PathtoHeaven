@@ -14,18 +14,6 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical">
 
-        <!--<android.support.v7.widget.Toolbar-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="?attr/actionBarSize"-->
-            <!--android:background="?attr/colorPrimary"-->
-            <!--android:elevation="4dp"-->
-            <!--app:title="Path To Heaven"-->
-            <!--android:id="@+id/actionBar"-->
-            <!--app:titleTextColor="@color/white"-->
-            <!--android:theme="@style/ThemeOverlay.AppCompat.ActionBar"-->
-            <!--app:popupTheme="@style/ThemeOverlay.AppCompat.Light">-->
-        <!--</android.support.v7.widget.Toolbar>-->
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -136,7 +124,8 @@
         android:id="@+id/navigation_viewID"
         app:menu="@menu/nav_menu"
         android:layout_gravity="start"
-        app:headerLayout="@layout/nav_header">
+        app:headerLayout="@layout/nav_header"
+        app:itemTextAppearance="@style/menu_text_style">
     </android.support.design.widget.NavigationView>
 
 </android.support.v4.widget.DrawerLayout>

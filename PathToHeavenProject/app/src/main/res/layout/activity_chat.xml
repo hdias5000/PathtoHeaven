@@ -102,7 +102,8 @@
         android:id="@+id/navigation_viewID"
         app:menu="@menu/nav_menu"
         android:layout_gravity="start"
-        app:headerLayout="@layout/nav_header">
+        app:headerLayout="@layout/nav_header"
+        app:itemTextAppearance="@style/menu_text_style">
     </android.support.design.widget.NavigationView>
 
 </android.support.v4.widget.DrawerLayout>
