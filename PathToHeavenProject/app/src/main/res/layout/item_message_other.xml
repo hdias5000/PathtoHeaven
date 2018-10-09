@@ -29,28 +29,38 @@
         android:layout_width="@dimen/space_avg"
         android:layout_height="wrap_content" />
 
-    <TextView
-        android:id="@+id/message"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/margin_huge"
-        android:background="@drawable/chat_rounded_rect_other_person"
-        android:padding="@dimen/padding_small"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@color/grey_100"
-        tools:text="Hello mate ! \ntest" />
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/viewMedia"
-        android:layout_width="125dp"
-        android:layout_height="match_parent"
-        android:layout_marginStart="-50dp"
-        android:text="View Media" />
+        <TextView
+            android:id="@+id/message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/margin_huge"
+            android:background="@drawable/chat_rounded_rect_other_person"
+            android:padding="@dimen/padding_small"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@color/grey_100"
+            tools:text="Hello mate ! \ntest" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:text="M"
-        android:id="@+id/B_helpMessage_other" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/viewMedia"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View Media" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Help Button"
+                android:id="@+id/B_helpMessage_other" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>

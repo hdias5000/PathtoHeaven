@@ -14,7 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:context=".ChatMainPageActivity">
+        tools:context=".ChatMainPageActivity"
+        android:background="@color/orange_100">
 
         <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"

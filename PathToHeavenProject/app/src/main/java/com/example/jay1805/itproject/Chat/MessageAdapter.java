@@ -192,12 +192,10 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         TextView message, sender;
         Button mViewMedia;
-        public RelativeLayout theRelativeLayout;
         Button helpMessageMine;
 
         public MyChatViewHolder(View view) {
             super(view);
-            theRelativeLayout = view.findViewById(R.id.the_relative_layout);
             message = view.findViewById(R.id.message);
             sender = view.findViewById(R.id.sender);
             mViewMedia = view.findViewById(R.id.viewMedia);
@@ -209,12 +207,10 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         TextView message, sender;
         Button mViewMedia;
-        public RelativeLayout theRelativeLayout;
         Button helpMessageOther;
 
         public OtherChatViewHolder(View view) {
             super(view);
-            theRelativeLayout = view.findViewById(R.id.the_relative_layout);
             message = view.findViewById(R.id.message);
             sender = view.findViewById(R.id.sender);
             mViewMedia = view.findViewById(R.id.viewMedia);
