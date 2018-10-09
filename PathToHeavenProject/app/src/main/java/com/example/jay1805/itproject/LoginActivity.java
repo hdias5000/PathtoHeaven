@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -33,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class LoginActivity extends BaseActivity implements SinchService.StartFailedListener {
+public class LoginActivity extends AppCompatActivity implements SinchService.StartFailedListener {
 
     private EditText mPhoneNumber, mCode;
     public EditText mName;
@@ -55,7 +56,7 @@ public class LoginActivity extends BaseActivity implements SinchService.StartFai
                     1);
         }
 
-        //userIsLoggedIn();
+        userIsLoggedIn();
 
         mPhoneNumber = findViewById(R.id.phoneNumber);
         mCode = findViewById(R.id.code);
@@ -98,12 +99,12 @@ public class LoginActivity extends BaseActivity implements SinchService.StartFai
 
 
     }
-
-    @Override
-    protected void onServiceConnected() {
-
-        getSinchServiceInterface().setStartListener(this);
-    }
+//
+//    @Override
+//    protected void onServiceConnected() {
+//
+//        getSinchServiceInterface().setStartListener(this);
+//    }
 
     private void verifyPhoneNumberWithCode(){
         // code = 6 number code
@@ -163,7 +164,7 @@ public class LoginActivity extends BaseActivity implements SinchService.StartFai
         if(user != null){
             SinchService.SinchServiceInterface in = getSinchServiceInterface();
             if (!in.isStarted()) {
-                getSinchServiceInterface().startClient(user.getUid().toString());
+                getSinchServiceInterface().startClient(user.getUid());
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
             }
             startActivity(new Intent(getApplicationContext(), ProfilePageActivity.class));

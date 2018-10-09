@@ -45,16 +45,18 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.sinch.android.rtc.SinchError;
 
 import java.io.InputStream;
 
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
+public class MapsActivity extends BaseActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener,SinchService.StartFailedListener {
     private CurrentLocation currentLocation;
     private Map map;
     private Location lastKnownLoc;
@@ -75,6 +77,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        if(user!=null) {
+            SinchService.SinchServiceInterface in = getSinchServiceInterface();
+            if (!in.isStarted()) {
+                getSinchServiceInterface().startClient(user.getUid());
+            }
+        }
 
         placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
@@ -345,6 +356,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void askForCurrentLocation() {
         Intent intent = new Intent("SEND GPS");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    @Override
+    protected void onServiceConnected() {
+
+        getSinchServiceInterface().setStartListener(this);
+    }
+
+    @Override
+    public void onStartFailed(SinchError error) {
+
+    }
+
+    @Override
+    public void onStarted() {
+
     }
 
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
