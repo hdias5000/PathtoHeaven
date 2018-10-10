@@ -140,6 +140,7 @@ public class SinchService extends Service {
             Log.d(TAG, "SinchClient started");
             if (mListener != null) {
                 mListener.onStarted();
+                mSinchClient.getAudioController().enableSpeaker();
             }
         }
 
