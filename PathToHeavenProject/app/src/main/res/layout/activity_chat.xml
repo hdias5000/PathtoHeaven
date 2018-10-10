@@ -12,79 +12,88 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@color/orange_200">
 
         <Button
             android:id="@+id/callButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Call" />
+            android:text="Call"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:textSize="20dp"
+            android:background="@color/green_800"/>
         <Button
             android:id="@+id/B_help"
-            android:layout_alignParentRight="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:background="@color/red_800"
+            android:textColor="@color/white"
+            android:textSize="20dp"
             android:text="HELP"
             android:onClick="onClick" />
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".ChatActivity">
-
-
-        <android.support.v7.widget.RecyclerView
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/recyclerView"
-            android:layout_above="@+id/sendLayout"/>
+            android:layout_height="match_parent"
+            tools:context=".ChatActivity"
+            android:background="@color/orange_200">
 
-        <LinearLayout
-            android:layout_alignParentBottom="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:id="@+id/sendLayout">
 
             <android.support.v7.widget.RecyclerView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/mediaList"/>
+                android:id="@+id/recyclerView"
+                android:layout_above="@+id/sendLayout"/>
 
             <LinearLayout
+                android:layout_alignParentBottom="true"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:id="@+id/sendLayout">
 
-                <EditText
-                    android:layout_weight="0.8"
-                    android:layout_width="0dp"
+                <android.support.v7.widget.RecyclerView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/messageText"
-                    android:hint="message..."/>
+                    android:id="@+id/mediaList"/>
 
-                <Button
-                    android:id="@+id/addMedia"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.2"
-                    android:text="media"
-                    android:textSize="12sp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:orientation="horizontal"
+                    android:background="@color/yellow_200">
 
-                <Button
-                    android:id="@+id/send"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.2"
-                    android:text="Send" />
+                    <ImageButton
+                        android:id="@+id/addMedia"
+                        android:layout_width="60dp"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_insert_photo_black_24dp" />
+
+                    <EditText
+                        android:layout_weight="0.8"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:textColor="@color/black"
+                        android:id="@+id/messageText"
+                        android:hint="Enter Message..." />
+
+                    <ImageButton
+                        android:id="@+id/send"
+                        android:layout_width="70dp"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_send_black_24dp" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
-        </LinearLayout>
+        </RelativeLayout>
 
-    </RelativeLayout>
     </LinearLayout>
 
     <android.support.design.widget.NavigationView

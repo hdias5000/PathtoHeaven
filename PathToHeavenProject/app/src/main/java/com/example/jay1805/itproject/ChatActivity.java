@@ -25,6 +25,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -82,8 +83,8 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
         chatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
         nameOfSenderDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("name");
 
-        Button mSend = findViewById(R.id.send);
-        Button mAddMedia = findViewById(R.id.addMedia);
+        ImageButton mSend = findViewById(R.id.send);
+        ImageButton mAddMedia = findViewById(R.id.addMedia);
 
         myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
         myToggle = new ActionBarDrawerToggle(ChatActivity.this, myDrawerLayout, R.string.open, R.string.close);

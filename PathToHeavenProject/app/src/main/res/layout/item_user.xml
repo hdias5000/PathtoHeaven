@@ -3,18 +3,25 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/contact_layout">
+    android:layout_height="wrap_content"
+    android:id="@+id/contact_layout"
+    android:padding="10dp">
     
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="contact"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
         android:id="@+id/name"/>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="phone"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        android:textColor="@color/blue_800"
         android:id="@+id/phone"/>
     
 </LinearLayout>

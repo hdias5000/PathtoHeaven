@@ -22,7 +22,7 @@
             android:layout_height="230dp"
             android:layout_marginTop="10dp"
             android:id="@+id/profilePic"
-            android:src="@drawable/chat_rounded_rect_mine"/>
+            android:src="@drawable/ic_launcher_background"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -35,6 +35,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:text="Name : "
+                android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="17dp" />
 
@@ -43,6 +44,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="10dp"
+                android:textStyle="bold"
                 android:text="This is the name"
                 android:textSize="17dp"
                 android:textColor="@color/blue_800"/>
@@ -60,6 +62,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:text="Phone Number:"
+                android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="17dp" />
 
@@ -68,6 +71,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="10dp"
+                android:textStyle="bold"
                 android:text="Phone Number"
                 android:textSize="17dp"
                 android:textColor="@color/blue_800"/>
@@ -85,6 +89,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:text="Date Of Birth:"
+                android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="17dp" />
 
@@ -93,6 +98,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="10dp"
+                android:textStyle="bold"
                 android:text="dd/mm/yyyy"
                 android:textSize="17dp"
                 android:textColor="@color/blue_800"/>
@@ -110,6 +116,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:text="Home Address:"
+                android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="17dp" />
 
@@ -119,6 +126,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:text="Here is the Address"
+                android:textStyle="bold"
                 android:textSize="17dp"
                 android:textColor="@color/blue_800"/>
 
@@ -135,6 +143,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:text="User Type:"
+                android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="17dp" />
 
@@ -144,6 +153,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:text="Elder or Helper"
+                android:textStyle="bold"
                 android:textSize="17dp"
                 android:textColor="@color/blue_800"/>
 

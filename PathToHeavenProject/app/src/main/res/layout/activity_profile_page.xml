@@ -5,30 +5,35 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".LoginActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/orange_100">
 
     <TextView
         android:id="@+id/textViewWelcome"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="20dp"
+        android:textStyle="bold"
+        android:padding="10dp"
         android:gravity="center"
-        android:textSize="20dp"
-        android:text="Enter your details:" />
+        android:textSize="30dp"
+        android:textColor="@color/black"
+        android:text="User Profile" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="59dp">
+        android:layout_marginStart="10dp">
 
         <TextView
             android:id="@+id/image_textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="40dp"
+            android:textStyle="bold"
             android:padding="10dp"
-            android:text="Upload Image : "
-            android:textSize="17dp" />
+            android:textColor="@color/black"
+            android:text="Upload \nImage  "
+            android:textSize="20dp" />
 
         <ImageView
             android:layout_width="140dp"
@@ -37,24 +42,27 @@
 
         <ImageButton
             android:id="@+id/image_button"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:layout_gravity="center"
-            app:srcCompat="@android:drawable/ic_menu_gallery" />
+            android:background="#7abbf9"
+            android:src="@drawable/ic_insert_photo_black_24dp"/>
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="59dp">
+        android:layout_marginStart="10dp">
 
         <TextView
             android:id="@+id/name_textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="10dp"
+            android:textStyle="bold"
             android:text="Name : "
+            android:textColor="@color/black"
             android:textSize="17dp" />
 
         <TextView
@@ -62,6 +70,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="10dp"
+            android:textStyle="bold"
+            android:textColor="@color/blue_800"
             android:text="This is the name"
             android:textSize="17dp" />
 
@@ -70,22 +80,25 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="58dp">
-
+        android:layout_marginStart="10dp">
 
         <TextView
             android:id="@+id/dob_textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textStyle="bold"
             android:padding="10dp"
             android:text="Enter Date Of Birth:"
+            android:textColor="@color/black"
             android:textSize="17dp" />
 
         <EditText
-            android:layout_width="120dp"
+            android:layout_width="130dp"
             android:layout_height="match_parent"
             android:id="@+id/date_editText"
+            android:textStyle="bold"
             android:hint="dd/mm/yyyy"
+            android:textColor="@color/blue_800"
             android:clickable="true" />
 
         <Button
@@ -93,6 +106,7 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_gravity="center"
+            android:textStyle="bold"
             android:background="#7abbf9"
             android:text="C"
             android:textColor="@color/common_google_signin_btn_text_dark_default" />
@@ -100,20 +114,28 @@
 
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/home_address_editText"
-        android:layout_width="283dp"
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="7dp"
-        android:layout_gravity="center"
-        android:hint="Enter Home Address" />
+        android:layout_marginStart="10dp">
+
+        <EditText
+            android:id="@+id/home_address_editText"
+            android:layout_width="283dp"
+            android:textStyle="bold"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="7dp"
+            android:layout_gravity="center"
+            android:textColor="@color/blue_800"
+            android:hint="Enter Home Address" />
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="58dp"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="10dp">
-
 
         <TextView
             android:id="@+id/user_type"
@@ -121,6 +143,8 @@
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:text="User Type:"
+            android:textStyle="bold"
+            android:textColor="@color/black"
             android:layout_marginTop="10dp"
             android:textSize="17dp" />
 
@@ -134,12 +158,16 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Helper"
+                android:textStyle="bold"
+                android:textColor="@color/blue_800"
                 android:onClick="CheckedRadioButton"
                 android:id="@+id/helperButton" />
 
             <RadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/blue_800"
+                android:textStyle="bold"
                 android:text="Elderly Person"
                 android:onClick="CheckedRadioButton"
                 android:id="@+id/elderlyPersonButton"/>
@@ -156,6 +184,7 @@
         android:layout_marginTop="20dp"
         android:background="#7abbf9"
         android:text="Save details"
+        android:textStyle="bold"
         android:textColor="@color/common_google_signin_btn_text_dark_default" />
 
 
