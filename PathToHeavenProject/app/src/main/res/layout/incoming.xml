@@ -38,12 +38,12 @@
     </LinearLayout>
 
     <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:src="@drawable/callbg"
-            android:padding="0dip"
-            android:layout_weight="3"
-            android:contentDescription="Call background">
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:contentDescription="Call background"
+        android:padding="0dip"
+        android:src="@drawable/call_screen">
 
     </ImageView>
 
