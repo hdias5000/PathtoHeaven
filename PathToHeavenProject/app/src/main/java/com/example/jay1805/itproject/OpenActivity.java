@@ -21,6 +21,8 @@ public class OpenActivity extends BaseActivity implements SinchService.StartFail
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_open);
 
+        startActivity(new Intent(getApplicationContext(), LaunchGPSActivity.class));
+
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user != null) {

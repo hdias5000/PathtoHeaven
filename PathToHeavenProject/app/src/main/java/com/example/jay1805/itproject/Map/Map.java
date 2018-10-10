@@ -35,7 +35,7 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
         currentLocationMarker = mMap.addMarker(markerOptions);
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomBy(1));
+//        mMap.animateCamera(CameraUpdateFactory.zoomBy(1));
     }
 
     public Marker addMarker(MarkerOptions markerOptions, LatLng latLng){

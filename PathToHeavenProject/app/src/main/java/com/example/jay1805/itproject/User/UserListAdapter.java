@@ -78,20 +78,6 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-//                        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
-//                            @Override
-//                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                                for(DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
-//                                    CurrentUserChatIDs.add(childSnapShot.getKey());
-//                                }
-//                            }
-//
-//                            @Override
-//                            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                            }
-//                        });
-
                         String chatIDKey = null;
 
                         for (DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
