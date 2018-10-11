@@ -12,7 +12,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.onesignal.OneSignal;
 import com.sinch.android.rtc.SinchError;
 
 public class OpenActivity extends BaseActivity implements SinchService.StartFailedListener{
@@ -21,16 +20,6 @@ public class OpenActivity extends BaseActivity implements SinchService.StartFail
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_open);
-
-        OneSignal.startInit(this).init();
-        OneSignal.setSubscription(true);
-        OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
-            @Override
-            public void idsAvailable(String userId, String registrationId) {
-                FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("notificationKey").setValue(userId);
-            }
-        });
-        OneSignal.setInFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification);
 
         startActivity(new Intent(getApplicationContext(), LaunchGPSActivity.class));
 
