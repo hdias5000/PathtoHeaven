@@ -14,16 +14,15 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,13 +45,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.sinch.android.rtc.SinchError;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.InputStream;
 
@@ -70,6 +68,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private URLCreator urlCreator;
 
+    ////////////////////////////////////////
+    private SlidingUpPanelLayout slidingLayout;
+    private Button btnShow;
+    private Button btnHide;
+    private TextView textView;
+    ///////////////////////////////////////
+
     LatLng currentDestination;
     Marker marker;
     Marker markerOfElderly;
@@ -78,6 +83,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        /////////////////////////////////////////////////////
+//        btnShow = (Button)findViewById(R.id.btn_show);
+//        btnHide = (Button)findViewById(R.id.btn_hide);
+//        textView = (TextView)findViewById(R.id.text);
+
+        //set layout slide listener
+        slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
+        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+
+        //some "demo" event
+//        slidingLayout.setPanelSlideListener(onSlideListener());
+//        btnHide.setOnClickListener(onHideListener());
+//        btnShow.setOnClickListener(onShowListener());
+        ///////////////////////////////////////////////////
 
         if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MapsActivity.this,
@@ -105,6 +125,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
                 map.addMarker(mo,currentDestination);
+
+                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+
             }
 
             @Override
@@ -214,6 +237,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    ////////////////////////////////////////////////////////
+    private View.OnClickListener onHideListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //hide sliding layout
+                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                btnShow.setVisibility(View.VISIBLE);
+            }
+        };
+    }
+    ///////////////////////////////////////////////////////
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(myToggle.onOptionsItemSelected(item)) {
@@ -295,17 +331,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         switch (v.getId()) {
 
-            case R.id.B_Hospital:
-                showNearbyPlaces("hospital",latitude,longitude);
-                break;
-
-            case R.id.B_Restaurant:
-                showNearbyPlaces("restaurant",latitude,longitude);
-                break;
-
-            case R.id.B_School:
-                showNearbyPlaces("school",latitude,longitude);
-                break;
+//            case R.id.B_Hospital:
+//                showNearbyPlaces("hospital",latitude,longitude);
+//                break;
+//
+//            case R.id.B_Restaurant:
+//                showNearbyPlaces("restaurant",latitude,longitude);
+//                break;
+//
+//            case R.id.B_School:
+//                showNearbyPlaces("school",latitude,longitude);
+//                break;
 
             case R.id.B_to:
 
