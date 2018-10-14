@@ -5,10 +5,13 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GetDirectionsData extends AsyncTask<Object,String,String> {
 
@@ -19,6 +22,7 @@ public class GetDirectionsData extends AsyncTask<Object,String,String> {
     String duration,distance;
 
     LatLng latLng;
+    private List<Polyline> route;
 
     @Override
     protected String doInBackground(Object... objects) {
@@ -38,9 +42,12 @@ public class GetDirectionsData extends AsyncTask<Object,String,String> {
 
     @Override
     protected void onPostExecute(String s) {
+        route = null;
         String[] directionsList;
         DataParser parser = new DataParser();
         Log.d("URL",s);
+        System.out.println(s);
+        route = new ArrayList<>();
 
         directionsList = parser.parseDirections(s);
         if (directionsList != null) {
@@ -78,7 +85,11 @@ public class GetDirectionsData extends AsyncTask<Object,String,String> {
             options.width(10);
             options.addAll(PolyUtil.decode(directionsList[i]));
 
-            mMap.addRoute(options);
+            route.add(mMap.addRoute(options));
         }
+    }
+
+    public List<Polyline> getRoute() {
+        return route;
     }
 }

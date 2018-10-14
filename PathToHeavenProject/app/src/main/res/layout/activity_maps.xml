@@ -104,45 +104,21 @@
             android:focusable="false"
             android:orientation="vertical">
 
-            <LinearLayout
+            <include android:id="@+id/route"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                layout="@layout/slider_layout_route"/>
 
-                <!--<TextView-->
-                    <!--android:id="@+id/name"-->
-                    <!--android:layout_width="0dp"-->
-                    <!--android:layout_height="match_parent"-->
-                    <!--android:layout_weight="1"-->
-                    <!--android:textColor="@android:color/holo_green_dark"-->
-                    <!--android:gravity="center_vertical"-->
-                    <!--android:paddingLeft="10dp"-->
-                    <!--android:text="slide"-->
-                    <!--android:textSize="14sp" />-->
-
-                <!--<Button-->
-                    <!--android:id="@+id/btn_hide"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="match_parent"-->
-                    <!--android:gravity="center_vertical|right"-->
-                    <!--android:paddingLeft="10dp"-->
-                    <!--android:paddingRight="10dp"-->
-                    <!--android:text="hide"-->
-                    <!--android:textSize="14sp" />-->
-
-
-                <Button
-                    android:id="@+id/B_to"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical|right"
-                    android:onClick="onClick"
-                    android:text="Route" />
-
-            </LinearLayout>
+            <include android:id="@+id/secondary"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                layout="@layout/slider_layout_test"/>
 
         </LinearLayout>
+
+
+
+
 
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>
 
