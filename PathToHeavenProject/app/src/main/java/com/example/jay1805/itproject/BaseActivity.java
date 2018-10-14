@@ -19,6 +19,8 @@ public abstract class BaseActivity extends AppCompatActivity implements ServiceC
                 BIND_AUTO_CREATE);
     }
 
+
+
     @Override
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
         if (SinchService.class.getName().equals(componentName.getClassName())) {

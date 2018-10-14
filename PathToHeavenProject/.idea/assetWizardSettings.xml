@@ -23,7 +23,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/maps/ic_directions_transit_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/Applications/Android%20Studio.app/Contents/plugins/android/lib/android.jar!/images/material_design_icons/communication/ic_call_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -33,9 +33,9 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="color" value="ffffff" />
-                            <entry key="outputName" value="ic_directions_transit_white_24dp" />
-                            <entry key="sourceFile" value="C:\Users\Hasitha Dias" />
+                            <entry key="color" value="020202" />
+                            <entry key="outputName" value="ic_call_black_24dp" />
+                            <entry key="sourceFile" value="$APPLICATION_HOME_DIR$/bin/C:\Users\Hasitha Dias" />
                           </map>
                         </option>
                       </PersistentState>
