@@ -14,23 +14,22 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jay1805.itproject.Map.CurrentLocation;
 import com.example.jay1805.itproject.Map.GetDirectionsData;
-import com.example.jay1805.itproject.Map.GetNearbyPlacesData;
 import com.example.jay1805.itproject.Map.Map;
 import com.example.jay1805.itproject.Map.URLCreator;
 import com.google.android.gms.common.api.Status;
@@ -45,16 +44,17 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.sinch.android.rtc.SinchError;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.InputStream;
+import java.util.List;
 
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
@@ -70,6 +70,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private URLCreator urlCreator;
 
+    ////////////////////////////////////////
+    private SlidingUpPanelLayout slidingLayout;
+    private Button btnShow;
+    private Button btnHide;
+    private TextView textView;
+    ///////////////////////////////////////
+
+    private Marker destinationMarker;
+    private List<Polyline> route;
+
+    private String modeOfTransport;
+
     LatLng currentDestination;
     Marker marker;
     Marker markerOfElderly;
@@ -78,6 +90,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        setButtonListeners();
+
+
+        /////////////////////////////////////////////////////
+//        btnShow = (Button)findViewById(R.id.btn_show);
+//        btnHide = (Button)findViewById(R.id.btn_hide);
+//        textView = (TextView)findViewById(R.id.text);
+
+        //set layout slide listener
+        slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
+//        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+
+        //some "demo" event
+//        slidingLayout.setPanelSlideListener(onSlideListener());
+//        btnHide.setOnClickListener(onHideListener());
+//        btnShow.setOnClickListener(onShowListener());
+        ///////////////////////////////////////////////////
 
         if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MapsActivity.this,
@@ -92,6 +121,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
+                currentLocation.hideCurrentLocation();
                 final LatLng latLngLoc = place.getLatLng();
                 MarkerOptions mo = new MarkerOptions();
                 if(marker!=null){
@@ -104,7 +134,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mo.title("Your search results");
                 mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
-                map.addMarker(mo,currentDestination);
+                destinationMarker = map.addMarker(mo,currentDestination);
+                modeOfTransport = "driving";
+                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+
             }
 
             @Override
@@ -113,6 +146,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+        placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_clear_button)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        // example : way to access view from PlaceAutoCompleteFragment
+                        // ((EditText) autocompleteFragment.getView()
+                        // .findViewById(R.id.place_autocomplete_search_input)).setText("");
+                        placeAutocompleteFragment.setText("");
+                        view.setVisibility(View.GONE);
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                        removeRoute();
+                        map.removeMarker(destinationMarker);
+                        currentLocation.showCurrentLocation();
+                        modeOfTransport = "driving";
+                    }
+                });
 
         myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
         myToggle = new ActionBarDrawerToggle(MapsActivity.this, myDrawerLayout, R.string.open, R.string.close);
@@ -214,6 +263,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    ////////////////////////////////////////////////////////
+    private View.OnClickListener onHideListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //hide sliding layout
+                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                btnShow.setVisibility(View.VISIBLE);
+            }
+        };
+    }
+    ///////////////////////////////////////////////////////
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(myToggle.onOptionsItemSelected(item)) {
@@ -295,32 +357,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         switch (v.getId()) {
 
-            case R.id.B_Hospital:
-                showNearbyPlaces("hospital",latitude,longitude);
-                break;
-
-            case R.id.B_Restaurant:
-                showNearbyPlaces("restaurant",latitude,longitude);
-                break;
-
-            case R.id.B_School:
-                showNearbyPlaces("school",latitude,longitude);
-                break;
+//            case R.id.B_Hospital:
+//                showNearbyPlaces("hospital",latitude,longitude);
+//                break;
+//
+//            case R.id.B_Restaurant:
+//                showNearbyPlaces("restaurant",latitude,longitude);
+//                break;
+//
+//            case R.id.B_School:
+//                showNearbyPlaces("school",latitude,longitude);
+//                break;
 
             case R.id.B_to:
-
+                removeRoute();
                 Object dataTransfer[] = new Object[3];
-                String url = urlCreator.getDirectionsUrl(latitude, longitude, currentDestination.latitude, currentDestination.longitude);
+                String url = urlCreator.getDirectionsUrl(latitude, longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
                 Log.d("LOL",url);
+//                System.out.println(url);
                 GetDirectionsData getDirectionsData = new GetDirectionsData();
                 dataTransfer[0] = map;
                 dataTransfer[1] = url;
                 dataTransfer[2] = currentDestination;
                 getDirectionsData.execute(dataTransfer);
                 sendMessageToActivity(url,currentDestination);
+                route = getDirectionsData.getRoute();
                 break;
         }
 
+    }
+
+    public void removeRoute(){
+        if (route!=null) {
+            map.removeRoute(route);
+        }
     }
 
     private void sendMessageToActivity(String url, LatLng dest) {
@@ -333,21 +403,49 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    private void showNearbyPlaces(String tag, double latitude, double longitude){
-        GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
-        Object dataTransfer[] = new Object[2];
-        map.clearMap();
-        String url = urlCreator.getUrl(latitude, longitude, tag);
-        dataTransfer[0] = map;
-        dataTransfer[1] = url;
-
-        getNearbyPlacesData.execute(dataTransfer);
-        makeToast("Showing Nearby "+tag);
-
-    }
+//    private void showNearbyPlaces(String tag, double latitude, double longitude){
+//        GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+//        Object dataTransfer[] = new Object[2];
+//        map.clearMap();
+//        String url = urlCreator.getUrl(latitude, longitude, tag);
+//        dataTransfer[0] = map;
+//        dataTransfer[1] = url;
+//
+//        getNearbyPlacesData.execute(dataTransfer);
+//        makeToast("Showing Nearby "+tag);
+//
+//    }
 
     public void makeToast(String message){
         Toast.makeText(MapsActivity.this, message, Toast.LENGTH_LONG).show();
+    }
+
+    private void setButtonListeners(){
+        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
+        button_Walk.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+//                button_Walk.setBackground();
+                modeOfTransport = "walking";
+            }
+        });
+        ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
+        button_Drive.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                modeOfTransport = "driving";
+            }
+        });
+        ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
+        button_Bike.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                modeOfTransport = "bicycling";
+            }
+        });
+        ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
+        button_Transit.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                modeOfTransport = "transit";
+            }
+        });
     }
 
 
