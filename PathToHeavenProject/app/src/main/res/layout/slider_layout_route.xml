@@ -13,6 +13,7 @@
         android:layout_weight="1"
         android:background="#616161"
         app:srcCompat="@drawable/ic_directions_walk_white_24dp"
+        tools:background="@color/grey_700"
         tools:ignore="VectorDrawableCompat" />
     <ImageButton
         android:id="@+id/B_car"
@@ -22,6 +23,7 @@
         android:background="@color/blue_A400"
         app:srcCompat="@drawable/ic_directions_car_white_24dp"
         tools:ignore="VectorDrawableCompat" />
+
     <ImageButton
         android:id="@+id/B_bike"
         android:layout_width="wrap_content"

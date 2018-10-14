@@ -445,29 +445,48 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Toast.makeText(MapsActivity.this, message, Toast.LENGTH_LONG).show();
     }
 
+    private void setBackgroundForModesOfTransport(ImageButton selectedButton){
+        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
+        ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
+        ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
+        ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
+        button_Walk.setBackgroundResource(R.color.blue_A400);
+        button_Drive.setBackgroundResource(R.color.blue_A400);
+        button_Transit.setBackgroundResource(R.color.blue_A400);
+        button_Bike.setBackgroundResource(R.color.blue_A400);
+        selectedButton.setBackgroundResource(R.color.grey_700);
+
+    }
+
     private void setButtonListeners(){
         final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
         button_Walk.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-//                button_Walk.setBackground();
+                setBackgroundForModesOfTransport(button_Walk);
                 modeOfTransport = "walking";
             }
         });
-        ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
+        final ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
         button_Drive.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
+                setBackgroundForModesOfTransport(button_Drive);
                 modeOfTransport = "driving";
             }
         });
-        ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
+        final ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
         button_Bike.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
+                setBackgroundForModesOfTransport(button_Bike);
                 modeOfTransport = "bicycling";
             }
         });
-        ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
+        final ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
         button_Transit.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
+
+                setBackgroundForModesOfTransport(button_Transit);
                 modeOfTransport = "transit";
             }
         });
