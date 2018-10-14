@@ -6,10 +6,12 @@ public class URLCreator {
 
     private static final int PROXIMITY_RADIUS = 10000;
 
-    public String getDirectionsUrl(double latitude, double longitude, double endLatitude,double endLongitude){
+
+    public String getDirectionsUrl(double latitude, double longitude, double endLatitude,double endLongitude,String mode){
         StringBuilder googleDirectionsUrl = new StringBuilder("https://maps.googleapis.com/maps/api/directions/json?");
         googleDirectionsUrl.append("origin="+latitude+","+longitude);
         googleDirectionsUrl.append("&destination="+endLatitude+","+endLongitude);
+        googleDirectionsUrl.append("&mode="+mode);
         googleDirectionsUrl.append("&key="+"AIzaSyAIhjebUkrK_zx9sXyjv6ryUVuZV9VsEVk");
 
         return googleDirectionsUrl.toString();
