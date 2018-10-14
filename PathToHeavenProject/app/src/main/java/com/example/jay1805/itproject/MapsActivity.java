@@ -12,6 +12,7 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -25,6 +26,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -72,12 +74,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     ////////////////////////////////////////
     private SlidingUpPanelLayout slidingLayout;
-    private Button btnShow;
-    private Button btnHide;
-    private TextView textView;
+    private FloatingActionButton SosButton;
+    private Button VolunteersButton;
     ///////////////////////////////////////
 
     private Marker destinationMarker;
+    private MarkerOptions destMarkerOptions;
     private List<Polyline> route;
 
     private String modeOfTransport;
@@ -92,7 +94,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_maps);
         setButtonListeners();
 
-
         /////////////////////////////////////////////////////
 //        btnShow = (Button)findViewById(R.id.btn_show);
 //        btnHide = (Button)findViewById(R.id.btn_hide);
@@ -100,6 +101,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //set layout slide listener
         slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
+        SosButton = findViewById(R.id.floatingButton);
+        VolunteersButton = findViewById(R.id.volunteersButton);
+
+        SosButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                LinearLayout routeSlider = findViewById(R.id.route);
+                routeSlider.setVisibility(View.GONE);
+                LinearLayout helpSlider = findViewById(R.id.sosSlider);
+                helpSlider.setVisibility(View.VISIBLE);
+                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            }
+        });
+
+        VolunteersButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+            }
+        });
 //        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
 
         //some "demo" event
@@ -123,19 +144,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onPlaceSelected(Place place) {
                 currentLocation.hideCurrentLocation();
                 final LatLng latLngLoc = place.getLatLng();
-                MarkerOptions mo = new MarkerOptions();
+                destMarkerOptions = new MarkerOptions();
                 if(marker!=null){
                     marker.remove();
                 }
                 map.clearMap();
                 currentDestination = latLngLoc;
 
-                mo.position(currentDestination);
-                mo.title("Your search results");
-                mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                destMarkerOptions.position(currentDestination);
+                destMarkerOptions.title("Your search results");
+                destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
 
-                destinationMarker = map.addMarker(mo,currentDestination);
+                destinationMarker = map.addMarker(destMarkerOptions,currentDestination);
                 modeOfTransport = "driving";
+                LinearLayout routeSlider = findViewById(R.id.route);
+                routeSlider.setVisibility(View.VISIBLE);
+                LinearLayout helpSlider = findViewById(R.id.sosSlider);
+                helpSlider.setVisibility(View.GONE);
                 slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 
             }
@@ -156,8 +181,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         placeAutocompleteFragment.setText("");
                         view.setVisibility(View.GONE);
                         slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-                        removeRoute();
-                        map.removeMarker(destinationMarker);
+                        map.clearMap();
                         currentLocation.showCurrentLocation();
                         modeOfTransport = "driving";
                     }
@@ -370,11 +394,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                break;
 
             case R.id.B_to:
-                removeRoute();
+//                removeRoute();
+                map.clearMap();
+                destinationMarker = map.addMarker(destMarkerOptions,currentDestination);
                 Object dataTransfer[] = new Object[3];
                 String url = urlCreator.getDirectionsUrl(latitude, longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
                 Log.d("LOL",url);
-//                System.out.println(url);
                 GetDirectionsData getDirectionsData = new GetDirectionsData();
                 dataTransfer[0] = map;
                 dataTransfer[1] = url;

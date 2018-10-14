@@ -48,6 +48,8 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
 //        mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
     }
 
+
+
     public void removeMarker(Marker marker){
         marker.remove();
     }
