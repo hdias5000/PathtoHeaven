@@ -5,6 +5,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.onesignal.OneSignal;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallEndCause;
@@ -150,6 +151,7 @@ public class CallScreenActivity extends BaseActivity implements NavigationView.O
         }
 
         if (id == R.id.Logout) {
+            OneSignal.setSubscription(false);
             FirebaseAuth.getInstance().signOut();
             // make sure the user is who he says he is
             Intent intent = new Intent(getApplicationContext(),LoginActivity.class);

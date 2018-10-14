@@ -22,6 +22,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.onesignal.OneSignal;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -154,6 +155,7 @@ public class MyProfileActivity extends AppCompatActivity implements NavigationVi
         }
 
         if (id == R.id.Logout) {
+            OneSignal.setSubscription(false);
             FirebaseAuth.getInstance().signOut();
             // make sure the user is who he says he is
             Intent intent = new Intent(getApplicationContext(),LoginActivity.class);

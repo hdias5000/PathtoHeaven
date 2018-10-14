@@ -31,6 +31,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.onesignal.OneSignal;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -148,6 +149,7 @@ public class ChatMainPageActivity extends AppCompatActivity implements Navigatio
         }
 
         if (id == R.id.Logout) {
+            OneSignal.setSubscription(false);
             FirebaseAuth.getInstance().signOut();
             // make sure the user is who he says he is
             Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
