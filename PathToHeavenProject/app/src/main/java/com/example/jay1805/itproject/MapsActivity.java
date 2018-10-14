@@ -69,8 +69,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private PlaceAutocompleteFragment placeAutocompleteFragment;
 
-
     private URLCreator urlCreator;
+
+    private double volLat=0;
+    private double volLongi=0;
+    private String currentVolunteerName;
+
+
+    LatLng currentDestination;
+    Marker marker;
+    Marker markerOfElderly;
 
     ////////////////////////////////////////
     private SlidingUpPanelLayout slidingLayout;
@@ -84,9 +92,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private String modeOfTransport;
 
-    LatLng currentDestination;
-    Marker marker;
-    Marker markerOfElderly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +124,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
                 slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                PlaceVolunteerMarkerOnMap();
+
             }
         });
 //        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
@@ -287,6 +294,60 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    ///////////////////////////////////////////////////////
+
+    private void PlaceVolunteerMarkerOnMap() {
+
+        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
+                    {
+
+                        // getting volunteers' coordinates
+                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
+                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
+                            {
+                                if (volunteersnapshot2.getKey().equals("latitude")) {
+                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
+                                }
+                                if (volunteersnapshot2.getKey().equals("longitude")) {
+                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
+
+                                }
+                                if (volunteersnapshot2.getKey().equals("name")) {
+                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
+                                }
+
+
+                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
+                                {
+                                    System.out.println("current vol: "+currentVolunteerName);
+                                    MarkerOptions mo = new MarkerOptions();
+                                    LatLng volLatLng = new LatLng(volLat,volLongi);
+
+                                    mo.position(volLatLng);
+                                    mo.title(currentVolunteerName);
+                                    mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
+
+                                    map.addMarker(mo,volLatLng);
+                                    currentVolunteerName = "";
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
     ////////////////////////////////////////////////////////
     private View.OnClickListener onHideListener() {
         return new View.OnClickListener() {

@@ -13,12 +13,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -36,7 +38,8 @@ public class SensorService extends Service implements com.google.android.gms.loc
     private boolean share = false;
     private LatLng newDest;
     private String newURL = "";
-
+    private String currentUserId;
+    private DatabaseReference userRef;
 
     public SensorService(Context applicationContext) {
         super();
@@ -143,13 +146,28 @@ public class SensorService extends Service implements com.google.android.gms.loc
         ref.updateChildren(map);
     }
 
+    private void uploadLocation(){
+
+        Toast.makeText(SensorService.this, ""+"location uploaded", Toast.LENGTH_SHORT).show();
+        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        userRef = FirebaseDatabase.getInstance().getReference().child("user").child(currentUserId);
+
+
+        Map map = new HashMap<>();
+
+        map.put("latitude", Double.toString(currentLocation.getLatitude()));
+        map.put("longitude", Double.toString(currentLocation.getLongitude()));
+
+        userRef.updateChildren(map);
+    }
+
 
     private void makeUseOfNewLocation(Location location){
         Log.d("LOCATION3","result");
         if (location != null) {
             Log.d("LOCATION","C'est bien.");
             currentLocation = location;
-
+            uploadLocation();
             sendMessageToActivity(currentLocation, "");
             if (share) {
                 updateLocation();
