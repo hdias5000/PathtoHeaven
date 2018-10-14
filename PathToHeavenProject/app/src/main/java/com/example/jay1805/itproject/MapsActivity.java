@@ -55,11 +55,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
+import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
+
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener{
     private CurrentLocation currentLocation;
     private Map map;
     private Location lastKnownLoc;
@@ -75,6 +78,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private double volLongi=0;
     private String currentVolunteerName;
 
+
+    private HashMap<Marker, String> markers;
 
     LatLng currentDestination;
     Marker marker;
@@ -98,6 +103,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         setButtonListeners();
+        markers = new HashMap<Marker, String>();
 
         /////////////////////////////////////////////////////
 //        btnShow = (Button)findViewById(R.id.btn_show);
@@ -332,14 +338,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
                                     //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
 
-                                    map.addMarker(mo,volLatLng);
+
+                                    markers.put(map.addMarker(mo,volLatLng), childsnapshot.getKey());
                                     currentVolunteerName = "";
                                 }
                             }
                         }
                     }
 
+
                 }
+                map.setListOfVolunteers(markers);
             }
 
             @Override
@@ -539,6 +548,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Intent intent = new Intent("SEND GPS");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
+
+
+   
 
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         ImageView bmImage;
