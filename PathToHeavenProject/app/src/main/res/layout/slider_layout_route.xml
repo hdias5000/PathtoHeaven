@@ -1,51 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="horizontal">
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="horizontal">
 
-    <ImageButton
-        android:id="@+id/B_walk"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="#616161"
-        app:srcCompat="@drawable/ic_directions_walk_white_24dp"
-        tools:ignore="VectorDrawableCompat" />
-    <ImageButton
-        android:id="@+id/B_car"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@color/blue_A400"
-        app:srcCompat="@drawable/ic_directions_car_white_24dp"
-        tools:ignore="VectorDrawableCompat" />
-    <ImageButton
-        android:id="@+id/B_bike"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@color/blue_A400"
-        app:srcCompat="@drawable/ic_directions_bike_white_24dp"
-        tools:ignore="VectorDrawableCompat" />
-    <ImageButton
-        android:id="@+id/B_transit"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@color/blue_A400"
-        app:srcCompat="@drawable/ic_directions_transit_white_24dp"
-        tools:ignore="VectorDrawableCompat" />
+        <ImageButton
+            android:id="@+id/B_walk"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#616161"
+            app:srcCompat="@drawable/ic_directions_walk_white_24dp"
+            tools:background="@color/grey_700"
+            tools:ignore="VectorDrawableCompat" />
+        <ImageButton
+            android:id="@+id/B_car"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/blue_A400"
+            app:srcCompat="@drawable/ic_directions_car_white_24dp"
+            tools:ignore="VectorDrawableCompat" />
 
-    <Button
-        android:id="@+id/B_to"
-        android:layout_width="wrap_content"
+        <ImageButton
+            android:id="@+id/B_bike"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/blue_A400"
+            app:srcCompat="@drawable/ic_directions_bike_white_24dp"
+            tools:ignore="VectorDrawableCompat" />
+        <ImageButton
+            android:id="@+id/B_transit"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/blue_A400"
+            app:srcCompat="@drawable/ic_directions_transit_white_24dp"
+            tools:ignore="VectorDrawableCompat" />
+
+        <Button
+            android:id="@+id/B_to"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical|right"
+            android:onClick="onClick"
+            android:text="Route" />
+
+    </LinearLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:gravity="center_vertical|right"
-        android:onClick="onClick"
-        android:text="Route" />
+        android:id="@+id/List_Directions">
+
+    </android.support.v7.widget.RecyclerView>
 
 </LinearLayout>
