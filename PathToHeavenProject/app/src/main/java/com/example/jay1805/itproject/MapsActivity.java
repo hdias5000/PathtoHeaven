@@ -115,6 +115,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         SosButton = findViewById(R.id.floatingButton);
         VolunteersButton = findViewById(R.id.volunteersButton);
 
+
+
+        java.util.Map hmap = new HashMap<>();
+        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        hmap.put("Requested", "False");
+        userDB.updateChildren(hmap);
+
         SosButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -130,6 +137,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
                 slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                //startActivity(new Intent(getApplicationContext(),MapsActivity.class));
                 PlaceVolunteerMarkerOnMap();
 
             }
@@ -233,6 +241,34 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             }
         });
+
+
+
+
+        //testing alert!!!!
+        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue()!=null) {
+                    System.out.println("###############DATASNAPSHOT: " + dataSnapshot.getValue().toString());
+                    if (dataSnapshot.getValue().toString().equals("True")) {
+                        startActivity(new Intent(getApplicationContext(), NotificationActivity.class));
+                        java.util.Map map = new HashMap<>();
+                        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                        map.put("Requested", "False");
+                        userDB.updateChildren(map);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()

@@ -148,7 +148,6 @@ public class SensorService extends Service implements com.google.android.gms.loc
 
     private void uploadLocation(){
 
-        Toast.makeText(SensorService.this, ""+"location uploaded", Toast.LENGTH_SHORT).show();
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         userRef = FirebaseDatabase.getInstance().getReference().child("user").child(currentUserId);
 

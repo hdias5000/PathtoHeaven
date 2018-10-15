@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".LoginActivity"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textViewWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:gravity="center"
+        android:textSize="20dp"
+        android:text="Enter your details:" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="59dp">
+
+        <TextView
+            android:id="@+id/image_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:padding="10dp"
+            android:text="Upload Image : "
+            android:textSize="17dp" />
+
+        <ImageView
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:id="@+id/imageViewer" />
+
+        <ImageButton
+            android:id="@+id/image_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            app:srcCompat="@android:drawable/ic_menu_gallery" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="59dp">
+
+        <TextView
+            android:id="@+id/name_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Name : "
+            android:textSize="17dp" />
+
+        <TextView
+            android:id="@+id/theActualName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="This is the name"
+            android:textSize="17dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="58dp">
+
+
+        <TextView
+            android:id="@+id/dob_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Enter Date Of Birth:"
+            android:textSize="17dp" />
+
+        <EditText
+            android:layout_width="120dp"
+            android:layout_height="match_parent"
+            android:id="@+id/date_editText"
+            android:hint="dd/mm/yyyy"
+            android:clickable="true" />
+
+        <Button
+            android:id="@+id/calender_button"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:background="#7abbf9"
+            android:text="C"
+            android:textColor="@color/common_google_signin_btn_text_dark_default" />
+
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/home_address_editText"
+        android:layout_width="283dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="7dp"
+        android:layout_gravity="center"
+        android:hint="Enter Home Address" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="10dp">
+
+
+        <TextView
+            android:id="@+id/user_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="User Type:"
+            android:layout_marginTop="10dp"
+            android:textSize="17dp" />
+
+        <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/user_type_rg">
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Helper"
+                android:onClick="CheckedRadioButton"
+                android:id="@+id/helperButton" />
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Elderly Person"
+                android:onClick="CheckedRadioButton"
+                android:id="@+id/elderlyPersonButton"/>
+
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/save_button"
+        android:layout_width="282dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:background="#7abbf9"
+        android:text="Save details"
+        android:textColor="@color/common_google_signin_btn_text_dark_default" />
+
+
+</LinearLayout>
