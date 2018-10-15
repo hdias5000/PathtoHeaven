@@ -6,11 +6,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -20,6 +22,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,6 +39,9 @@ import com.example.jay1805.itproject.Map.CurrentLocation;
 import com.example.jay1805.itproject.Map.GetDirectionsData;
 import com.example.jay1805.itproject.Map.Map;
 import com.example.jay1805.itproject.Map.URLCreator;
+import com.example.jay1805.itproject.User.UserListAdapter;
+import com.example.jay1805.itproject.User.UserObject;
+import com.example.jay1805.itproject.Utilities.CountryToPhonePrefix;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
@@ -52,14 +60,16 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
+public class MapsActivity extends BaseActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
     private CurrentLocation currentLocation;
     private Map map;
     private Location lastKnownLoc;
@@ -69,6 +79,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private PlaceAutocompleteFragment placeAutocompleteFragment;
 
+    private RecyclerView userListView;
+    private RecyclerView.Adapter userListViewAdapter;
+    private RecyclerView.LayoutManager userListViewLayoutManager;
+
+    public ArrayList<UserObject> contactList;
+
+    ArrayList<UserObject> userList;
 
     private URLCreator urlCreator;
 
@@ -112,6 +129,36 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 LinearLayout helpSlider = findViewById(R.id.sosSlider);
                 helpSlider.setVisibility(View.VISIBLE);
                 slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            }
+        });
+
+        contactList = new ArrayList<>();
+        userList = new ArrayList<>();
+        //initializeRecyclerView();
+        userListView = findViewById(R.id.userList);
+        userListView.setNestedScrollingEnabled(false);
+        userListView.setHasFixedSize(false);
+        userListViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
+        userListView.setLayoutManager(userListViewLayoutManager);
+        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(getSinchServiceInterface()!=null) {
+                    Log.d("Sinch","NIT NULL");
+                    System.out.println("SinchService is not null");
+                }
+                else {
+                    Log.d("Sinch","YEEt NULL");
+                    System.out.println("SinchService is null");
+                }
+                userListViewAdapter = new UserListAdapter(userList, getSinchServiceInterface());
+                userListView.setAdapter(userListViewAdapter);
+                getContactList();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
 
@@ -286,6 +333,101 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
     }
+
+    private void getContactList() {
+        String isoPrefix = getCountryIso();
+        Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+        while (phones.moveToNext()) {
+            String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+            String phone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+
+            phone = phone.replace(" ", "");
+            phone = phone.replace("-", "");
+            phone = phone.replace("(", "");
+            phone = phone.replace(")", "");
+
+            if(!String.valueOf(phone.charAt(0)).equals("+")) {
+                phone = isoPrefix + phone;
+            }
+            UserObject mContacts = new UserObject(name, phone, "");
+            contactList.add(mContacts);
+            getUserDetails(mContacts);
+        }
+    }
+
+    private void getUserDetails(UserObject mContacts) {
+        DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user");
+        Query query = userDB.orderByChild("phone").equalTo(mContacts.getPhone());
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    String phone = "", name = "";
+                    for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                        if(childSnapshot.child("phone").getValue() != null) {
+                            phone = childSnapshot.child("phone").getValue().toString();
+                        }
+                        if(childSnapshot.child("name").getValue() != null) {
+                            name = childSnapshot.child("name").getValue().toString();
+                        }
+
+                        UserObject mUser = new UserObject(name, phone, childSnapshot.getKey());
+                        for(UserObject mContactIterator : contactList) {
+                            if(mContactIterator.getPhone().equals(phone)) {
+                                mUser.setName(mContactIterator.getName());
+
+                            }
+                        }
+
+                        userList.add(mUser);
+                        userListViewAdapter.notifyDataSetChanged();
+                        return;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private String getCountryIso() {
+        String ISO = null;
+
+        TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+
+        if(telephonyManager.getNetworkCountryIso() != null) {
+            if(telephonyManager.getNetworkCountryIso().toString().equals("")) {
+                ISO = telephonyManager.getNetworkCountryIso().toString();
+            }
+        }
+        if (ISO == null) {
+            return "";
+        }
+        return CountryToPhonePrefix.getPhone(ISO);
+
+    }
+
+//    private void initializeRecyclerView() {
+//
+//        userListView = findViewById(R.id.userList);
+//        userListView.setNestedScrollingEnabled(false);
+//        userListView.setHasFixedSize(false);
+//        userListViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
+//        userListView.setLayoutManager(userListViewLayoutManager);
+//        if(getSinchServiceInterface()!=null) {
+//            Log.d("Sinch","NIT NULL");
+//            System.out.println("SinchService is not null");
+//        }
+//        else {
+//            Log.d("Sinch","YEEt NULL");
+//            System.out.println("SinchService is null");
+//        }
+//        userListViewAdapter = new UserListAdapter(userList);
+//        userListView.setAdapter(userListViewAdapter);
+//    }
 
     ////////////////////////////////////////////////////////
     private View.OnClickListener onHideListener() {
