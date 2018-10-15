@@ -61,6 +61,7 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
     private ActionBarDrawerToggle myToggle;
     ArrayList<MessageObject> messageList;
     String chatID;
+    String toUserUid;
     DatabaseReference chatDB;
     DatabaseReference nameOfSenderDB;
     String nameOfSender;
@@ -82,6 +83,26 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
         });
         chatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
         nameOfSenderDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("name");
+
+        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+                    if(!childsnapshot.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+                        for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
+                            if(chatsnapshot.getKey().equals(chatID)) {
+                                toUserUid = childsnapshot.getKey();
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         ImageButton mSend = findViewById(R.id.send);
         ImageButton mAddMedia = findViewById(R.id.addMedia);
@@ -231,6 +252,7 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
                     String text = "";
                     String creatorId = "";
                     String creator = "";
+                    String receiverID = "";
                     ArrayList<String> mediaUrlList = new ArrayList<>();
                     if (dataSnapshot.child("text").getValue() != null) {
                         text = dataSnapshot.child("text").getValue().toString();
@@ -246,18 +268,19 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
                             mediaUrlList.add(mediaSnapshot.getValue().toString());
                         }
                     }
+                    if (dataSnapshot.child("receiverID").getValue() != null) {
+                        receiverID = dataSnapshot.child("receiverID").getValue().toString();
+                    }
 
-
-                    MessageObject myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, text, mediaUrlList, false);
+                    MessageObject myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, receiverID, text, mediaUrlList, false);
                     if (dataSnapshot.child("isGpsShared").getValue() != null){
                         if(dataSnapshot.child("isGpsShared").getValue().equals("false")) {
-                            myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, text, mediaUrlList, false);
+                            myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, receiverID, text, mediaUrlList, false);
                         }
                         else {
-                            myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, "Click here", mediaUrlList, true);
+                            myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, receiverID, "Click here", mediaUrlList, true);
                         }
                     }
-                    //messageList.add(new MessageObject(messageId, nameOfSender, FirebaseAuth.getInstance().getCurrentUser().getUid(), "Click here", mediaUriList, true));
                     messageList.add(myMessage);
                     ChatViewLayoutManager.scrollToPosition(messageList.size()-1);
                     ChatViewAdapter.notifyDataSetChanged();
@@ -300,6 +323,8 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
             final Map newMessageMap = new HashMap<>();
 
             newMessageMap.put("creatorID", FirebaseAuth.getInstance().getUid());
+
+            newMessageMap.put("receiverID", toUserUid);
 
             newMessageMap.put("creator", nameOfSender);
 
@@ -381,8 +406,6 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
 
     private void updateDatabaseWithNewMessage(DatabaseReference newMessageDB, Map newMessageMap) {
         newMessageDB.updateChildren(newMessageMap);
-//        finish();
-//        startActivity(getIntent());
         mMessage.setText(null);
         mediaUriList.clear();
         mediaIdList.clear();

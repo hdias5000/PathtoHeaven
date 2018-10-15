@@ -5,16 +5,21 @@ import java.util.ArrayList;
 public class MessageObject {
 
     Boolean isGPSShared;
-    String messageId, message, senderId, senderUid;
+    String messageId, message, senderId, senderUid, receiverUid;
     ArrayList<String> mediaUrlList;
 
-    public MessageObject(String messageId, String senderId, String senderUid, String message, ArrayList<String> mediaUrlList, Boolean isGPSShared) {
+    public MessageObject(String messageId, String senderId, String senderUid, String receiverUid, String message, ArrayList<String> mediaUrlList, Boolean isGPSShared) {
         this.senderUid = senderUid;
+        this.receiverUid = receiverUid;
         this.messageId = messageId;
         this.senderId = senderId;
         this.message = message;
         this.mediaUrlList = mediaUrlList;
         this.isGPSShared = isGPSShared;
+    }
+
+    public String getReceiverUid() {
+        return receiverUid;
     }
 
     public String getSenderUid() {
