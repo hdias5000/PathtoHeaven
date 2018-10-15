@@ -355,6 +355,9 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
                             if(chatsnapshot.getKey().equals(chatID)) {
                                 chatToId = childsnapshot.getKey();
                                 System.out.println("chat to UID is "+chatToId);
+                                if(getSinchServiceInterface()==null){
+                                    System.out.println("IN CHAT - SINCH SERVICE IS EMPTY");
+                                }
                                 Call call = getSinchServiceInterface().callUser(chatToId);
                                 String callId = call.getCallId();
 

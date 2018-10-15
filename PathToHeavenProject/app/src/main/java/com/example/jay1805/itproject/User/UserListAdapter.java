@@ -8,29 +8,38 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.jay1805.itproject.BaseActivity;
+import com.example.jay1805.itproject.CallScreenActivity;
 import com.example.jay1805.itproject.ChatActivity;
 import com.example.jay1805.itproject.FindUserActivity;
 import com.example.jay1805.itproject.R;
+import com.example.jay1805.itproject.SinchService;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.sinch.android.rtc.SinchError;
+import com.sinch.android.rtc.calling.Call;
 
 import java.util.ArrayList;
 
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserListViewHolder>{
 
+    SinchService.SinchServiceInterface sinchServiceInterface;
     ArrayList<UserObject> userList;
     ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
     ArrayList<String> ToUserChatIDs = new ArrayList<String>();
 
-    public UserListAdapter(ArrayList<UserObject> userList) {
+    public UserListAdapter(ArrayList<UserObject> userList, SinchService.SinchServiceInterface sinchServiceInterface) {
         this.userList = userList;
+        this.sinchServiceInterface = sinchServiceInterface;
     }
 
     @NonNull
@@ -70,10 +79,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
         holder.mName.setText(userList.get(position).getName());
         holder.mPhone.setText(userList.get(position).getPhone());
 
-        holder.contactLayout.setOnClickListener(new View.OnClickListener() {
+        holder.chatButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-
                 FirebaseDatabase.getInstance().getReference().child("user").child(userList.get(position).getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -122,6 +130,18 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
                 });
             }
         });
+
+        holder.callsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Call call = sinchServiceInterface.callUser(userList.get(position).getUid());
+                String callId = call.getCallId();
+
+                Intent callScreen = new Intent(v.getContext(), CallScreenActivity.class);
+                callScreen.putExtra(SinchService.CALL_ID, callId);
+                v.getContext().startActivity(callScreen);
+            }
+        });
     }
 
     @Override
@@ -132,11 +152,15 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
     public class UserListViewHolder extends RecyclerView.ViewHolder {
         public TextView mName, mPhone;
         public LinearLayout contactLayout;
+        public ImageButton chatButton, callsButton, helpButton;
         public UserListViewHolder(View view) {
             super(view);
             mName = view.findViewById(R.id.name);
             mPhone = view.findViewById(R.id.phone);
             contactLayout = view.findViewById(R.id.contact_layout);
+            chatButton = view.findViewById(R.id.chatButton);
+            callsButton = view.findViewById(R.id.callButton);
+            helpButton = view.findViewById(R.id.helpButton);
         }
     }
 
