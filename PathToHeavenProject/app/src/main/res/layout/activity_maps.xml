@@ -18,7 +18,7 @@
         sothree:umanoOverlay="true"
         sothree:umanoPanelHeight="50dp"
         sothree:umanoInitialState="hidden"
-        sothree:umanoParalaxOffset="150dp"
+        sothree:umanoParalaxOffset="100dp"
         sothree:umanoShadowHeight="10dp">
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -108,7 +108,7 @@
         <LinearLayout
             android:id="@+id/dragView"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="wrap_content"
             android:background="#ffffff"
             android:clickable="true"
             android:focusable="false"
@@ -116,7 +116,7 @@
 
             <include android:id="@+id/route"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 layout="@layout/slider_layout_route"/>
 
             <include android:id="@+id/sosSlider"

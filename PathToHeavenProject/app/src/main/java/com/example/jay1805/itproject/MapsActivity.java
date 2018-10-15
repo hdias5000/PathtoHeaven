@@ -20,6 +20,8 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,8 +33,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jay1805.itproject.Map.CurrentLocation;
+import com.example.jay1805.itproject.Map.DirectionsViewAdapter;
 import com.example.jay1805.itproject.Map.GetDirectionsData;
 import com.example.jay1805.itproject.Map.Map;
+import com.example.jay1805.itproject.Map.RouteData;
 import com.example.jay1805.itproject.Map.URLCreator;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.AutocompleteFilter;
@@ -56,6 +60,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -66,6 +72,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private DrawerLayout myDrawerLayout;
     private ActionBarDrawerToggle myToggle;
     private NavigationView myView;
+
+    private RecyclerView DirectionsView;
+    private RecyclerView.Adapter DirectionsViewAdapter;
+    private RecyclerView.LayoutManager DirectionsViewLayoutManager;
 
     private PlaceAutocompleteFragment placeAutocompleteFragment;
 
@@ -81,6 +91,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Marker destinationMarker;
     private MarkerOptions destMarkerOptions;
     private List<Polyline> route;
+
+    private RouteData currentRouteData;
 
     private String modeOfTransport;
 
@@ -129,6 +141,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void setUpBroadcastReceivers() {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                onRouteSuccess, new IntentFilter("RouteSuccess"));
     }
 
     private void gettingPermissions() {
@@ -207,8 +221,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Profile Picture").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                new DownloadImageTask(myProfileImage)
-                        .execute(dataSnapshot.getValue().toString());
+                if(dataSnapshot.getValue() != null) {
+                    new DownloadImageTask(myProfileImage)
+                            .execute(dataSnapshot.getValue().toString());
+                }
             }
 
             @Override
@@ -386,17 +402,77 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Object dataTransfer[] = new Object[3];
                 String url = urlCreator.getDirectionsUrl(latitude, longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
                 Log.d("LOL",url);
-                GetDirectionsData getDirectionsData = new GetDirectionsData();
+                currentRouteData = new RouteData();
+                GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData, new OnEventListener() {
+                    @Override
+                    public void onSuccess(Object object) {
+                        printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        makeToast("Route Not Found");
+                    }
+                });
                 dataTransfer[0] = map;
                 dataTransfer[1] = url;
                 dataTransfer[2] = currentDestination;
                 getDirectionsData.execute(dataTransfer);
                 sendMessageToActivity(url,currentDestination);
                 route = getDirectionsData.getRoute();
+//                while (!getDirectionsData.isSuccess()){
+//
+//                }
+//                getDirectionsData
+
                 break;
         }
 
     }
+
+    private ArrayList change(ArrayList step){
+        ArrayList <HashMap> stepUpdated = new ArrayList<>();
+
+        for (int i=0;i<step.size();i++){
+            HashMap info = (HashMap) step.get(i);
+            String str = info.get("Maneuver").toString().replaceAll("-","_");
+            String drawable = "direction_"+str;
+            int resID =getResources().getIdentifier(drawable, "drawable", getPackageName());
+            System.out.println("Jay is shit "+ drawable);
+            info.put("manRes", Integer.toString(resID));
+            stepUpdated.add(info);
+        }
+        return stepUpdated;
+    }
+
+    private void printRouteInfo(HashMap<String,String> routeInformation, ArrayList stepInformation) {
+        ArrayList newSteps = change(stepInformation);
+        DirectionsView = findViewById(R.id.List_Directions);
+        DirectionsView.setNestedScrollingEnabled(false);
+        DirectionsView.setHasFixedSize(false);
+        DirectionsViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
+        DirectionsView.setLayoutManager(DirectionsViewLayoutManager);
+        DirectionsViewAdapter = new DirectionsViewAdapter(newSteps);
+        DirectionsView.setAdapter(DirectionsViewAdapter);
+
+//        System.out.println(routeInformation.get("Summary"));
+//        System.out.println(routeInformation.get("Distance"));
+//        System.out.println(routeInformation.get("Duration"));
+//        for (int i =0;i<stepInformation.size();i++){
+//            HashMap step = (HashMap) stepInformation.get(i);
+//            System.out.println(step.get("Distance"));
+//            System.out.println(step.get("Duration"));
+//            System.out.println(step.get("Maneuver"));
+//            System.out.println(step.get("Instructions"));
+//        }
+    }
+
+    private BroadcastReceiver onRouteSuccess = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
+        }
+    };
 
 //    public void removeRoute(){
 //        if (route!=null) {

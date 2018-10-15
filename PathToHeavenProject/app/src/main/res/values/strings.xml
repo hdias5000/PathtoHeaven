@@ -2,5 +2,7 @@
     <string name="app_name">IT Project</string>
     <string name="firebase_path">location</string>
     <string name="open">Open</string>
+    <string name="turn_left"></string>
+    <string name="turn_right"></string>
     <string name="close">Close</string>
 </resources>
