@@ -21,12 +21,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-
 import android.telephony.TelephonyManager;
-
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -70,9 +67,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-
 import java.util.HashMap;
-
 import java.util.List;
 
 
