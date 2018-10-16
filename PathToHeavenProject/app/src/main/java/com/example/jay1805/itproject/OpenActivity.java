@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -16,6 +17,8 @@ import com.onesignal.OneSignal;
 import com.sinch.android.rtc.SinchError;
 
 public class OpenActivity extends BaseActivity implements SinchService.StartFailedListener{
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +35,16 @@ public class OpenActivity extends BaseActivity implements SinchService.StartFail
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     userIsLoggedIn();
-                    startActivity(new Intent(getApplicationContext(),MapsActivity.class));
+                    while(getSinchServiceInterface()==null) {
+
+                    }
+                    if(getSinchServiceInterface()!=null) {
+                        System.out.println("THE SINCH SERVICE IS NOT NULL");
+                    }
+                    else {
+                        System.out.println("THE SINCH SERVICE IS NULL");
+                    }
+//                    startActivity(new Intent(getApplicationContext(),MapsActivity.class));
                     finish();
                 }
 
@@ -48,6 +60,8 @@ public class OpenActivity extends BaseActivity implements SinchService.StartFail
         }
     }
 
+
+
     private void userIsLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         // to double check user has logged in
@@ -57,7 +71,6 @@ public class OpenActivity extends BaseActivity implements SinchService.StartFail
                 getSinchServiceInterface().startClient(user.getUid());
             }
         }
-
     }
 
     @Override
@@ -73,6 +86,7 @@ public class OpenActivity extends BaseActivity implements SinchService.StartFail
 
     @Override
     public void onStarted() {
-
+        Log.d("Sinch","STARTED please work");
+        startActivity(new Intent(getApplicationContext(),MapsActivity.class));
     }
 }

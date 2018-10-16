@@ -239,12 +239,12 @@ public class FindUserActivity extends AppCompatActivity implements NavigationVie
     }
 
     private void initializeRecyclerView() {
-        userListView = findViewById(R.id.userList);
-        userListView.setNestedScrollingEnabled(false);
-        userListView.setHasFixedSize(false);
-        userListViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
-        userListView.setLayoutManager(userListViewLayoutManager);
-        userListViewAdapter = new UserListAdapter(userList);
-        userListView.setAdapter(userListViewAdapter);
+//        userListView = findViewById(R.id.userList);
+//        userListView.setNestedScrollingEnabled(false);
+//        userListView.setHasFixedSize(false);
+//        userListViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
+//        userListView.setLayoutManager(userListViewLayoutManager);
+//        userListViewAdapter = new UserListAdapter(userList,);
+//        userListView.setAdapter(userListViewAdapter);
     }
 }

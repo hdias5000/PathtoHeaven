@@ -7,7 +7,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.List;
 
 public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
     private GoogleMap mMap;
@@ -45,8 +48,22 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
 //        mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
     }
 
-    public void addRoute(PolylineOptions options) {
-        mMap.addPolyline(options);
+
+
+    public void removeMarker(Marker marker){
+        marker.remove();
+    }
+
+    public Polyline addRoute(PolylineOptions options) {
+
+        return mMap.addPolyline(options);
+    }
+
+    public void removeRoute(List<Polyline> route){
+        int count = route.size();
+        for (int i=0;i<count;i++) {
+            route.get(i).remove();
+        }
     }
 
     public void clearMap(){

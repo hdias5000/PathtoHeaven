@@ -63,6 +63,9 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
 
     implementation(name: 'sinch-android-rtc', version: '+', ext: 'aar')
+
+    implementation 'com.sothree.slidinguppanel:library:3.0.0'
+
 }
 
 apply plugin: 'com.google.gms.google-services'
