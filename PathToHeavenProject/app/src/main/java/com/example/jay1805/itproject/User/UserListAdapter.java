@@ -1,6 +1,5 @@
 package com.example.jay1805.itproject.User;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -13,32 +12,31 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.jay1805.itproject.BaseActivity;
 import com.example.jay1805.itproject.CallScreenActivity;
 import com.example.jay1805.itproject.ChatActivity;
-import com.example.jay1805.itproject.FindUserActivity;
 import com.example.jay1805.itproject.R;
 import com.example.jay1805.itproject.SinchService;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
 
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserListViewHolder>{
 
     SinchService.SinchServiceInterface sinchServiceInterface;
+    SlidingUpPanelLayout slidingLayout;
     ArrayList<UserObject> userList;
     ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
     ArrayList<String> ToUserChatIDs = new ArrayList<String>();
 
-    public UserListAdapter(ArrayList<UserObject> userList, SinchService.SinchServiceInterface sinchServiceInterface) {
+    public UserListAdapter(ArrayList<UserObject> userList, SinchService.SinchServiceInterface sinchServiceInterface, SlidingUpPanelLayout slidingLayout) {
         this.userList = userList;
+        this.slidingLayout = slidingLayout;
         this.sinchServiceInterface = sinchServiceInterface;
     }
 
@@ -82,6 +80,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
         holder.chatButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
+                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
                 FirebaseDatabase.getInstance().getReference().child("user").child(userList.get(position).getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

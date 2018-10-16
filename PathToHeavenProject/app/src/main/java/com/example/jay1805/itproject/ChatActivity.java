@@ -27,7 +27,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.example.jay1805.itproject.Chat.MediaAdapter;
 import com.example.jay1805.itproject.Chat.MessageAdapter;
@@ -45,7 +44,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.onesignal.OneSignal;
-import com.sinch.android.rtc.calling.Call;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -76,51 +74,51 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
         setContentView(R.layout.activity_chat);
         callButton = findViewById(R.id.callButton);
         chatID = getIntent().getExtras().getString("chatID");
-        callButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callButtonClicked();
-            }
-        });
+//        callButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                callButtonClicked();
+//            }
+//        });
         chatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
         nameOfSenderDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("name");
 
         ImageButton mSend = findViewById(R.id.send);
         ImageButton mAddMedia = findViewById(R.id.addMedia);
 
-        myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-        myToggle = new ActionBarDrawerToggle(ChatActivity.this, myDrawerLayout, R.string.open, R.string.close);
-        myDrawerLayout.addDrawerListener(myToggle);
-        myToggle.syncState();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_viewID);
-        navigationView.setNavigationItemSelectedListener(this);
-        View headerView = navigationView.getHeaderView(0);
-        final ImageView myProfileImage = headerView.findViewById(R.id.headerImage);
-        final TextView myHeaderName = headerView.findViewById(R.id.headerTextView);
-        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Profile Picture").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                new DownloadImageTask(myProfileImage)
-                        .execute(dataSnapshot.getValue().toString());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                myHeaderName.setText(dataSnapshot.getValue().toString());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+//        myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+//        myToggle = new ActionBarDrawerToggle(ChatActivity.this, myDrawerLayout, R.string.open, R.string.close);
+//        myDrawerLayout.addDrawerListener(myToggle);
+//        myToggle.syncState();
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_viewID);
+//        navigationView.setNavigationItemSelectedListener(this);
+//        View headerView = navigationView.getHeaderView(0);
+//        final ImageView myProfileImage = headerView.findViewById(R.id.headerImage);
+//        final TextView myHeaderName = headerView.findViewById(R.id.headerTextView);
+//        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Profile Picture").addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                new DownloadImageTask(myProfileImage)
+//                        .execute(dataSnapshot.getValue().toString());
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                myHeaderName.setText(dataSnapshot.getValue().toString());
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
 
         mSend.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
@@ -369,43 +367,43 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
             }
     }
 
-    private void callButtonClicked() {
-        System.out.println("here"+chatID);
-        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-
-                    if(!childsnapshot.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-
-                        for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
-
-                            if(chatsnapshot.getKey().equals(chatID)) {
-                                chatToId = childsnapshot.getKey();
-                                System.out.println("chat to UID is "+chatToId);
-                                if(getSinchServiceInterface()==null){
-                                    System.out.println("IN CHAT - SINCH SERVICE IS EMPTY");
-                                }
-                                Call call = getSinchServiceInterface().callUser(chatToId);
-                                String callId = call.getCallId();
-
-                                Intent callScreen = new Intent(ChatActivity.this, CallScreenActivity.class);
-                                callScreen.putExtra(SinchService.CALL_ID, callId);
-                                startActivity(callScreen);
-                            }
-                        }
-                    }
-
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-    }
+//    private void callButtonClicked() {
+//        System.out.println("here"+chatID);
+//        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+//
+//                    if(!childsnapshot.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+//
+//                        for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
+//
+//                            if(chatsnapshot.getKey().equals(chatID)) {
+//                                chatToId = childsnapshot.getKey();
+//                                System.out.println("chat to UID is "+chatToId);
+//                                if(getSinchServiceInterface()==null){
+//                                    System.out.println("IN CHAT - SINCH SERVICE IS EMPTY");
+//                                }
+//                                Call call = getSinchServiceInterface().callUser(chatToId);
+//                                String callId = call.getCallId();
+//
+//                                Intent callScreen = new Intent(ChatActivity.this, CallScreenActivity.class);
+//                                callScreen.putExtra(SinchService.CALL_ID, callId);
+//                                startActivity(callScreen);
+//                            }
+//                        }
+//                    }
+//
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//
+//    }
 
     private void updateDatabaseWithNewMessage(DatabaseReference newMessageDB, Map newMessageMap) {
         newMessageDB.updateChildren(newMessageMap);
@@ -450,12 +448,12 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
         startActivityForResult(Intent.createChooser(intent,"Select Image(s)"), PICK_IMAGE_INTENT);
     }
 
-    private void stopButtonClicked() {
-        if (getSinchServiceInterface() != null) {
-            getSinchServiceInterface().stopClient();
-        }
-        finish();
-    }
+//    private void stopButtonClicked() {
+//        if (getSinchServiceInterface() != null) {
+//            getSinchServiceInterface().stopClient();
+//        }
+//        finish();
+//    }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override

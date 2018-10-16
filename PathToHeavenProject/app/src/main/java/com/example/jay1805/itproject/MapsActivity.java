@@ -164,7 +164,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                     Log.d("Sinch","YEEt NULL");
                     System.out.println("SinchService is null");
                 }
-                userListViewAdapter = new UserListAdapter(userList, getSinchServiceInterface());
+                userListViewAdapter = new UserListAdapter(userList, getSinchServiceInterface(), slidingLayout);
                 userListView.setAdapter(userListViewAdapter);
                 getContactList();
             }
