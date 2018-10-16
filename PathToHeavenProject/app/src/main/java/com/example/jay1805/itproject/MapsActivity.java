@@ -138,7 +138,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         //set layout slide listener
         slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
 
-<<<<<<< HEAD
         endCallButton = findViewById(R.id.endCallButton);
         mAudioPlayer = new AudioPlayer(this);
         mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
@@ -154,9 +153,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                 endCall();
             }
         });
-=======
-//        hideSliders();
->>>>>>> master
+
 
         OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
         OneSignal.setSubscription(true);
@@ -223,7 +220,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
 
     }
 
-<<<<<<< HEAD
     @Override
     public void onServiceConnected() {
         Call call = getSinchServiceInterface().getCall(mCallId);
@@ -284,7 +280,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
             // Send a push through your push provider here, e.g. GCM
         }
-=======
+    }
     private void hideSliders(){
         LinearLayout route = findViewById(R.id.route);
         LinearLayout sos = findViewById(R.id.sosSlider);
@@ -295,7 +291,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         help.setVisibility(View.GONE);
         helpRoute.setVisibility(View.GONE);
         slidingLayout.setPanelHeight(120);
->>>>>>> master
     }
 
     private void loadMapFragment() {

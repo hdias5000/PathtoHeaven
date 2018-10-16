@@ -1,10 +1,8 @@
 package com.example.jay1805.itproject.User;
 
-<<<<<<< HEAD
-=======
 import android.content.BroadcastReceiver;
 import android.content.Context;
->>>>>>> master
+
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
