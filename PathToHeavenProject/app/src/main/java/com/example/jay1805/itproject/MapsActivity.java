@@ -127,6 +127,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
     LatLng currentDestination;
     Marker marker;
 
+    String nameOfElderly = "Elderly";
     Marker markerOfElderly;
     LatLng locationOfElderly;
 
@@ -445,6 +446,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
 
             shareID = intent.getExtras().getString("Share ID");
             userID = intent.getExtras().getString("userID");
+            setInitialInfoForHelp(userID);
             System.out.println(userID);
             System.out.println("Share ID is: " + shareID);
             Log.d("SHAREID", shareID);
@@ -469,6 +471,24 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
             });
 
         }
+    }
+
+    private void setInitialInfoForHelp(String userID) {
+        FirebaseDatabase.getInstance().getReference().child("user").child(userID).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                nameOfElderly = dataSnapshot.getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        TextView nameTextView = findViewById(R.id.name);
+        nameTextView.setText(nameOfElderly);
+        nameTextView = findViewById(R.id.name1);
+        nameTextView.setText(nameOfElderly);
     }
 
     private void setGPSSharing(String shareID){

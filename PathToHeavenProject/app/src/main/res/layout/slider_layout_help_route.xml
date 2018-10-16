@@ -22,7 +22,7 @@
                 android:layout_marginRight="20dp"
                 android:textStyle="bold"
                 android:textColor="@color/black"
-                android:id="@+id/name"/>
+                android:id="@+id/name1"/>
         </LinearLayout>
 
         <LinearLayout
