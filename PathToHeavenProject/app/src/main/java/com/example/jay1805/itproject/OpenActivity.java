@@ -1,9 +1,8 @@
 package com.example.jay1805.itproject;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -13,7 +12,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.onesignal.OneSignal;
 import com.sinch.android.rtc.SinchError;
 
 public class OpenActivity extends BaseActivity implements SinchService.StartFailedListener{
@@ -87,6 +85,10 @@ public class OpenActivity extends BaseActivity implements SinchService.StartFail
     @Override
     public void onStarted() {
         Log.d("Sinch","STARTED please work");
-        startActivity(new Intent(getApplicationContext(),MapsActivity.class));
+        Intent intent = new Intent(this, MapsActivity.class);
+        //intent.putExtra(SinchService.CALL_ID, "");
+        intent.putExtra("called", "no");
+        startActivity(intent);
+        //startActivity(new Intent(getApplicationContext(),MapsActivity.class));
     }
 }

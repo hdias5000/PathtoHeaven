@@ -1,7 +1,10 @@
 package com.example.jay1805.itproject.User;
 
+<<<<<<< HEAD
+=======
 import android.content.BroadcastReceiver;
 import android.content.Context;
+>>>>>>> master
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -27,6 +30,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sinch.android.rtc.calling.Call;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,13 +38,15 @@ import java.util.HashMap;
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserListViewHolder>{
 
     SinchService.SinchServiceInterface sinchServiceInterface;
+    SlidingUpPanelLayout slidingLayout;
     ArrayList<UserObject> userList;
     ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
     ArrayList<String> ToUserChatIDs = new ArrayList<String>();
     private String currentShareID = "";
 
-    public UserListAdapter(ArrayList<UserObject> userList, SinchService.SinchServiceInterface sinchServiceInterface) {
+    public UserListAdapter(ArrayList<UserObject> userList, SinchService.SinchServiceInterface sinchServiceInterface, SlidingUpPanelLayout slidingLayout) {
         this.userList = userList;
+        this.slidingLayout = slidingLayout;
         this.sinchServiceInterface = sinchServiceInterface;
     }
 
@@ -84,6 +90,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
         holder.chatButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
+                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
                 FirebaseDatabase.getInstance().getReference().child("user").child(userList.get(position).getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
