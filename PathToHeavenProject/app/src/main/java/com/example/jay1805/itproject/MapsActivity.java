@@ -63,6 +63,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.onesignal.OneSignal;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.InputStream;
@@ -119,6 +120,16 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         setContentView(R.layout.activity_maps);
         //set layout slide listener
         slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
+
+        OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
+        OneSignal.setSubscription(true);
+        OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
+            @Override
+            public void idsAvailable(String userId, String registrationId) {
+                FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("notificationKey").setValue(userId);
+            }
+        });
+        OneSignal.setInFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification);
 
         setButtonListeners();
         gettingPermissions();
@@ -482,6 +493,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         }
 
         if (id == R.id.Logout) {
+            OneSignal.setSubscription(false);
             FirebaseAuth.getInstance().signOut();
             // make sure the user is who he says he is
             Intent intent = new Intent(getApplicationContext(),LoginActivity.class);

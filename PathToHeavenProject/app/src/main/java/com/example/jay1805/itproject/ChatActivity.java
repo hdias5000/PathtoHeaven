@@ -17,7 +17,6 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -33,6 +32,7 @@ import android.widget.TextView;
 import com.example.jay1805.itproject.Chat.MediaAdapter;
 import com.example.jay1805.itproject.Chat.MessageAdapter;
 import com.example.jay1805.itproject.Chat.MessageObject;
+import com.example.jay1805.itproject.Utilities.SendNotifications;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -44,6 +44,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.onesignal.OneSignal;
 import com.sinch.android.rtc.calling.Call;
 
 import java.io.InputStream;
@@ -64,6 +65,7 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
     DatabaseReference chatDB;
     DatabaseReference nameOfSenderDB;
     String nameOfSender;
+    String notificationKeyOfReciever;
     DatabaseReference myRef;
     private String chatToId ;
     String currentShareID;
@@ -199,6 +201,7 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
         }
 
         if (id == R.id.Logout) {
+            OneSignal.setSubscription(false);
             FirebaseAuth.getInstance().signOut();
             // make sure the user is who he says he is
             Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
@@ -211,6 +214,30 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
     }
 
     private void getChatMessages() {
+
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+
+                    if(!childsnapshot.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+
+                        for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
+
+                            if(chatsnapshot.getKey().equals(chatID)) {
+                                notificationKeyOfReciever = childsnapshot.child("notificationKey").getValue().toString();
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         nameOfSenderDB.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -305,10 +332,11 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
 
             newMessageMap.put("isGpsShared", "false");
 
-            if(!mMessage.getText().toString().isEmpty())
+            if(!mMessage.getText().toString().isEmpty()) {
+                System.out.println("notificationKey is" + notificationKeyOfReciever);
+                new SendNotifications(mMessage.getText().toString(), nameOfSender, notificationKeyOfReciever, chatID);
                 newMessageMap.put("text", mMessage.getText().toString());
-
-            //newMessageDB.updateChildren(newMessageMap);
+            }
 
             if(!mediaUriList.isEmpty()) {
                 for(String mediaUri : mediaUriList) {
