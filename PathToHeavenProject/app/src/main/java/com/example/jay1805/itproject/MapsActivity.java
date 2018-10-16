@@ -148,7 +148,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             }
         });
 
-//        hideSliders();
 
         OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
         OneSignal.setSubscription(true);
@@ -234,7 +233,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
 
     }
-
 
     @Override
     public void onServiceConnected() {
