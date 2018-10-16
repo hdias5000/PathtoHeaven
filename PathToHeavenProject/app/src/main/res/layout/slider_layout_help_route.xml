@@ -111,19 +111,22 @@
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text= "Elder To Destination"/>
+            android:text= "Elder To Destination"
+            android:id="@+id/B_ElderToDestination"/>
 
         <Button
             android:layout_width="150dp"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="Route To Elder"/>
+            android:text="Route To Elder"
+            android:id="@+id/B_RouteToElder1"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:text="Send Route"/>
+            android:text="Send Route"
+            android:id="@+id/B_SendRoute"/>
 
 
     </LinearLayout>

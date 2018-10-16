@@ -110,16 +110,23 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
 
     private String modeOfTransport;
 
+    private boolean helpMode;
+
     LatLng currentDestination;
     Marker marker;
+
     Marker markerOfElderly;
+    LatLng locationOfElderly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        helpMode = false;
         //set layout slide listener
         slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
+
+//        hideSliders();
 
         OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
         OneSignal.setSubscription(true);
@@ -186,6 +193,18 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
 
     }
 
+    private void hideSliders(){
+        LinearLayout route = findViewById(R.id.route);
+        LinearLayout sos = findViewById(R.id.sosSlider);
+        LinearLayout help = findViewById(R.id.help);
+        LinearLayout helpRoute = findViewById(R.id.helpRoute);
+        route.setVisibility(View.GONE);
+        sos.setVisibility(View.GONE);
+        help.setVisibility(View.GONE);
+        helpRoute.setVisibility(View.GONE);
+        slidingLayout.setPanelHeight(120);
+    }
+
     private void loadMapFragment() {
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -198,6 +217,22 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                 mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 onRouteSuccess, new IntentFilter("RouteSuccess"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        final Button stopButton = findViewById(R.id.B_StopGPSShare);
+                        stopButton.setVisibility(View.VISIBLE);
+                        stopButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Intent intent = new Intent("STOP GPS");
+                                LocalBroadcastManager.getInstance(view.getContext()).sendBroadcast(intent);
+                                stopButton.setVisibility(View.GONE);
+                            }
+                        });
+                    }
+                }, new IntentFilter("GPS ID"));
     }
 
     private void gettingPermissions() {
@@ -206,6 +241,14 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                     new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
                     1);
         }
+    }
+
+    private void setDestinationMarker(){
+        destMarkerOptions = new MarkerOptions();
+        destMarkerOptions.position(currentDestination);
+        destMarkerOptions.title("Your search results");
+        destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        destinationMarker = map.addMarker(destMarkerOptions,currentDestination);
     }
 
     private void createAutoCompleteSearch() {
@@ -218,23 +261,28 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
             public void onPlaceSelected(Place place) {
                 currentLocation.hideCurrentLocation();
                 final LatLng latLngLoc = place.getLatLng();
-                destMarkerOptions = new MarkerOptions();
                 if(marker!=null){
                     marker.remove();
                 }
                 map.clearMap();
                 currentDestination = latLngLoc;
 
-                destMarkerOptions.position(currentDestination);
-                destMarkerOptions.title("Your search results");
-                destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                setDestinationMarker();
 
-                destinationMarker = map.addMarker(destMarkerOptions,currentDestination);
-                modeOfTransport = "driving";
-                LinearLayout routeSlider = findViewById(R.id.route);
-                routeSlider.setVisibility(View.VISIBLE);
-                LinearLayout helpSlider = findViewById(R.id.sosSlider);
-                helpSlider.setVisibility(View.GONE);
+                modeOfTransport = "walking";
+
+                hideSliders();
+
+                if (helpMode){
+                    slidingLayout.setPanelHeight(400);
+                    LinearLayout helpRouteSlider = findViewById(R.id.helpRoute);
+                    helpRouteSlider.setVisibility(View.VISIBLE);
+                }else {
+                    LinearLayout routeSlider = findViewById(R.id.route);
+                    routeSlider.setVisibility(View.VISIBLE);
+                }
+
+
                 slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 
             }
@@ -322,7 +370,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                    makeToast("Tracking has Stopped");
+                    helpMode = false;
+                    startActivity(new Intent(getApplicationContext(), MapsActivity.class));
                 }
             });
 
@@ -349,24 +399,30 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                     }
                 }
 
+                helpMode = true;
+
                 if (markerOfElderly!=null){
                     markerOfElderly.remove();
                 }
 
                 Log.d("Coord", "lat is: " +newLatitude);
                 Log.d("Coord", "long is: " +newLongitude);
-                LatLng latLng = new LatLng(newLatitude,newLongitude);
-                MarkerOptions mo = new MarkerOptions();
-                mo.position(latLng);
-                mo.title("Location of Elderly");
-                mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                markerOfElderly = map.addMarker(mo,latLng);
+                locationOfElderly= new LatLng(newLatitude,newLongitude);
+
+                setMarkerForElderlyPerson();
+
+                hideSliders();
+                slidingLayout.setPanelHeight(240);
+                LinearLayout route = findViewById(R.id.help);
+                route.setVisibility(View.VISIBLE);
+                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 makeToast("Tracking has Stopped");
+                helpMode = false;
                 startActivity(new Intent(getApplicationContext(), MapsActivity.class));
             }
         });
@@ -377,6 +433,14 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
 //                makeToast("String don't exist.");
 //            }
 
+    }
+
+    private void setMarkerForElderlyPerson(){
+        MarkerOptions mo = new MarkerOptions();
+        mo.position(locationOfElderly);
+        mo.title("Location of Elderly");
+        mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        markerOfElderly = map.addMarker(mo,locationOfElderly);
     }
 
     private void getContactList() {
@@ -555,8 +619,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
     }
 
     public void onClick(View v) {
-        double latitude = currentLocation.getLatitude();
-        double longitude = currentLocation.getLongitude();
 
         switch (v.getId()) {
 
@@ -576,27 +638,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
 //                removeRoute();
                 map.clearMap();
                 destinationMarker = map.addMarker(destMarkerOptions,currentDestination);
-                Object dataTransfer[] = new Object[3];
-                String url = urlCreator.getDirectionsUrl(latitude, longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
-                Log.d("LOL",url);
-                currentRouteData = new RouteData();
-                GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData, new OnEventListener() {
-                    @Override
-                    public void onSuccess(Object object) {
-                        printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-                        makeToast("Route Not Found");
-                    }
-                });
-                dataTransfer[0] = map;
-                dataTransfer[1] = url;
-                dataTransfer[2] = currentDestination;
-                getDirectionsData.execute(dataTransfer);
-                sendMessageToActivity(url,currentDestination);
-                route = getDirectionsData.getRoute();
+                LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                findRoute(location,currentDestination);
 //                while (!getDirectionsData.isSuccess()){
 //
 //                }
@@ -605,6 +648,30 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                 break;
         }
 
+    }
+
+    private void findRoute(LatLng currentLocation, LatLng currentDestination){
+        Object dataTransfer[] = new Object[3];
+        String url = urlCreator.getDirectionsUrl(currentLocation.latitude, currentLocation.longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
+        Log.d("LOL",url);
+        currentRouteData = new RouteData();
+        GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData, new OnEventListener() {
+            @Override
+            public void onSuccess(Object object) {
+                printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                makeToast("Route Not Found");
+            }
+        });
+        dataTransfer[0] = map;
+        dataTransfer[1] = url;
+        dataTransfer[2] = currentDestination;
+        getDirectionsData.execute(dataTransfer);
+        sendMessageToActivity(url, currentDestination);
+        route = getDirectionsData.getRoute();
     }
 
     private ArrayList change(ArrayList step){
@@ -709,14 +776,40 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         SosButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                LinearLayout routeSlider = findViewById(R.id.route);
-                routeSlider.setVisibility(View.GONE);
+                hideSliders();
                 LinearLayout helpSlider = findViewById(R.id.sosSlider);
                 helpSlider.setVisibility(View.VISIBLE);
                 slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             }
         });
+
+
+        Button routeToElderlyButton = findViewById(R.id.B_RouteToElder);
+        routeToElderlyButton.setOnClickListener(alrightalrightalright);
+        Button routeToElderlyButton1 = findViewById(R.id.B_RouteToElder1);
+        routeToElderlyButton1.setOnClickListener(alrightalrightalright);
+
+        Button elderToDestination = findViewById(R.id.B_ElderToDestination);
+        elderToDestination.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                map.clearMap();
+                setMarkerForElderlyPerson();
+                setDestinationMarker();
+                findRoute(locationOfElderly, currentDestination);
+            }
+        });
     }
+
+    View.OnClickListener alrightalrightalright = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            map.clearMap();
+            setMarkerForElderlyPerson();
+            LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+            findRoute(location,locationOfElderly);
+        }
+    };
 
     private void modesOfTransportListeners() {
         final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);

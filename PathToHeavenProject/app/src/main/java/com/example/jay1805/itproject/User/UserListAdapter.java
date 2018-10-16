@@ -162,7 +162,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
                                     notification.put("shareID",shareID);
                                     notification.put("notificationKey",userList.get(position).getNotificationKey());
                                     new SendNotifications(notification);
+
                                 }
+
                             }
                         }, new IntentFilter("GPS ID"));
                 Intent intent = new Intent("UPLOAD GPS");
@@ -171,20 +173,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
         });
     }
 
-//    private BroadcastReceiver sendID = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//            String shareID = intent.getStringExtra("ID");
-//            if (!currentShareID.equals(shareID)){
-//                HashMap<String,String> notification = new HashMap<>();
-//                notification.put("name",userList.get());
-//                notification.put("message","");
-//                notification.put("shareID",shareID);
-//                notification.put("notificationKey","");
-//                new SendNotifications(notification);
-//            }
-//        }
-//    };
+
 
     @Override
     public int getItemCount() {

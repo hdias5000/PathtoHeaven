@@ -139,6 +139,16 @@
                 android:layout_height="match_parent"
                 layout="@layout/slider_layout_sos"/>
 
+            <include android:id="@+id/help"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                layout="@layout/slider_layout_help"/>
+
+            <include android:id="@+id/helpRoute"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                layout="@layout/slider_layout_help_route"/>
+
         </LinearLayout>
 
 
