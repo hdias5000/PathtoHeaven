@@ -21,15 +21,9 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-<<<<<<< HEAD
-=======
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-
 import android.telephony.TelephonyManager;
-
->>>>>>> master
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -69,22 +63,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-<<<<<<< HEAD
-import com.onesignal.OSNotificationAction;
-import com.onesignal.OSNotificationOpenResult;
 import com.onesignal.OneSignal;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-=======
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
->>>>>>> master
 
 import java.io.InputStream;
 import java.util.ArrayList;
-
 import java.util.HashMap;
-
 import java.util.List;
 
 
@@ -136,6 +120,16 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         setContentView(R.layout.activity_maps);
         //set layout slide listener
         slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
+
+        OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
+        OneSignal.setSubscription(true);
+        OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
+            @Override
+            public void idsAvailable(String userId, String registrationId) {
+                FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("notificationKey").setValue(userId);
+            }
+        });
+        OneSignal.setInFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification);
 
         setButtonListeners();
         gettingPermissions();
@@ -213,20 +207,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         }
     }
 
-<<<<<<< HEAD
-        OneSignal.startInit(this).init();
-        OneSignal.setSubscription(true);
-        OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
-            @Override
-            public void idsAvailable(String userId, String registrationId) {
-                FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("notificationKey").setValue(userId);
-            }
-        });
-        OneSignal.setInFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification);
-
-=======
     private void createAutoCompleteSearch() {
->>>>>>> master
         placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
         placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").build());

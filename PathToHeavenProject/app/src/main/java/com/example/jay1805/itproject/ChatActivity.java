@@ -17,7 +17,6 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -49,7 +48,6 @@ import com.onesignal.OneSignal;
 import com.sinch.android.rtc.calling.Call;
 
 import java.io.InputStream;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -335,7 +333,8 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
             newMessageMap.put("isGpsShared", "false");
 
             if(!mMessage.getText().toString().isEmpty()) {
-                new SendNotifications(mMessage.getText().toString(), nameOfSender, notificationKeyOfReciever);
+                System.out.println("notificationKey is" + notificationKeyOfReciever);
+                new SendNotifications(mMessage.getText().toString(), nameOfSender, notificationKeyOfReciever, chatID);
                 newMessageMap.put("text", mMessage.getText().toString());
             }
 

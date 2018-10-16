@@ -57,14 +57,14 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:16.0.1'
     implementation 'com.google.firebase:firebase-storage:16.0.1'
     implementation 'com.onesignal:OneSignal:3.8.3'
+    implementation 'com.sothree.slidinguppanel:library:3.0.0'
     implementation 'com.github.bumptech.glide:glide:4.8.0'
     implementation 'com.facebook.fresco:fresco:1.10.0'
     implementation 'com.github.stfalcon:frescoimageviewer:0.5.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
 
-    implementation(name: 'sinch-android-rtc', version: '+', ext: 'aar')
 
-    implementation 'com.sothree.slidinguppanel:library:3.0.0'
+    implementation(name: 'sinch-android-rtc', version: '+', ext: 'aar')
 
 }
 
