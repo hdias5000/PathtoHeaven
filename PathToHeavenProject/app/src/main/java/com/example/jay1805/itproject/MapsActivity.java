@@ -473,8 +473,15 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         }
     }
 
-    private void setInitialInfoForHelp(String userID) {
-        FirebaseDatabase.getInstance().getReference().child("user").child(userID).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+    private void setInitialInfoForHelp(final String elderlyID) {
+        ImageButton callHelper;
+        ImageButton chatHelper;
+        ImageButton callHelper1;
+        ImageButton chatHelper1;
+        final ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
+        final ArrayList<String> ToUserChatIDs = new ArrayList<String>();
+
+        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 nameOfElderly = dataSnapshot.getValue().toString();
@@ -489,6 +496,97 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         nameTextView.setText(nameOfElderly);
         nameTextView = findViewById(R.id.name1);
         nameTextView.setText(nameOfElderly);
+
+        callHelper = findViewById(R.id.callButtonHelp);
+        chatHelper = findViewById(R.id.chatButtonHelp);
+        callHelper1 = findViewById(R.id.callButtonHelp1);
+        chatHelper1 = findViewById(R.id.chatButtonHelp1);
+
+        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
+                    CurrentUserChatIDs.add(childSnapShot.getKey());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        View.OnClickListener callListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Call call = getSinchServiceInterface().callUser(elderlyID);
+                String callId = call.getCallId();
+
+                Intent callScreen = new Intent(v.getContext(), CallScreenActivity.class);
+                callScreen.putExtra(SinchService.CALL_ID, callId);
+                startActivity(callScreen);
+            }
+        };
+
+        callHelper.setOnClickListener(callListener);
+        callHelper1.setOnClickListener(callListener);
+
+
+        View.OnClickListener chatListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").addListenerForSingleValueEvent(
+                        new ValueEventListener() {
+                              @Override
+                              public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                  String chatIDKey = null;
+
+                                  for (DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
+                                      ToUserChatIDs.add(childSnapShot.getKey());
+                                  }
+
+                                  Boolean chatExists = false;
+                                  for(String MyChatIDs : CurrentUserChatIDs) {
+                                      for(String ToChatIDs : ToUserChatIDs) {
+                                          if(MyChatIDs.equals(ToChatIDs)) {
+                                              chatIDKey = MyChatIDs;
+                                              chatExists = true;
+                                          }
+                                      }
+                                  }
+
+                                  if(chatExists.equals(false)) {
+                                      String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+                                      CurrentUserChatIDs.add(key);
+                                      ToUserChatIDs.add(key);
+                                      chatIDKey = key;
+                                      FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("chat").child(key).setValue(true);
+                                      FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").child(key).setValue(true);
+                                  }
+
+                                  else {
+                                      Toast.makeText(getApplicationContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
+                                  }
+
+                                  Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
+                                  Bundle bundle = new Bundle();
+                                  bundle.putString("chatID", chatIDKey);
+                                  intent.putExtras(bundle);
+                                  getApplicationContext().startActivity(intent);
+
+                              }
+
+                              @Override
+                              public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                              }
+                        }
+                );}};
+        chatHelper.setOnClickListener(chatListener);
+        chatHelper1.setOnClickListener(chatListener);
+
+
     }
 
     private void setGPSSharing(String shareID){
