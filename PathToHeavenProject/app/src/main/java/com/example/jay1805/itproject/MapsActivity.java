@@ -16,23 +16,18 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jay1805.itproject.Map.CurrentLocation;
@@ -77,16 +72,13 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class MapsActivity extends BaseActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
+public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     static final String TAG = MapsActivity.class.getSimpleName();
 
     private CurrentLocation currentLocation;
     private Map map;
     private Location lastKnownLoc;
-    private DrawerLayout myDrawerLayout;
-    private ActionBarDrawerToggle myToggle;
-    private NavigationView myView;
 
     private AudioPlayer mAudioPlayer;
     private String mCallId;
@@ -112,6 +104,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
     private SlidingUpPanelLayout slidingLayout;
     private FloatingActionButton SosButton;
     private Button VolunteersButton;
+    private Button ProfileButton;
+    private Button LogoutButton;
     ///////////////////////////////////////
 
     private Marker destinationMarker;
@@ -138,7 +132,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         //set layout slide listener
         slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
 
-<<<<<<< HEAD
         endCallButton = findViewById(R.id.endCallButton);
         mAudioPlayer = new AudioPlayer(this);
         mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
@@ -154,9 +147,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                 endCall();
             }
         });
-=======
+
 //        hideSliders();
->>>>>>> master
 
         OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
         OneSignal.setSubscription(true);
@@ -172,7 +164,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         setButtonListeners();
         gettingPermissions();
         createAutoCompleteSearch();
-        creatingMenu();
         loadMapFragment();
         gpsSharing();
         setUpBroadcastReceivers();
@@ -180,8 +171,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         urlCreator = new URLCreator();
         lastKnownLoc = null;
 
-
         VolunteersButton = findViewById(R.id.volunteersButton);
+        ProfileButton = findViewById(R.id.profileButton);
+        LogoutButton = findViewById(R.id.logoutButton);
 
         contactList = new ArrayList<>();
         userList = new ArrayList<>();
@@ -220,10 +212,30 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
             }
         });
 
+        ProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), MyProfileActivity.class));
+            }
+        });
+
+        LogoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                // make sure the user is who he says he is
+                Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
+                intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return;
+            }
+        });
+
 
     }
 
-<<<<<<< HEAD
+
     @Override
     public void onServiceConnected() {
         Call call = getSinchServiceInterface().getCall(mCallId);
@@ -231,7 +243,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
             call.addCallListener(new SinchCallListener());
         } else {
             Log.e(TAG, "Started with invalid callId, aborting.");
-//            finish();
         }
     }
 
@@ -284,7 +295,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
             // Send a push through your push provider here, e.g. GCM
         }
-=======
+    }
+
     private void hideSliders(){
         LinearLayout route = findViewById(R.id.route);
         LinearLayout sos = findViewById(R.id.sosSlider);
@@ -295,7 +307,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         help.setVisibility(View.GONE);
         helpRoute.setVisibility(View.GONE);
         slidingLayout.setPanelHeight(120);
->>>>>>> master
     }
 
     private void loadMapFragment() {
@@ -401,44 +412,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                         modeOfTransport = "driving";
                     }
                 });
-    }
-
-    private void creatingMenu() {
-        myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-        myToggle = new ActionBarDrawerToggle(MapsActivity.this, myDrawerLayout, R.string.open, R.string.close);
-        myDrawerLayout.addDrawerListener(myToggle);
-        myToggle.syncState();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_viewID);
-        navigationView.setNavigationItemSelectedListener(this);
-        View headerView = navigationView.getHeaderView(0);
-        final ImageView myProfileImage = headerView.findViewById(R.id.headerImage);
-        final TextView myHeaderName = headerView.findViewById(R.id.headerTextView);
-        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Profile Picture").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getValue() != null) {
-                    new DownloadImageTask(myProfileImage)
-                            .execute(dataSnapshot.getValue().toString());
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                myHeaderName.setText(dataSnapshot.getValue().toString());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
     }
 
     private void gpsSharing() {
@@ -646,49 +619,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         };
     }
     ///////////////////////////////////////////////////////
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(myToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
-        int id = item.getItemId();
-
-        if (id == R.id.Chats) {
-            startActivity(new Intent(getApplicationContext(), ChatMainPageActivity.class));
-        }
-
-        if (id == R.id.Profile) {
-            startActivity(new Intent(getApplicationContext(), MyProfileActivity.class));
-        }
-
-        if (id == R.id.Maps) {
-            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
-        }
-
-        if (id == R.id.FindUser) {
-            startActivityForResult(new Intent(getApplicationContext(), FindUserActivity.class), 1);
-        }
-
-        if (id == R.id.Logout) {
-            OneSignal.setSubscription(false);
-            FirebaseAuth.getInstance().signOut();
-            // make sure the user is who he says he is
-            Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
-            intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            finish();
-        }
-
-        return false;
-    }
-
 
 
     /**

@@ -22,7 +22,7 @@
         android:background="@drawable/chat_rounded_rect_mine"
         android:padding="@dimen/padding_small"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         tools:text="Noice man !" />
 
     <TextView
@@ -36,7 +36,7 @@
         android:maxEms="1"
         android:textAllCaps="true"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textStyle="bold"
         tools:text="a" />
 
@@ -49,14 +49,5 @@
         android:layout_marginStart="191dp"
         android:layout_toStartOf="@+id/sender"
         android:text="view media" />
-
-    <Button
-        android:id="@+id/helpMessage_mine"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/message"
-        android:layout_marginStart="75dp"
-        android:text="Help Button" />
 
 </RelativeLayout>

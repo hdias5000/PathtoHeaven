@@ -1,10 +1,7 @@
 package com.example.jay1805.itproject.User;
 
-<<<<<<< HEAD
-=======
 import android.content.BroadcastReceiver;
 import android.content.Context;
->>>>>>> master
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -78,12 +75,6 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
     @Override
     public void onBindViewHolder(@NonNull final UserListViewHolder holder, final int position) {
 
-        if(position%2 == 0) {
-            holder.contactLayout.setBackgroundResource(R.color.green_200);
-        }
-        else {
-            holder.contactLayout.setBackgroundResource(R.color.yellow_200);
-        }
         holder.mName.setText(userList.get(position).getName());
         holder.mPhone.setText(userList.get(position).getPhone());
 

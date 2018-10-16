@@ -3,7 +3,8 @@
 <LinearLayout android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:background="@drawable/custom_border">
     <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical"
@@ -27,7 +28,7 @@
             android:text="phone"
             android:textSize="20dp"
             android:textStyle="bold"
-            android:textColor="@color/blue_800"
+            android:textColor="@color/black"
             android:id="@+id/phone"/>
     </LinearLayout>
 
@@ -39,19 +40,22 @@
         <ImageButton
             android:layout_width="75dp"
             android:layout_height="75dp"
-            android:src="@drawable/ic_chats"
+            android:src="@drawable/ic_chat_white_24dp"
+            android:backgroundTint="@color/grey_700"
             android:id="@+id/chatButton" />
 
         <ImageButton
             android:layout_width="75dp"
             android:layout_height="75dp"
-            android:src="@drawable/ic_call_black_24dp"
+            android:src="@drawable/ic_call_white_24dp"
+            android:backgroundTint="@color/grey_700"
             android:id="@+id/callButton"/>
 
         <ImageButton
             android:layout_width="75dp"
             android:layout_height="75dp"
-            android:src="@drawable/ic_contacts"
+            android:src="@drawable/ic_people_white_24dp"
+            android:backgroundTint="@color/grey_700"
             android:id="@+id/helpButton"/>
 
     </LinearLayout>
