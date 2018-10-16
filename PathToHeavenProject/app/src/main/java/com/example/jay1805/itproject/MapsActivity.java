@@ -153,7 +153,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                 endCall();
             }
         });
-//        hideSliders();
+
 
         OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
         OneSignal.setSubscription(true);
