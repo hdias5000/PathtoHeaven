@@ -73,7 +73,8 @@
 
         <activity android:name=".ProfilePageActivity" />
         <activity android:name=".MyProfileActivity" />
-        <activity android:name=".NotificationActivity"></activity>
+        <activity android:name=".NotificationActivity" />
+        <activity android:name=".VolunteerRedirect"></activity>
     </application>
 
 </manifest>

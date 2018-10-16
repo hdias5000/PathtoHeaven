@@ -138,9 +138,10 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
                                 System.out.println("@@@@@@@@@@@ inside requested");
                                 java.util.Map map = new HashMap<>();
                                 final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(childsnapshot.getKey());
+                                System.out.println("^^^^^^^^^^^^"+FirebaseDatabase.getInstance().getReference().child("user").child(childsnapshot.getKey()).toString());
                                 map.put("Requested", "True");
-                               // map.put("RequestUserID",
-                                 //       FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid().toString()));
+                                map.put("ElderlyIDRequested", FirebaseAuth.getInstance().getCurrentUser().getUid().toString());
+                                System.out.println("ELDERLY WOO############ :"+childsnapshot.getKey().toString());
                                 userDB.updateChildren(map);
 
                             }

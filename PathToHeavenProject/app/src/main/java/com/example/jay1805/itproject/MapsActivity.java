@@ -116,11 +116,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         VolunteersButton = findViewById(R.id.volunteersButton);
 
 
+        createVolunteerChildrenInDB();
 
-        java.util.Map hmap = new HashMap<>();
-        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        hmap.put("Requested", "False");
-        userDB.updateChildren(hmap);
 
         SosButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -255,7 +252,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         startActivity(new Intent(getApplicationContext(), NotificationActivity.class));
                         java.util.Map map = new HashMap<>();
                         final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-                        map.put("Requested", "False");
+
+                        // map.put("Requested", "False");
+                       // map.put("ElderlyIDRequested","");
                         userDB.updateChildren(map);
                     }
                 }
@@ -334,6 +333,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         }
 
+    }
+
+    private void createVolunteerChildrenInDB() {
+        java.util.Map hmap = new HashMap<>();
+        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        hmap.put("Requested", "False");
+        hmap.put("ElderlyIDRequested","");
+        userDB.updateChildren(hmap);
     }
 
     ///////////////////////////////////////////////////////

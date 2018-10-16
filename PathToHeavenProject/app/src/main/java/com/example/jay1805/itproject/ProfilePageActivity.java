@@ -174,6 +174,7 @@ public class ProfilePageActivity extends AppCompatActivity {
             if (rb.getText().toString().equals("Helper")) {
                 System.out.println( "HELLLLLLLLLOOO$$$$$$$$$$$$$$$$$$$$$");
                 userMap.put("Requested", "False");
+                userMap.put("ElderlyIDRequested","");
             }
         }
         if(!selectedImageUri.isEmpty()) {
