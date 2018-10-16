@@ -1,8 +1,15 @@
 package com.example.jay1805.itproject.User;
 
+<<<<<<< HEAD
+=======
+import android.content.BroadcastReceiver;
+import android.content.Context;
+>>>>>>> master
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +23,7 @@ import com.example.jay1805.itproject.CallScreenActivity;
 import com.example.jay1805.itproject.ChatActivity;
 import com.example.jay1805.itproject.R;
 import com.example.jay1805.itproject.SinchService;
+import com.example.jay1805.itproject.Utilities.SendNotifications;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -25,6 +33,7 @@ import com.sinch.android.rtc.calling.Call;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserListViewHolder>{
 
@@ -33,6 +42,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
     ArrayList<UserObject> userList;
     ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
     ArrayList<String> ToUserChatIDs = new ArrayList<String>();
+    private String currentShareID = "";
 
     public UserListAdapter(ArrayList<UserObject> userList, SinchService.SinchServiceInterface sinchServiceInterface, SlidingUpPanelLayout slidingLayout) {
         this.userList = userList;
@@ -141,7 +151,36 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
                 v.getContext().startActivity(callScreen);
             }
         });
+
+        holder.helpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Context v = view.getContext();
+                LocalBroadcastManager.getInstance(v).registerReceiver(
+                        new BroadcastReceiver() {
+                            @Override
+                            public void onReceive(Context context, Intent intent) {
+                                String shareID = intent.getStringExtra("ID");
+                                if (!currentShareID.equals(shareID)){
+                                    HashMap<String,String> notification = new HashMap<>();
+                                    notification.put("type","help");
+                                    notification.put("name",userList.get(position).getName());
+                                    notification.put("message","Click Here For Nudes");
+                                    notification.put("shareID",shareID);
+                                    notification.put("notificationKey",userList.get(position).getNotificationKey());
+                                    new SendNotifications(notification);
+
+                                }
+
+                            }
+                        }, new IntentFilter("GPS ID"));
+                Intent intent = new Intent("UPLOAD GPS");
+                LocalBroadcastManager.getInstance(v).sendBroadcast(intent);
+            }
+        });
     }
+
+
 
     @Override
     public int getItemCount() {

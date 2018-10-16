@@ -18,8 +18,10 @@
         sothree:umanoOverlay="true"
         sothree:umanoPanelHeight="50dp"
         sothree:umanoInitialState="hidden"
-        sothree:umanoParalaxOffset="100dp"
-        sothree:umanoShadowHeight="10dp">
+        sothree:umanoShadowHeight="10dp"
+        sothree:umanoParalaxOffset="100dp">
+        <!--sothree:umanoFadeColor="@android:color/transparent"-->
+
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
@@ -81,11 +83,19 @@
             <RelativeLayout
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content">
+
                 <Button
+                    android:id="@+id/B_StopGPSShare"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="115dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginEnd="115dp"
                     android:text="Stop Sharing GPS"
-                    android:id="@+id/B_StopGPSShare"/>
+                    android:visibility="gone" />
 
                 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
                     xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -137,6 +147,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 layout="@layout/slider_layout_sos"/>
+
+            <include android:id="@+id/help"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                layout="@layout/slider_layout_help"/>
+
+            <include android:id="@+id/helpRoute"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                layout="@layout/slider_layout_help_route"/>
 
         </LinearLayout>
 

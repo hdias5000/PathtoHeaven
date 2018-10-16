@@ -67,6 +67,7 @@ public class ChatActivity extends Activity implements NavigationView.OnNavigatio
     String notificationKeyOfReciever;
     DatabaseReference myRef;
     private String chatToId ;
+
     String currentShareID;
 
     @Override
@@ -333,7 +334,13 @@ public class ChatActivity extends Activity implements NavigationView.OnNavigatio
 
             if(!mMessage.getText().toString().isEmpty()) {
                 System.out.println("notificationKey is" + notificationKeyOfReciever);
-                new SendNotifications(mMessage.getText().toString(), nameOfSender, notificationKeyOfReciever, chatID);
+                HashMap<String,String> notification = new HashMap();
+                notification.put("type","message");
+                notification.put("message",mMessage.getText().toString());
+                notification.put("heading",nameOfSender);
+                notification.put("notificationKey",notificationKeyOfReciever);
+                notification.put("chatID",chatID);
+                new SendNotifications(notification);
                 newMessageMap.put("text", mMessage.getText().toString());
             }
 
