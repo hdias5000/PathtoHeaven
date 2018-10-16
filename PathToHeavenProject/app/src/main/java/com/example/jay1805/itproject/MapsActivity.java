@@ -126,6 +126,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
             @Override
             public void idsAvailable(String userId, String registrationId) {
+
                 FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("notificationKey").setValue(userId);
             }
         });
@@ -300,51 +301,75 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
     }
 
     private void gpsSharing() {
-        String shareID;
+        final String shareID;
         Intent intent = getIntent();
         if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID")) {
 
             shareID = intent.getExtras().getString("Share ID");
             System.out.println("Share ID is: " + shareID);
             Log.d("SHAREID", shareID);
-            // Get a reference to our posts
-//            if (FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID) != null) {
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID);
-//                if ((ref.child("latitude") != null) && (ref.child("longitude") != null)){
-            ref.addValueEventListener(new ValueEventListener() {
+
+            FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    double newLatitude = 0;
-                    double newLongitude = 0;
-                    for (DataSnapshot childSnapshot: dataSnapshot.getChildren()){
-                        if (childSnapshot.getKey().toString().equals("latitude")){
-                            newLatitude = Double.parseDouble(childSnapshot.getValue().toString());
-                        }
-                        if (childSnapshot.getKey().toString().equals("longitude")){
-                            newLongitude = Double.parseDouble(childSnapshot.getValue().toString());
-                        }
+                    if (dataSnapshot.exists()){
+                        setGPSSharing(shareID);
+                    }else{
+                        /////////send name of elderly person
+                        makeToast("Elderly Person has Disabled GPS Sharing");
                     }
-
-                    if (markerOfElderly!=null){
-                        markerOfElderly.remove();
-                    }
-
-                    Log.d("Coord", "lat is: " +newLatitude);
-                    Log.d("Coord", "long is: " +newLongitude);
-                    LatLng latLng = new LatLng(newLatitude,newLongitude);
-                    MarkerOptions mo = new MarkerOptions();
-                    mo.position(latLng);
-                    mo.title("Location of Elderly");
-                    mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                    markerOfElderly = map.addMarker(mo,latLng);
-
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
-                    makeToast("Tracking has Stopped");
+
                 }
             });
+
+        }
+    }
+
+    private void setGPSSharing(String shareID){
+
+        // Get a reference to our posts
+//            if (FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID) != null) {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID);
+//                if ((ref.child("latitude") != null) && (ref.child("longitude") != null)){
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                double newLatitude = 0;
+                double newLongitude = 0;
+                for (DataSnapshot childSnapshot: dataSnapshot.getChildren()){
+                    if (childSnapshot.getKey().toString().equals("latitude")){
+                        newLatitude = Double.parseDouble(childSnapshot.getValue().toString());
+                    }
+                    if (childSnapshot.getKey().toString().equals("longitude")){
+                        newLongitude = Double.parseDouble(childSnapshot.getValue().toString());
+                    }
+                }
+
+                if (markerOfElderly!=null){
+                    markerOfElderly.remove();
+                }
+
+                Log.d("Coord", "lat is: " +newLatitude);
+                Log.d("Coord", "long is: " +newLongitude);
+                LatLng latLng = new LatLng(newLatitude,newLongitude);
+                MarkerOptions mo = new MarkerOptions();
+                mo.position(latLng);
+                mo.title("Location of Elderly");
+                mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                markerOfElderly = map.addMarker(mo,latLng);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                makeToast("Tracking has Stopped");
+                startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+            }
+        });
 //                } else{
 //                    makeToast("missing coordinates");
 //                }
@@ -352,7 +377,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
 //                makeToast("String don't exist.");
 //            }
 
-        }
     }
 
     private void getContactList() {
@@ -370,7 +394,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
             if(!String.valueOf(phone.charAt(0)).equals("+")) {
                 phone = isoPrefix + phone;
             }
-            UserObject mContacts = new UserObject(name, phone, "");
+            UserObject mContacts = new UserObject(name, phone, "", "");
             contactList.add(mContacts);
             getUserDetails(mContacts);
         }
@@ -383,7 +407,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()) {
-                    String phone = "", name = "";
+                    String phone = "", name = "", myNotificationKey="";
                     for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
                         if(childSnapshot.child("phone").getValue() != null) {
                             phone = childSnapshot.child("phone").getValue().toString();
@@ -391,8 +415,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                         if(childSnapshot.child("name").getValue() != null) {
                             name = childSnapshot.child("name").getValue().toString();
                         }
+                        if(childSnapshot.child("notificationKey").getValue() != null) {
+                            myNotificationKey = childSnapshot.child("notificationKey").getValue().toString();
+                        }
 
-                        UserObject mUser = new UserObject(name, phone, childSnapshot.getKey());
+                        UserObject mUser = new UserObject(name, phone, childSnapshot.getKey(), myNotificationKey);
                         for(UserObject mContactIterator : contactList) {
                             if(mContactIterator.getPhone().equals(phone)) {
                                 mUser.setName(mContactIterator.getName());
