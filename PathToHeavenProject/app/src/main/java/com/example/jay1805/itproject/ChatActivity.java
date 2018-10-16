@@ -1,5 +1,6 @@
 package com.example.jay1805.itproject;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -50,7 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChatActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ChatActivity extends Activity implements NavigationView.OnNavigationItemSelectedListener {
 
     private RecyclerView ChatView, MediaView;
     private RecyclerView.Adapter ChatViewAdapter, MediaViewAdapter;

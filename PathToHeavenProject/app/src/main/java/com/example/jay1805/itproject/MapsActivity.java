@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -64,6 +65,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.onesignal.OneSignal;
+import com.sinch.android.rtc.PushPair;
+import com.sinch.android.rtc.calling.Call;
+import com.sinch.android.rtc.calling.CallEndCause;
+import com.sinch.android.rtc.calling.CallListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.io.InputStream;
@@ -73,12 +78,19 @@ import java.util.List;
 
 
 public class MapsActivity extends BaseActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener {
+
+    static final String TAG = MapsActivity.class.getSimpleName();
+
     private CurrentLocation currentLocation;
     private Map map;
     private Location lastKnownLoc;
     private DrawerLayout myDrawerLayout;
     private ActionBarDrawerToggle myToggle;
     private NavigationView myView;
+
+    private AudioPlayer mAudioPlayer;
+    private String mCallId;
+    private FloatingActionButton endCallButton;
 
     private RecyclerView DirectionsView;
     private RecyclerView.Adapter DirectionsViewAdapter;
@@ -120,6 +132,22 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         setContentView(R.layout.activity_maps);
         //set layout slide listener
         slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
+
+        endCallButton = findViewById(R.id.endCallButton);
+        mAudioPlayer = new AudioPlayer(this);
+        mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
+        if(mCallId!=null) {
+            endCallButton.setVisibility(View.VISIBLE);
+        }
+        else {
+            endCallButton.setVisibility(View.GONE);
+        }
+        endCallButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                endCall();
+            }
+        });
 
         OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
         OneSignal.setSubscription(true);
@@ -183,6 +211,68 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
         });
 
 
+    }
+
+    @Override
+    public void onServiceConnected() {
+        Call call = getSinchServiceInterface().getCall(mCallId);
+        if (call != null) {
+            call.addCallListener(new SinchCallListener());
+        } else {
+            Log.e(TAG, "Started with invalid callId, aborting.");
+//            finish();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    private void endCall() {
+        mAudioPlayer.stopProgressTone();
+        Call call = getSinchServiceInterface().getCall(mCallId);
+        if (call != null) {
+            call.hangup();
+        }
+        finish();
+    }
+
+    private class SinchCallListener implements CallListener {
+
+        @Override
+        public void onCallEnded(Call call) {
+            CallEndCause cause = call.getDetails().getEndCause();
+            Log.d(TAG, "Call ended. Reason: " + cause.toString());
+            mAudioPlayer.stopProgressTone();
+            setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
+            String endMsg = "Call ended: " + call.getDetails().toString();
+            Toast.makeText(MapsActivity.this, endMsg, Toast.LENGTH_LONG).show();
+            endCall();
+        }
+
+        @Override
+        public void onCallEstablished(Call call) {
+            Log.d(TAG, "Call established");
+            mAudioPlayer.stopProgressTone();
+            setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+        }
+
+        @Override
+        public void onCallProgressing(Call call) {
+            Log.d(TAG, "Call progressing");
+            mAudioPlayer.playProgressTone();
+        }
+
+        @Override
+        public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
+            // Send a push through your push provider here, e.g. GCM
+        }
     }
 
     private void loadMapFragment() {
