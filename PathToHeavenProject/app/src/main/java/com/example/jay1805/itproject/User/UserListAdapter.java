@@ -1,10 +1,7 @@
 package com.example.jay1805.itproject.User;
 
-<<<<<<< HEAD
-=======
 import android.content.BroadcastReceiver;
 import android.content.Context;
->>>>>>> master
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -43,6 +40,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
     ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
     ArrayList<String> ToUserChatIDs = new ArrayList<String>();
     private String currentShareID = "";
+    String name = "Elderly";
 
     public UserListAdapter(ArrayList<UserObject> userList, SinchService.SinchServiceInterface sinchServiceInterface, SlidingUpPanelLayout slidingLayout) {
         this.userList = userList;
@@ -162,11 +160,25 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
                             public void onReceive(Context context, Intent intent) {
                                 String shareID = intent.getStringExtra("ID");
                                 if (!currentShareID.equals(shareID)){
+                                    String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                                    FirebaseDatabase.getInstance().getReference().child("user").child(userID).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            name = dataSnapshot.getValue().toString();
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+                                    });
                                     HashMap<String,String> notification = new HashMap<>();
                                     notification.put("type","help");
-                                    notification.put("name",userList.get(position).getName());
+                                    ////////////////change to my name
+                                    notification.put("name",name);
                                     notification.put("message","Click Here For Nudes");
                                     notification.put("shareID",shareID);
+                                    notification.put("userID",userID);
                                     notification.put("notificationKey",userList.get(position).getNotificationKey());
                                     new SendNotifications(notification);
 

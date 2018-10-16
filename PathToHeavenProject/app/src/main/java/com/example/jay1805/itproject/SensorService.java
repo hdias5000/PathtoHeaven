@@ -201,7 +201,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d("LOC","Start Location Tracking");
+//        Log.d("LOC","Start Location Tracking");
         if (currentLocation==null){
             makeUseOfNewLocation(location);
         } else if ((location.getLatitude() != currentLocation.getLatitude()) || (location.getLongitude() != currentLocation.getLongitude())){

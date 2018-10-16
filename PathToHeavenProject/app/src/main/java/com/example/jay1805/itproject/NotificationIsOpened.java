@@ -65,13 +65,16 @@ class NotificationIsOpened implements OneSignal.NotificationOpenedHandler {
 
             case "help":
                 String shareID = "";
+                String uid = "";
                 try {
                     shareID = data.getString("shareID");
+                    uid = data.getString("userID");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 Intent intent = new Intent(context, MapsActivity.class);
                 intent.putExtra("Share ID", shareID);
+                intent.putExtra("userID",uid);
                 context.startActivity(intent);
                 break;
         }
