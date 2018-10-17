@@ -518,7 +518,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             System.out.println("Share ID is: " + shareIDOfElder);
             Log.d("SHAREID", shareIDOfElder);
 
-            FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareIDOfElder).addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareIDOfElder).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()){
@@ -526,6 +526,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                     }else{
                         /////////send name of elderly person
                         makeToast("Elderly Person has Disabled GPS Sharing");
+                        helpMode = false;
+                        startActivity(new Intent(getApplicationContext(), MapsActivity.class));
                     }
                 }
 
@@ -678,15 +680,15 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 }
 
                 helpMode = true;
-
-                            Log.d("Coord", "lat is: " +newLatitude);
-                            Log.d("Coord", "long is: " +newLongitude);
-                            LatLng latLng = new LatLng(newLatitude,newLongitude);
-                            MarkerOptions mo = new MarkerOptions();
-                            mo.position(latLng);
-                            mo.title("Location of Elderly");
-                            mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer));
-                            markerOfElderly = map.addMarker(mo,latLng);
+//
+//                            Log.d("Coord", "lat is: " +newLatitude);
+//                            Log.d("Coord", "long is: " +newLongitude);
+//                            LatLng latLng = new LatLng(newLatitude,newLongitude);
+//                            MarkerOptions mo = new MarkerOptions();
+//                            mo.position(latLng);
+//                            mo.title("Location of Elderly");
+//                            mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer));
+//                            markerOfElderly = map.addMarker(mo,latLng);
                 if (markerOfElderly!=null){
                     markerOfElderly.remove();
                 }
