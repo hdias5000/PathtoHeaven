@@ -50,6 +50,9 @@ public class CurrentLocation {
         showCurrentLocation = false;
     }
 
+    public float getBearing(){
+        return lastLocation.getBearing();
+    }
 
     public void showCurrentLocation(){
         showCurrentLocation = true;

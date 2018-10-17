@@ -82,6 +82,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     private Map map;
     private View mapView;
     private Location lastKnownLoc;
+    private LatLng currentRouteLocation;
 
     private AudioPlayer mAudioPlayer;
     private String mCallId;
@@ -131,10 +132,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     private String modeOfTransport;
 
     private boolean helpMode;
+    private boolean isEnRoute;
+    Marker marker;
 
 
     LatLng currentDestination;
-    Marker marker;
 
     HashMap sendRouteInfo = null;
     String shareIDOfElder = "";
@@ -152,7 +154,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
-
+        isEnRoute = false;
         currentPanel = "menu";
         panelHeight = new HashMap<>();
         findPanelHeights();
@@ -766,7 +768,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
-    private void findRoute(LatLng currentLocation, LatLng currentDestination){
+    private void findRoute(final LatLng currentLocation, final LatLng currentDestination){
         final LatLng curr = currentLocation;
         final LatLng dest = currentDestination;
         Object dataTransfer[] = new Object[3];
@@ -776,8 +778,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData, new OnEventListener() {
             @Override
             public void onSuccess(Object object) {
-                printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
                 map.showEntireRoute(curr,dest);
+                currentRouteLocation = currentLocation;
+                printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
             }
 
             @Override
@@ -811,6 +814,31 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     ///////////////////////add route information
     private void printRouteInfo(HashMap<String,String> routeInformation, ArrayList stepInformation) {
+        LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
+        enRouteLayout.setVisibility(View.VISIBLE);
+        findPanelHeights();
+        TextView distDur = findViewById(R.id.distanceDuration);
+        String summary="Path Information";
+        if (routeInformation.containsKey("Summary")){
+            summary = routeInformation.get("Summary");
+        }
+        distDur.setText(summary+":- "+routeInformation.get("Distance")+"("+routeInformation.get("Duration")+")");
+        final Button enRoute = findViewById(R.id.enRoute);
+        enRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isEnRoute){
+                    isEnRoute = false;
+                    map.showEntireRoute(currentLocation.getCurrentLocation(),currentDestination);
+                    enRoute.setText("En Route");
+                }else{
+                    isEnRoute=true;
+                    enRoute.setText("Terminate");
+                    map.zoomToLocation(currentLocation.getCurrentLocation());
+                    map.updateCameraBearing(currentLocation.getBearing());
+                }
+            }
+        });
         ArrayList newSteps = change(stepInformation);
         DirectionsView = findViewById(R.id.List_Directions);
         DirectionsView.setNestedScrollingEnabled(false);
@@ -843,6 +871,19 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                     map.zoomToLocation(currentLocation.getCurrentLocation());
                 }else{
                     currentLocation.changeCurrentLocation(lastKnownLoc);
+                }
+                if (isEnRoute){
+                    map.zoomToLocation(currentLocation.getCurrentLocation());
+                    map.updateCameraBearing(lastKnownLoc.getBearing());
+                    map.showLocation(new LatLng(lastKnownLoc.getLatitude(),lastKnownLoc.getLongitude()));
+                    Location prevLoc = new Location("");
+                    prevLoc.setLatitude(currentRouteLocation.latitude);
+                    prevLoc.setLongitude(currentRouteLocation.longitude);
+                    if (prevLoc.distanceTo(lastKnownLoc)>10){
+                        isEnRoute = false;
+                        findRoute(currentLocation.getCurrentLocation(),new LatLng(currentDestination.latitude,currentDestination.longitude));
+                    }
+//                map.updateCameraBearing(currentLocation.getBearing());
                 }
             }
         }
@@ -1063,7 +1104,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         showCurrentSlider();
                         map.clearMap();
                         currentLocation.showCurrentLocation();
+                        map.showLocation(currentLocation.getCurrentLocation());
                         modeOfTransport = "driving";
+                        isEnRoute = false;
                     }
                 });
     }
