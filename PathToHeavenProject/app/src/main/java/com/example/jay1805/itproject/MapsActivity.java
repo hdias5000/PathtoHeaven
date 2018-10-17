@@ -282,12 +282,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         slidingLayout.setPanelHeight(120);
     }
 
-    private void loadMapFragment() {
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-    }
+
 
     private void setUpBroadcastReceivers() {
         LocalBroadcastManager.getInstance(this).registerReceiver(
@@ -325,13 +320,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                 if (dataSnapshot.exists()){
                                     double latitude = Double.parseDouble(dataSnapshot.child("destLat").getValue().toString());
                                     double longitude = Double.parseDouble(dataSnapshot.child("destLon").getValue().toString());
-//                                    double latitude = Double.parseDouble(dataSnapshot.child("destLat").getValue().toString());
-//                                    double longitude = Double.parseDouble(dataSnapshot.child("destLon").getValue().toString());
                                     LatLng dest = new LatLng(latitude,longitude);
                                     String mode = dataSnapshot.child("mode").getValue().toString();
                                     ///////////////////change button when this is pressed
                                     modeOfTransport = mode;
                                     LatLng curLoc = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                                    setDestinationMarker(dest);
                                     findRoute(curLoc,dest);
                                 }
                             }
@@ -365,79 +359,14 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         }
     };
 
-    private void gettingPermissions() {
-        if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MapsActivity.this,
-                    new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
-                    1);
-        }
-    }
 
-    private void setDestinationMarker(){
+
+    private void setDestinationMarker(LatLng dest){
         destMarkerOptions = new MarkerOptions();
-        destMarkerOptions.position(currentDestination);
+        destMarkerOptions.position(dest);
         destMarkerOptions.title("Your search results");
         destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-        destinationMarker = map.addMarker(destMarkerOptions,currentDestination);
-    }
-
-    private void createAutoCompleteSearch() {
-        placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
-
-        placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").build());
-
-        placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                currentLocation.hideCurrentLocation();
-                final LatLng latLngLoc = place.getLatLng();
-                if(marker!=null){
-                    marker.remove();
-                }
-                map.clearMap();
-                currentDestination = latLngLoc;
-
-                setDestinationMarker();
-
-                modeOfTransport = "walking";
-
-                hideSliders();
-
-                if (helpMode){
-                    slidingLayout.setPanelHeight(400);
-                    LinearLayout helpRouteSlider = findViewById(R.id.helpRoute);
-                    helpRouteSlider.setVisibility(View.VISIBLE);
-                }else {
-                    LinearLayout routeSlider = findViewById(R.id.route);
-                    routeSlider.setVisibility(View.VISIBLE);
-                }
-
-
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-
-            }
-
-            @Override
-            public void onError(Status status) {
-                Toast.makeText(MapsActivity.this, ""+status.toString(), Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_clear_button)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        // example : way to access view from PlaceAutoCompleteFragment
-                        // ((EditText) autocompleteFragment.getView()
-                        // .findViewById(R.id.place_autocomplete_search_input)).setText("");
-                        placeAutocompleteFragment.setText("");
-                        view.setVisibility(View.GONE);
-                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-                        map.clearMap();
-                        currentLocation.showCurrentLocation();
-                        modeOfTransport = "driving";
-                    }
-                });
+        destinationMarker = map.addMarker(destMarkerOptions, dest);
     }
 
     private void gpsSharing() {
@@ -658,71 +587,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
-    private void createVolunteerChildrenInDB() {
-        java.util.Map hmap = new HashMap<>();
-        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        hmap.put("Requested", "False");
-        hmap.put("ElderlyIDRequested","");
-        userDB.updateChildren(hmap);
-    }
 
-    ///////////////////////////////////////////////////////
-
-    private void PlaceVolunteerMarkerOnMap() {
-
-        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
-                    {
-
-                        // getting volunteers' coordinates
-                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
-                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
-                            {
-                                if (volunteersnapshot2.getKey().equals("latitude")) {
-                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
-                                }
-                                if (volunteersnapshot2.getKey().equals("longitude")) {
-                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
-
-                                }
-                                if (volunteersnapshot2.getKey().equals("name")) {
-                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
-                                }
-
-
-                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
-                                {
-                                    System.out.println("current vol: "+currentVolunteerName);
-                                    MarkerOptions mo = new MarkerOptions();
-                                    LatLng volLatLng = new LatLng(volLat,volLongi);
-
-                                    mo.position(volLatLng);
-                                    mo.title(currentVolunteerName);
-                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
-                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
-
-
-                                    markers.put(map.addMarker(mo,volLatLng), childsnapshot.getKey());
-                                    currentVolunteerName = "";
-                                }
-                            }
-                        }
-                    }
-
-
-                }
-                map.setListOfVolunteers(markers);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
     ////////////////////////////////////////////////////////
 //    private View.OnClickListener onHideListener() {
 //        return new View.OnClickListener() {
@@ -742,84 +607,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         markerOfElderly = map.addMarker(mo,locationOfElderly);
     }
 
-    private void getContactList() {
-        String isoPrefix = getCountryIso();
-        Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-        while (phones.moveToNext()) {
-            String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-            String phone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
 
-            phone = phone.replace(" ", "");
-            phone = phone.replace("-", "");
-            phone = phone.replace("(", "");
-            phone = phone.replace(")", "");
-
-            if(!String.valueOf(phone.charAt(0)).equals("+")) {
-                phone = isoPrefix + phone;
-            }
-            UserObject mContacts = new UserObject(name, phone, "", "");
-            contactList.add(mContacts);
-            getUserDetails(mContacts);
-        }
-    }
-
-    private void getUserDetails(UserObject mContacts) {
-        DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user");
-        Query query = userDB.orderByChild("phone").equalTo(mContacts.getPhone());
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()) {
-                    String phone = "", name = "", myNotificationKey="";
-                    for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
-                        if(childSnapshot.child("phone").getValue() != null) {
-                            phone = childSnapshot.child("phone").getValue().toString();
-                        }
-                        if(childSnapshot.child("name").getValue() != null) {
-                            name = childSnapshot.child("name").getValue().toString();
-                        }
-                        if(childSnapshot.child("notificationKey").getValue() != null) {
-                            myNotificationKey = childSnapshot.child("notificationKey").getValue().toString();
-                        }
-
-                        UserObject mUser = new UserObject(name, phone, childSnapshot.getKey(), myNotificationKey);
-                        for(UserObject mContactIterator : contactList) {
-                            if(mContactIterator.getPhone().equals(phone)) {
-                                mUser.setName(mContactIterator.getName());
-
-                            }
-                        }
-
-                        userList.add(mUser);
-                        userListViewAdapter.notifyDataSetChanged();
-                        return;
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private String getCountryIso() {
-        String ISO = null;
-
-        TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(getApplicationContext().TELEPHONY_SERVICE);
-
-        if(telephonyManager.getNetworkCountryIso() != null) {
-            if(telephonyManager.getNetworkCountryIso().toString().equals("")) {
-                ISO = telephonyManager.getNetworkCountryIso().toString();
-            }
-        }
-        if (ISO == null) {
-            return "";
-        }
-        return CountryToPhonePrefix.getPhone(ISO);
-
-    }
 
 //    private void initializeRecyclerView() {
 //
@@ -854,25 +642,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     ///////////////////////////////////////////////////////
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            map = new Map(googleMap);
-            currentLocation = new CurrentLocation(map);
-            askForCurrentLocation();
-        }
 
-
-    }
 
     public void onClick(View v) {
 
@@ -945,6 +715,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         return stepUpdated;
     }
 
+
+    ///////////////////////add route information
     private void printRouteInfo(HashMap<String,String> routeInformation, ArrayList stepInformation) {
         ArrayList newSteps = change(stepInformation);
         DirectionsView = findViewById(R.id.List_Directions);
@@ -1035,7 +807,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             public void onClick(View view) {
                 map.clearMap();
                 setMarkerForElderlyPerson();
-                setDestinationMarker();
+                setDestinationMarker(currentDestination);
                 findRoute(locationOfElderly, currentDestination);
                 sendRouteInfo = new HashMap<String,String>();
                 sendRouteInfo.put("destLat",currentDestination.latitude);
@@ -1123,6 +895,243 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
 
+    private void gettingPermissions() {
+        if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MapsActivity.this,
+                    new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
+                    1);
+        }
+    }
+
+    private void createAutoCompleteSearch() {
+        placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
+        placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").build());
+
+        placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                currentLocation.hideCurrentLocation();
+                final LatLng latLngLoc = place.getLatLng();
+                if(marker!=null){
+                    marker.remove();
+                }
+                map.clearMap();
+                currentDestination = latLngLoc;
+
+                setDestinationMarker(currentDestination);
+
+                modeOfTransport = "walking";
+
+                hideSliders();
+
+                if (helpMode){
+                    slidingLayout.setPanelHeight(400);
+                    LinearLayout helpRouteSlider = findViewById(R.id.helpRoute);
+                    helpRouteSlider.setVisibility(View.VISIBLE);
+                }else {
+                    LinearLayout routeSlider = findViewById(R.id.route);
+                    routeSlider.setVisibility(View.VISIBLE);
+                }
+
+
+                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+
+            }
+
+            @Override
+            public void onError(Status status) {
+                Toast.makeText(MapsActivity.this, ""+status.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_clear_button)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        // example : way to access view from PlaceAutoCompleteFragment
+                        // ((EditText) autocompleteFragment.getView()
+                        // .findViewById(R.id.place_autocomplete_search_input)).setText("");
+                        placeAutocompleteFragment.setText("");
+                        view.setVisibility(View.GONE);
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                        map.clearMap();
+                        currentLocation.showCurrentLocation();
+                        modeOfTransport = "driving";
+                    }
+                });
+    }
+
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just add a marker near Sydney, Australia.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            map = new Map(googleMap);
+            currentLocation = new CurrentLocation(map);
+            askForCurrentLocation();
+        }
+
+
+    }
+    private void loadMapFragment() {
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+    }
+
+    private void createVolunteerChildrenInDB() {
+        java.util.Map hmap = new HashMap<>();
+        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        hmap.put("Requested", "False");
+        hmap.put("ElderlyIDRequested","");
+        userDB.updateChildren(hmap);
+    }
+
+    ///////////////////////////////////////////////////////
+
+    private void PlaceVolunteerMarkerOnMap() {
+
+        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
+                    {
+
+                        // getting volunteers' coordinates
+                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
+                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
+                            {
+                                if (volunteersnapshot2.getKey().equals("latitude")) {
+                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
+                                }
+                                if (volunteersnapshot2.getKey().equals("longitude")) {
+                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
+
+                                }
+                                if (volunteersnapshot2.getKey().equals("name")) {
+                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
+                                }
+
+
+                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
+                                {
+                                    System.out.println("current vol: "+currentVolunteerName);
+                                    MarkerOptions mo = new MarkerOptions();
+                                    LatLng volLatLng = new LatLng(volLat,volLongi);
+
+                                    mo.position(volLatLng);
+                                    mo.title(currentVolunteerName);
+                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
+                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
+
+
+                                    markers.put(map.addMarker(mo,volLatLng), childsnapshot.getKey());
+                                    currentVolunteerName = "";
+                                }
+                            }
+                        }
+                    }
+
+
+                }
+                map.setListOfVolunteers(markers);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void getContactList() {
+        String isoPrefix = getCountryIso();
+        Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+        while (phones.moveToNext()) {
+            String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+            String phone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+
+            phone = phone.replace(" ", "");
+            phone = phone.replace("-", "");
+            phone = phone.replace("(", "");
+            phone = phone.replace(")", "");
+
+            if(!String.valueOf(phone.charAt(0)).equals("+")) {
+                phone = isoPrefix + phone;
+            }
+            UserObject mContacts = new UserObject(name, phone, "", "");
+            contactList.add(mContacts);
+            getUserDetails(mContacts);
+        }
+    }
+
+    private void getUserDetails(UserObject mContacts) {
+        DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user");
+        Query query = userDB.orderByChild("phone").equalTo(mContacts.getPhone());
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    String phone = "", name = "", myNotificationKey="";
+                    for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                        if(childSnapshot.child("phone").getValue() != null) {
+                            phone = childSnapshot.child("phone").getValue().toString();
+                        }
+                        if(childSnapshot.child("name").getValue() != null) {
+                            name = childSnapshot.child("name").getValue().toString();
+                        }
+                        if(childSnapshot.child("notificationKey").getValue() != null) {
+                            myNotificationKey = childSnapshot.child("notificationKey").getValue().toString();
+                        }
+
+                        UserObject mUser = new UserObject(name, phone, childSnapshot.getKey(), myNotificationKey);
+                        for(UserObject mContactIterator : contactList) {
+                            if(mContactIterator.getPhone().equals(phone)) {
+                                mUser.setName(mContactIterator.getName());
+
+                            }
+                        }
+
+                        userList.add(mUser);
+                        userListViewAdapter.notifyDataSetChanged();
+                        return;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private String getCountryIso() {
+        String ISO = null;
+
+        TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+
+        if(telephonyManager.getNetworkCountryIso() != null) {
+            if(telephonyManager.getNetworkCountryIso().toString().equals("")) {
+                ISO = telephonyManager.getNetworkCountryIso().toString();
+            }
+        }
+        if (ISO == null) {
+            return "";
+        }
+        return CountryToPhonePrefix.getPhone(ISO);
+
+    }
    
 
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
