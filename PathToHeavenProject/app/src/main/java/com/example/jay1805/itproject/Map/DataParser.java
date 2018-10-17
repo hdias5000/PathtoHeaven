@@ -9,6 +9,19 @@ import java.util.HashMap;
 import java.util.List;
 
 public class DataParser {
+    private RouteData routeData;
+    private HashMap<String,String> routeInformation;
+    private ArrayList<HashMap> routeStepInformation;
+
+    public DataParser(RouteData routeData) {
+        this.routeData = routeData;
+        this.routeInformation = new HashMap<>();
+        this.routeStepInformation = new ArrayList<>();
+    }
+
+    public DataParser(){
+
+    }
 
 //    private HashMap<String,String> getDuration(JSONArray googleDirectionsJson){
 //        HashMap<String,String> googleDirectionsMap = new HashMap<>();
@@ -102,10 +115,19 @@ public class DataParser {
     public String[] parseDirections(String jsonData){
         JSONArray jsonArray = null;
         JSONObject jsonObject;
+        JSONObject jsonRoute;
+        JSONObject jsonLegs;
 
         try {
             jsonObject = new JSONObject(jsonData);
-            jsonArray = jsonObject.getJSONArray("routes").getJSONObject(0).getJSONArray("legs").getJSONObject(0).getJSONArray("steps");
+            jsonRoute = jsonObject.getJSONArray("routes").getJSONObject(0);
+            routeInformation.put("Summary", jsonRoute.getString("summary"));
+            System.out.println(routeInformation.get("Summary"));
+            jsonLegs = jsonRoute.getJSONArray("legs").getJSONObject(0);
+            routeInformation.put("Distance", jsonLegs.getJSONObject("distance").getString("text"));
+            routeInformation.put("Duration", jsonLegs.getJSONObject("duration").getString("text"));
+            routeData.setRouteInformation(routeInformation);
+            jsonArray = jsonLegs.getJSONArray("steps");
             return getPaths(jsonArray);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -125,16 +147,27 @@ public class DataParser {
                 e.printStackTrace();
             }
         }
+        routeData.setStepInformation(routeStepInformation);
         return polylines;
     }
 
     public String getPath(JSONObject jsonObject){
         String polyline = "";
+        HashMap<String,String> stepInfo = new HashMap<>();
         try {
+            stepInfo.put("Instructions",jsonObject.getString("html_instructions"));
+            stepInfo.put("Distance",jsonObject.getJSONObject("distance").getString("text"));
+            stepInfo.put("Duration",jsonObject.getJSONObject("duration").getString("text"));
+            if (!jsonObject.isNull("maneuver")) {
+                stepInfo.put("Maneuver", jsonObject.getString("maneuver"));
+            }else{
+                stepInfo.put("Maneuver","NULL");
+            }
             polyline = jsonObject.getJSONObject("polyline").getString("points");
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        routeStepInformation.add(stepInfo);
         return polyline;
     }
 

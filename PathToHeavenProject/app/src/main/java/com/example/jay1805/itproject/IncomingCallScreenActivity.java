@@ -1,10 +1,5 @@
 package com.example.jay1805.itproject;
 
-import com.sinch.android.rtc.PushPair;
-import com.sinch.android.rtc.calling.Call;
-import com.sinch.android.rtc.calling.CallEndCause;
-import com.sinch.android.rtc.calling.CallListener;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +7,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.sinch.android.rtc.PushPair;
+import com.sinch.android.rtc.calling.Call;
+import com.sinch.android.rtc.calling.CallEndCause;
+import com.sinch.android.rtc.calling.CallListener;
 
 import java.util.List;
 
@@ -58,7 +58,7 @@ public class IncomingCallScreenActivity extends BaseActivity {
         Call call = getSinchServiceInterface().getCall(mCallId);
         if (call != null) {
             call.answer();
-            Intent intent = new Intent(this, CallScreenActivity.class);
+            Intent intent = new Intent(this, MapsActivity.class);
             intent.putExtra(SinchService.CALL_ID, mCallId);
             startActivity(intent);
         } else {

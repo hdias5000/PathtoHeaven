@@ -1,9 +1,7 @@
 package com.example.jay1805.itproject;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -13,26 +11,22 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
-import android.support.design.widget.NavigationView;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.example.jay1805.itproject.Chat.MediaAdapter;
 import com.example.jay1805.itproject.Chat.MessageAdapter;
 import com.example.jay1805.itproject.Chat.MessageObject;
+import com.example.jay1805.itproject.Utilities.SendNotifications;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -44,14 +38,13 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.sinch.android.rtc.calling.Call;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChatActivity extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class ChatActivity extends Activity {
 
     private RecyclerView ChatView, MediaView;
     private RecyclerView.Adapter ChatViewAdapter, MediaViewAdapter;
@@ -64,61 +57,23 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
     DatabaseReference chatDB;
     DatabaseReference nameOfSenderDB;
     String nameOfSender;
+    String notificationKeyOfReciever;
     DatabaseReference myRef;
     private String chatToId ;
+
     String currentShareID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        callButton = findViewById(R.id.callButton);
+
         chatID = getIntent().getExtras().getString("chatID");
-        callButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callButtonClicked();
-            }
-        });
         chatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
         nameOfSenderDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("name");
 
         ImageButton mSend = findViewById(R.id.send);
-        ImageButton mAddMedia = findViewById(R.id.addMedia);
-
-        myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-        myToggle = new ActionBarDrawerToggle(ChatActivity.this, myDrawerLayout, R.string.open, R.string.close);
-        myDrawerLayout.addDrawerListener(myToggle);
-        myToggle.syncState();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_viewID);
-        navigationView.setNavigationItemSelectedListener(this);
-        View headerView = navigationView.getHeaderView(0);
-        final ImageView myProfileImage = headerView.findViewById(R.id.headerImage);
-        final TextView myHeaderName = headerView.findViewById(R.id.headerTextView);
-        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Profile Picture").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                new DownloadImageTask(myProfileImage)
-                        .execute(dataSnapshot.getValue().toString());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                myHeaderName.setText(dataSnapshot.getValue().toString());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
+        //ImageButton mAddMedia = findViewById(R.id.addMedia);
 
         mSend.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
@@ -130,12 +85,12 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
 
         myRef = FirebaseDatabase.getInstance().getReference("user");
 
-        mAddMedia.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openGallery();
-            }
-        });
+//        mAddMedia.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                openGallery();
+//            }
+//        });
 
         initializeMessage();
         initializeMedia();
@@ -169,48 +124,31 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(myToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
-        int id = item.getItemId();
-
-        if (id == R.id.Chats) {
-            startActivity(new Intent(getApplicationContext(), ChatMainPageActivity.class));
-        }
-
-        if (id == R.id.Profile) {
-            startActivity(new Intent(getApplicationContext(), MyProfileActivity.class));
-        }
-
-        if (id == R.id.Maps) {
-            startActivity(new Intent(getApplicationContext(), MapsActivity.class));
-        }
-
-        if (id == R.id.FindUser) {
-            startActivityForResult(new Intent(getApplicationContext(), FindUserActivity.class), 1);
-        }
-
-        if (id == R.id.Logout) {
-            FirebaseAuth.getInstance().signOut();
-            // make sure the user is who he says he is
-            Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
-            intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            finish();
-        }
-
-        return false;
-    }
-
     private void getChatMessages() {
+
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+
+                    if(!childsnapshot.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+
+                        for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
+
+                            if(chatsnapshot.getKey().equals(chatID)) {
+                                notificationKeyOfReciever = childsnapshot.child("notificationKey").getValue().toString();
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         nameOfSenderDB.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -305,10 +243,17 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
 
             newMessageMap.put("isGpsShared", "false");
 
-            if(!mMessage.getText().toString().isEmpty())
+            if(!mMessage.getText().toString().isEmpty()) {
+                System.out.println("notificationKey is" + notificationKeyOfReciever);
+                HashMap<String,String> notification = new HashMap();
+                notification.put("type","message");
+                notification.put("message",mMessage.getText().toString());
+                notification.put("heading",nameOfSender);
+                notification.put("notificationKey",notificationKeyOfReciever);
+                notification.put("chatID",chatID);
+                new SendNotifications(notification);
                 newMessageMap.put("text", mMessage.getText().toString());
-
-            //newMessageDB.updateChildren(newMessageMap);
+            }
 
             if(!mediaUriList.isEmpty()) {
                 for(String mediaUri : mediaUriList) {
@@ -341,45 +286,8 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
             }
     }
 
-    private void callButtonClicked() {
-        System.out.println("here"+chatID);
-        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-
-                    if(!childsnapshot.getKey().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-
-                        for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
-
-                            if(chatsnapshot.getKey().equals(chatID)) {
-                                chatToId = childsnapshot.getKey();
-                                System.out.println("chat to UID is "+chatToId);
-                                Call call = getSinchServiceInterface().callUser(chatToId);
-                                String callId = call.getCallId();
-
-                                Intent callScreen = new Intent(ChatActivity.this, CallScreenActivity.class);
-                                callScreen.putExtra(SinchService.CALL_ID, callId);
-                                startActivity(callScreen);
-                            }
-                        }
-                    }
-
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
     private void updateDatabaseWithNewMessage(DatabaseReference newMessageDB, Map newMessageMap) {
         newMessageDB.updateChildren(newMessageMap);
-//        finish();
-//        startActivity(getIntent());
         mMessage.setText(null);
         mediaUriList.clear();
         mediaIdList.clear();
@@ -419,13 +327,6 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
         startActivityForResult(Intent.createChooser(intent,"Select Image(s)"), PICK_IMAGE_INTENT);
     }
 
-    private void stopButtonClicked() {
-        if (getSinchServiceInterface() != null) {
-            getSinchServiceInterface().stopClient();
-        }
-        finish();
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -444,34 +345,4 @@ public class ChatActivity extends BaseActivity implements NavigationView.OnNavig
             }
         }
     }
-
-    public void onClick(View view) {
-        switch (view.getId()){
-            case R.id.B_help:
-                LocalBroadcastManager.getInstance(this).registerReceiver(
-                        sendID, new IntentFilter("GPS ID"));
-                Intent intent = new Intent("UPLOAD GPS");
-                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        }
-    }
-
-    private BroadcastReceiver sendID = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String message = intent.getStringExtra("ID");
-            if (!currentShareID.equals( message)) {
-                System.out.println("Sent Sharing ID:    "+message);
-
-                Map map = new HashMap<>();
-                String messageId = chatDB.push().getKey();
-                final DatabaseReference newMessageDB = chatDB.child(messageId);
-                map.put("creatorID", FirebaseAuth.getInstance().getCurrentUser().getUid());
-                map.put("creator", nameOfSender);
-                map.put("shareID", message);
-                map.put("isGpsShared", "true");
-                newMessageDB.updateChildren(map);
-                currentShareID = message;
-            }
-        }
-    };
 }

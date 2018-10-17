@@ -50,7 +50,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
 
     }
 
-    private Location currentLocation;
+    private Location currentLocation = null;
 
     //    private static final String TAG = SensorService.class.getSimpleName();
     @Override
@@ -70,7 +70,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 saveNewRoute, new IntentFilter("New Route"));
 
-        currentLocation = null;
+//        currentLocation = null;
 
     }
 
@@ -101,7 +101,6 @@ public class SensorService extends Service implements com.google.android.gms.loc
     private BroadcastReceiver startTracking = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            share = true;
             startFirebase();
         }
     };
@@ -109,14 +108,21 @@ public class SensorService extends Service implements com.google.android.gms.loc
     private BroadcastReceiver stopTracking = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            removeSharingFromFirebase();
+        }
+    };
+
+    private void removeSharingFromFirebase(){
+        if (share){
             share = false;
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference ref = database.getReference().child("gps-sharing").child(sharingID);
             ref.removeValue();
         }
-    };
+    }
 
     private void startFirebase(){
+        removeSharingFromFirebase();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference().child("gps-sharing");
         DatabaseReference newRef = ref.push();
@@ -126,12 +132,15 @@ public class SensorService extends Service implements com.google.android.gms.loc
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         System.out.println("Actual Sharing ID:    "+sharingID);
         updateLocation();
+        share = true;
     }
 
     private void updateLocation(){
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference().child("gps-sharing").child(sharingID);
         Map map = new HashMap<>();
+
+        ////////////////check if location exists
 
         map.put("latitude", Double.toString(currentLocation.getLatitude()));
 
@@ -209,6 +218,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
 
     @Override
     public void onLocationChanged(Location location) {
+        Log.d("LOC","Start Location Tracking");
         if (currentLocation==null){
             makeUseOfNewLocation(location);
         } else if ((location.getLatitude() != currentLocation.getLatitude()) || (location.getLongitude() != currentLocation.getLongitude())){

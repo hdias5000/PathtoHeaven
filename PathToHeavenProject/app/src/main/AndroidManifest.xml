@@ -51,7 +51,8 @@
         <activity android:name=".ChatMainPageActivity" />
         <activity android:name=".FindUserActivity" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".ChatActivity" />
+        <activity android:name=".ChatActivity"
+            android:theme="@style/Theme.Transparent"/>
         <activity android:name=".CallScreenActivity" />
         <activity android:name=".IncomingCallScreenActivity" />
         <activity android:name=".LaunchGPSActivity" />
