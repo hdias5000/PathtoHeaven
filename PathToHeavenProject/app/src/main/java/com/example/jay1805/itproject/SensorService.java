@@ -13,7 +13,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -218,7 +217,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d("LOC","Start Location Tracking");
+//        Log.d("LOC","Start Location Tracking");
         if (currentLocation==null){
             makeUseOfNewLocation(location);
         } else if ((location.getLatitude() != currentLocation.getLatitude()) || (location.getLongitude() != currentLocation.getLongitude())){

@@ -2,6 +2,7 @@ package com.example.jay1805.itproject;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -58,9 +59,13 @@ public class IncomingCallScreenActivity extends BaseActivity {
         Call call = getSinchServiceInterface().getCall(mCallId);
         if (call != null) {
             call.answer();
-            Intent intent = new Intent(this, MapsActivity.class);
+//            Intent intent = new Intent(this, MapsActivity.class);
+//            intent.putExtra(SinchService.CALL_ID, mCallId);
+//            startActivity(intent);
+            Intent intent = new Intent("Call ID");
             intent.putExtra(SinchService.CALL_ID, mCallId);
-            startActivity(intent);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+            finish();
         } else {
             finish();
         }

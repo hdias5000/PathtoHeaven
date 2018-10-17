@@ -36,13 +36,14 @@ public class SendNotifications {
                 heading = new String(nInformation.get("name")+" needs your Help!!");
                 System.out.println(heading+"  lolol  "+ nInformation.get("name"));
                 message = nInformation.get("message");
+                String uid = nInformation.get("userID");
 
                 try {
                     JSONObject notificationContent = new JSONObject(
                             "{'contents':{'en':'" + message + "'},"+
                                     "'include_player_ids':['" + notificationKey + "']," +
                                     "'android_channel_id':'8f72db5e-f2dc-4bb1-b5c3-f81d42c181ac'," +
-                                    "'data':{'shareID':'" + shareID + "', 'type':'" + "help" + "'}," +
+                                    "'data':{'shareID':'" + shareID + "', 'type':'" + "help" + "','userID':'" + uid + "'}," +
                                     "'headings':{'en': '" + heading + "'}}");
                     OneSignal.postNotification(notificationContent, null);
                 } catch (JSONException e) {

@@ -28,6 +28,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jay1805.itproject.Map.CurrentLocation;
@@ -65,8 +66,6 @@ import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallEndCause;
 import com.sinch.android.rtc.calling.CallListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
-
-import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -108,9 +107,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private HashMap<Marker, String> markers;
 
-    LatLng currentDestination;
-    Marker marker;
-    Marker markerOfElderly;
+//    LatLng currentDestination;
+//    Marker marker;
+//    Marker markerOfElderly;
 
     ////////////////////////////////////////
     private SlidingUpPanelLayout slidingLayout;
@@ -130,10 +129,15 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private boolean helpMode;
 
-//    LatLng currentDestination;
-//    Marker marker;
-//
-//    Marker markerOfElderly;
+
+    LatLng currentDestination;
+    Marker marker;
+
+    HashMap sendRouteInfo = null;
+    String shareIDOfElder = "";
+    String nameOfElderly = "Elderly";
+    Marker markerOfElderly;
+
     LatLng locationOfElderly;
 
     @Override
@@ -143,23 +147,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         helpMode = false;
         //set layout slide listener
         slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
-
-        endCallButton = findViewById(R.id.endCallButton);
-        mAudioPlayer = new AudioPlayer(this);
-        mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
-        if(mCallId!=null) {
-            endCallButton.setVisibility(View.VISIBLE);
-        }
-        else {
-            endCallButton.setVisibility(View.GONE);
-        }
-        endCallButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                endCall();
-            }
-        });
-
 
         OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
         OneSignal.setSubscription(true);
@@ -240,6 +227,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
             }
         });
+        endCallButton = findViewById(R.id.endCallButton);
+        endCallButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                endCall();
+            }
+        });
 
         VolunteersButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -277,6 +271,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     @Override
     public void onServiceConnected() {
         Call call = getSinchServiceInterface().getCall(mCallId);
+        System.out.println("mcallis is "+mCallId);
         if (call != null) {
             call.addCallListener(new SinchCallListener());
         } else {
@@ -300,13 +295,16 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         if (call != null) {
             call.hangup();
         }
-        finish();
+        endCallButton.setVisibility(View.GONE);
+//        finish();
     }
 
     private class SinchCallListener implements CallListener {
 
         @Override
         public void onCallEnded(Call call) {
+            Log.d("LOLOL","works for on call ended");
+
             CallEndCause cause = call.getDetails().getEndCause();
             Log.d(TAG, "Call ended. Reason: " + cause.toString());
             mAudioPlayer.stopProgressTone();
@@ -314,10 +312,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             String endMsg = "Call ended: " + call.getDetails().toString();
             Toast.makeText(MapsActivity.this, endMsg, Toast.LENGTH_LONG).show();
             endCall();
+
         }
 
         @Override
         public void onCallEstablished(Call call) {
+            Log.d("LOLOL","works for on call established");
             Log.d(TAG, "Call established");
             mAudioPlayer.stopProgressTone();
             setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
@@ -373,9 +373,52 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                 stopButton.setVisibility(View.GONE);
                             }
                         });
+                        String shareID = intent.getStringExtra("ID");
+                        FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID).child("route").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()){
+                                    double latitude = Double.parseDouble(dataSnapshot.child("destLat").getValue().toString());
+                                    double longitude = Double.parseDouble(dataSnapshot.child("destLon").getValue().toString());
+//                                    double latitude = Double.parseDouble(dataSnapshot.child("destLat").getValue().toString());
+//                                    double longitude = Double.parseDouble(dataSnapshot.child("destLon").getValue().toString());
+                                    LatLng dest = new LatLng(latitude,longitude);
+                                    String mode = dataSnapshot.child("mode").getValue().toString();
+                                    ///////////////////change button when this is pressed
+                                    modeOfTransport = mode;
+                                    LatLng curLoc = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                                    findRoute(curLoc,dest);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
                     }
                 }, new IntentFilter("GPS ID"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                callInMaps, new IntentFilter("Call ID"));
     }
+
+    BroadcastReceiver callInMaps = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            mAudioPlayer = new AudioPlayer(getApplicationContext());
+            mCallId = intent.getStringExtra(SinchService.CALL_ID);
+            System.out.println("mcallis is in receiver "+mCallId);
+            Log.d("CALLST",mCallId);
+            if(mCallId!=null) {
+                endCallButton.setVisibility(View.VISIBLE);
+            }
+            else {
+                endCallButton.setVisibility(View.GONE);
+            }
+            onServiceConnected();
+        }
+    };
 
     private void gettingPermissions() {
         if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
@@ -453,19 +496,23 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
     private void gpsSharing() {
-        final String shareID;
+
+        String userID;
         Intent intent = getIntent();
-        if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID")) {
+        if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID") && intent.getExtras().containsKey("userID")) {
+            sendRouteInfo = new HashMap<String,String>();
+            shareIDOfElder = intent.getExtras().getString("Share ID");
+            userID = intent.getExtras().getString("userID");
+            setInitialInfoForHelp(userID);
+            System.out.println(userID);
+            System.out.println("Share ID is: " + shareIDOfElder);
+            Log.d("SHAREID", shareIDOfElder);
 
-            shareID = intent.getExtras().getString("Share ID");
-            System.out.println("Share ID is: " + shareID);
-            Log.d("SHAREID", shareID);
-
-            FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID).addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareIDOfElder).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()){
-                        setGPSSharing(shareID);
+                        setGPSSharing(shareIDOfElder);
                     }else{
                         /////////send name of elderly person
                         makeToast("Elderly Person has Disabled GPS Sharing");
@@ -481,6 +528,123 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             });
 
         }
+    }
+
+    private void setInitialInfoForHelp(final String elderlyID) {
+
+        ImageButton callHelper;
+        ImageButton chatHelper;
+        ImageButton callHelper1;
+        ImageButton chatHelper1;
+        final ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
+        final ArrayList<String> ToUserChatIDs = new ArrayList<String>();
+
+        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                nameOfElderly = dataSnapshot.getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        TextView nameTextView = findViewById(R.id.name);
+        nameTextView.setText(nameOfElderly);
+        nameTextView = findViewById(R.id.name1);
+        nameTextView.setText(nameOfElderly);
+
+        callHelper = findViewById(R.id.callButtonHelp);
+        chatHelper = findViewById(R.id.chatButtonHelp);
+        callHelper1 = findViewById(R.id.callButtonHelp1);
+        chatHelper1 = findViewById(R.id.chatButtonHelp1);
+
+        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
+                    CurrentUserChatIDs.add(childSnapShot.getKey());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        View.OnClickListener callListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Call call = getSinchServiceInterface().callUser(elderlyID);
+                String callId = call.getCallId();
+
+                Intent callScreen = new Intent(v.getContext(), CallScreenActivity.class);
+                callScreen.putExtra(SinchService.CALL_ID, callId);
+                startActivity(callScreen);
+            }
+        };
+
+        callHelper.setOnClickListener(callListener);
+        callHelper1.setOnClickListener(callListener);
+
+
+        View.OnClickListener chatListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").addListenerForSingleValueEvent(
+                        new ValueEventListener() {
+                              @Override
+                              public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                  String chatIDKey = null;
+
+                                  for (DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
+                                      ToUserChatIDs.add(childSnapShot.getKey());
+                                  }
+
+                                  Boolean chatExists = false;
+                                  for(String MyChatIDs : CurrentUserChatIDs) {
+                                      for(String ToChatIDs : ToUserChatIDs) {
+                                          if(MyChatIDs.equals(ToChatIDs)) {
+                                              chatIDKey = MyChatIDs;
+                                              chatExists = true;
+                                          }
+                                      }
+                                  }
+
+                                  if(chatExists.equals(false)) {
+                                      String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+                                      CurrentUserChatIDs.add(key);
+                                      ToUserChatIDs.add(key);
+                                      chatIDKey = key;
+                                      FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("chat").child(key).setValue(true);
+                                      FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").child(key).setValue(true);
+                                  }
+
+                                  else {
+                                      Toast.makeText(getApplicationContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
+                                  }
+
+                                  Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
+                                  Bundle bundle = new Bundle();
+                                  bundle.putString("chatID", chatIDKey);
+                                  intent.putExtras(bundle);
+                                  getApplicationContext().startActivity(intent);
+
+                              }
+
+                              @Override
+                              public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                              }
+                        }
+                );}};
+        chatHelper.setOnClickListener(chatListener);
+        chatHelper1.setOnClickListener(chatListener);
+
+
     }
 
     private void setGPSSharing(String shareID){
@@ -942,6 +1106,22 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 setMarkerForElderlyPerson();
                 setDestinationMarker();
                 findRoute(locationOfElderly, currentDestination);
+                sendRouteInfo = new HashMap<String,String>();
+                sendRouteInfo.put("destLat",currentDestination.latitude);
+                sendRouteInfo.put("destLon",currentDestination.longitude);
+                sendRouteInfo.put("mode",modeOfTransport);
+            }
+        });
+
+        Button sendRoute = findViewById(R.id.B_SendRoute);
+        sendRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference ref = database.getReference().child("gps-sharing").child(shareIDOfElder);
+                java.util.Map map = new HashMap<>();
+                map.put("route",sendRouteInfo);
+                ref.updateChildren(map);
             }
         });
     }
@@ -953,6 +1133,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             setMarkerForElderlyPerson();
             LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
             findRoute(location,locationOfElderly);
+            sendRouteInfo.put("destLat",location.latitude);
+            sendRouteInfo.put("destLon",location.longitude);
+            sendRouteInfo.put("mode",modeOfTransport);
         }
     };
 

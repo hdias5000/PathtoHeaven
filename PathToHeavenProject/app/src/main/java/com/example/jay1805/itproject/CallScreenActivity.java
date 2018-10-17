@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.util.Log;
@@ -152,9 +153,13 @@ public class CallScreenActivity extends BaseActivity {
             mCallState.setText(call.getState().toString());
             setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
             mCallStart = System.currentTimeMillis();
-            Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+//            Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+//            intent.putExtra(SinchService.CALL_ID, mCallId);
+//            startActivity(intent);
+            Intent intent = new Intent("Call ID");
             intent.putExtra(SinchService.CALL_ID, mCallId);
-            startActivity(intent);
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+            finish();
         }
 
         @Override
