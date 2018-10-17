@@ -23,6 +23,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -249,7 +250,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         VolunteersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
                 //startActivity(new Intent(getApplicationContext(),MapsActivity.class));
                 PlaceVolunteerMarkerOnMap();
 
@@ -1306,6 +1307,64 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         }
         endCallButton.setVisibility(View.GONE);
 //        finish();
+    }
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        Log.d("touch","something");
+
+        View w = getCurrentFocus();
+        int scrcoords[] = new int[2];
+        w.getLocationOnScreen(scrcoords);
+//            float x = event.getRawX() + w.getLeft() - scrcoords[0];
+        float y = event.getRawY() + w.getTop() - scrcoords[1];
+
+        if (event.getAction()!=MotionEvent.ACTION_BUTTON_PRESS &&event.getAction()==MotionEvent.ACTION_UP&&event.getAction()!=MotionEvent.ACTION_MOVE&&event.getAction()!=MotionEvent.ACTION_BUTTON_RELEASE&&y>1500){
+            Log.d("touch","button press");
+            if (currentPanel.equals("menu")){
+                if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
+                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
+                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                }
+            }
+        }
+
+        View v = getCurrentFocus();
+
+
+//            Log.d("touch","y is"+y);
+//            if (event.getAction() == MotionEvent.ACTION_UP
+//                    && (x < w.getLeft() || x >= w.getRight() || y < w.getTop() || y > w
+//                    .getBottom())) {
+//                    Log.d("touch","somethinghjbhjhjbhj");
+////                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+////                imm.hideSoftInputFromWindow(getWindow().getCurrentFocus()
+////                        .getWindowToken(), 0);
+//            }
+
+        boolean ret = super.dispatchTouchEvent(event);
+        return ret;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.d("touch","c'est magnifique");
+        switch (event.getAction()){
+            case MotionEvent.EDGE_BOTTOM:
+                Log.d("touch","c'est magnifiqueee");
+                if (currentPanel.equals("menu")){
+                    if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                    }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    }
+                }
+                break;
+
+        }
+
+
+        return super.onTouchEvent(event);
     }
 
     private class SinchCallListener implements CallListener {
