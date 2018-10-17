@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".LoginActivity"
     android:orientation="vertical"
-    android:background="@color/orange_100">
+    android:background="@color/off_white">
 
     <TextView
         android:id="@+id/textViewWelcome"
@@ -14,6 +14,7 @@
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:padding="10dp"
+        android:layout_marginTop="30dp"
         android:gravity="center"
         android:textSize="30dp"
         android:textColor="@color/black"
@@ -22,7 +23,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp">
+        android:layout_gravity="center">
 
         <TextView
             android:id="@+id/image_textView"
@@ -53,7 +54,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp">
+        android:layout_gravity="center">
 
         <TextView
             android:id="@+id/name_textView"
@@ -80,7 +81,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp">
+        android:layout_gravity="center">
 
         <TextView
             android:id="@+id/dob_textView"
@@ -117,14 +118,14 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp">
+        android:layout_marginStart="10dp"
+        android:layout_gravity="center">
 
         <EditText
             android:id="@+id/home_address_editText"
             android:layout_width="283dp"
             android:textStyle="bold"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="7dp"
             android:layout_gravity="center"
             android:textColor="@color/blue_800"
             android:hint="Enter Home Address" />
@@ -135,7 +136,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center">
 
         <TextView
             android:id="@+id/user_type"
@@ -176,6 +178,34 @@
 
     </LinearLayout>
 
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        >
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Volunteer"
+            android:textStyle="bold"
+            android:textSize="17dp"
+            android:textColor="@color/black"/>
+
+
+        <Switch
+        android:id="@+id/volunteerSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+            android:paddingLeft="15dp"/>
+
+
+
+    </LinearLayout>
+
     <Button
         android:id="@+id/save_button"
         android:layout_width="282dp"
@@ -189,3 +219,4 @@
 
 
 </LinearLayout>
+

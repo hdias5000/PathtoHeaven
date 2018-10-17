@@ -136,22 +136,26 @@
         <include android:id="@+id/route"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            layout="@layout/slider_layout_route"/>
+            layout="@layout/slider_layout_route"
+            android:visibility="gone"/>
 
         <include android:id="@+id/sosSlider"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            layout="@layout/slider_layout_sos"/>
+            layout="@layout/slider_layout_sos"
+            android:visibility="gone"/>
 
         <include android:id="@+id/help"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            layout="@layout/slider_layout_help"/>
+            layout="@layout/slider_layout_help"
+            android:visibility="gone"/>
 
         <include android:id="@+id/helpRoute"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            layout="@layout/slider_layout_help_route"/>
+            layout="@layout/slider_layout_help_route"
+            android:visibility="gone"/>
 
     </LinearLayout>
 

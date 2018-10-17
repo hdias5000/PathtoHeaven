@@ -25,6 +25,7 @@
         android:layout_gravity="center"
         android:hint="Enter Name" />
 
+
     <EditText
         android:id="@+id/phoneNumber"
         android:layout_width="282dp"

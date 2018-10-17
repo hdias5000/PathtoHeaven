@@ -567,7 +567,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                     {
 
                         // getting volunteers' coordinates
-                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
+                        if (volunteersnapshot.getKey().equals("Volunteer") && volunteersnapshot.getValue().toString().equals("Yes")) {
                             for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
                             {
                                 if (volunteersnapshot2.getKey().equals("latitude")) {

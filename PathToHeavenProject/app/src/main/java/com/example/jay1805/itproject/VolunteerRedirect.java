@@ -24,6 +24,9 @@ public class VolunteerRedirect extends BaseActivity {
     TextView elderlyNameTV;
     Button callVolunteer;
     Button chatVolunteer;
+    Button mapRoute;
+
+
     ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
     ArrayList<String> ToUserChatIDs = new ArrayList<String>();
 
@@ -37,6 +40,9 @@ public class VolunteerRedirect extends BaseActivity {
         elderlyNameTV = findViewById(R.id.textViewElderlyName);
         callVolunteer = findViewById(R.id.call_volunteer);
         chatVolunteer = findViewById(R.id.chat_volunteer);
+        mapRoute = findViewById(R.id.map_volunteer);
+
+
 
         FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -116,7 +122,15 @@ public class VolunteerRedirect extends BaseActivity {
             }
         });
 
+        mapRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
         elderlyNameTV.setText(elderlyName);
+
 
     }
 }

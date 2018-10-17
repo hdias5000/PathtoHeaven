@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,6 +53,8 @@ public class ProfilePageActivity extends AppCompatActivity {
     private String name;
     private ImageButton UploadImage;
     private ImageView ImageViewer;
+    private Switch volunteerSwitch;
+    private boolean switchState;
 
     private DatabaseReference userDB;
 
@@ -65,10 +68,11 @@ public class ProfilePageActivity extends AppCompatActivity {
         nameOfUser = (TextView) findViewById(R.id.theActualName);
         saveDetails = (Button) findViewById(R.id.save_button);
         calenderBtn = (Button) findViewById(R.id.calender_button);
-        dateEditText  = (EditText) findViewById(R.id.date_editText);
+        dateEditText = (EditText) findViewById(R.id.date_editText);
         rg = (RadioGroup) findViewById(R.id.user_type_rg);
-        myCalendar =  Calendar.getInstance();
+        myCalendar = Calendar.getInstance();
         ImageViewer = findViewById(R.id.imageViewer);
+        volunteerSwitch = (Switch) findViewById(R.id.volunteerSwitch);
 
         final DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
 
@@ -91,7 +95,7 @@ public class ProfilePageActivity extends AppCompatActivity {
                 Intent intent = new Intent();
                 intent.setType("image/*");
                 intent.setAction(intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent,"Select Image"), 1);
+                startActivityForResult(Intent.createChooser(intent, "Select Image"), 1);
             }
         });
 
@@ -106,7 +110,10 @@ public class ProfilePageActivity extends AppCompatActivity {
             }
         });
 
-        userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+
+
+    userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         userDB.child("name").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -170,12 +177,19 @@ public class ProfilePageActivity extends AppCompatActivity {
         if(!rb.getText().toString().isEmpty()) {
             userMap.put("User Type", rb.getText().toString());
             System.out.println( "User type:"+rb.getText().toString());
+            userMap.put("Accepted","False");
 
-            if (rb.getText().toString().equals("Helper")) {
-                System.out.println( "HELLLLLLLLLOOO$$$$$$$$$$$$$$$$$$$$$");
-                userMap.put("Requested", "False");
-                userMap.put("ElderlyIDRequested","");
-            }
+        }
+
+        if(volunteerSwitch.isChecked())
+        {
+            userMap.put("Volunteer","Yes");
+            userMap.put("Requested", "False");
+            userMap.put("ElderlyIDRequested","");
+        }
+        else
+        {
+            userMap.put("Volunteer","No");
         }
         if(!selectedImageUri.isEmpty()) {
             final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Profile Pictures");

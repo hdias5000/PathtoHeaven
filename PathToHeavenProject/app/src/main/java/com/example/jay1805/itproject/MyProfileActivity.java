@@ -31,6 +31,7 @@ public class MyProfileActivity extends AppCompatActivity {
     private TextView PhoneNumber;
     private DrawerLayout myDrawerLayout;
     private ActionBarDrawerToggle myToggle;
+    private TextView isVolunteer;
 
     String currentUserUid;
     DatabaseReference userRef;
@@ -46,6 +47,7 @@ public class MyProfileActivity extends AppCompatActivity {
         HomeAddress = findViewById(R.id.theRealHomeAddress);
         UserType = findViewById(R.id.theRealUserType);
         PhoneNumber = findViewById(R.id.theRealPhoneNumber);
+        isVolunteer = findViewById(R.id.isVolunteerTextView);
 
         currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         userRef = FirebaseDatabase.getInstance().getReference().child("user").child(currentUserUid);
@@ -72,6 +74,9 @@ public class MyProfileActivity extends AppCompatActivity {
                     }
                     if(childSnapShot.getKey().equals("phone")) {
                         PhoneNumber.setText(childSnapShot.getValue().toString());
+                    }
+                    if(childSnapShot.getKey().equals("Volunteer")) {
+                        isVolunteer.setText(childSnapShot.getValue().toString());
                     }
                 }
             }
