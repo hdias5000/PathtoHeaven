@@ -314,7 +314,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             MarkerOptions mo = new MarkerOptions();
                             mo.position(latLng);
                             mo.title("Location of Elderly");
-                            mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                            mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer));
                             markerOfElderly = map.addMarker(mo,latLng);
 
                         }
@@ -378,7 +378,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                                     mo.position(volLatLng);
                                     mo.title(currentVolunteerName);
-                                    mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
                                     //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
 
 

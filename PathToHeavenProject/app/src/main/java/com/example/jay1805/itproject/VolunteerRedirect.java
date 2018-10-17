@@ -34,7 +34,7 @@ public class VolunteerRedirect extends BaseActivity {
         elderlyName = getIntent().getExtras().getString("elderlyName");
         elderlyID = getIntent().getExtras().getString("elderlyID");
 
-        elderlyNameTV = findViewById(R.id.textViewElderName);
+        elderlyNameTV = findViewById(R.id.textViewElderlyName);
         callVolunteer = findViewById(R.id.call_volunteer);
         chatVolunteer = findViewById(R.id.chat_volunteer);
 

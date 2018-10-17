@@ -18,11 +18,12 @@
         android:text="How do you wish to connect with the User:" />
 
     <TextView
-        android:id="@+id/textViewElderName"
+        android:id="@+id/textViewElderlyName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:textSize="20dp"
+        android:paddingBottom="50dp"
         android:text="UserName" />
 
     <Button
@@ -30,9 +31,8 @@
         android:layout_width="282dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="50dp"
-        android:layout_marginBottom="10dp"
-        android:background="#7abbf9"
+        android:layout_margin="10dp"
+        android:background="@color/orange_300"
         android:text="call"
         android:textColor="@color/common_google_signin_btn_text_dark_default" />
     <Button
@@ -41,7 +41,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="10dp"
-        android:background="#7abbf9"
+        android:background="@color/orange_500"
         android:text="Chat"
         android:textColor="@color/common_google_signin_btn_text_dark_default" />
     <Button
@@ -50,7 +50,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="10dp"
-        android:background="#7abbf9"
+        android:background="@color/orange_700"
         android:text="Map View"
         android:textColor="@color/common_google_signin_btn_text_dark_default" />
 
