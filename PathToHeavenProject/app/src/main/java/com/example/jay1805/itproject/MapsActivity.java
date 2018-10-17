@@ -140,13 +140,21 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     LatLng locationOfElderly;
 
+    HashMap<String,Integer> panelHeight;
+
+    String currentPanel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
+
+        currentPanel = "menu";
+        panelHeight = new HashMap<>();
+        findPanelHeights();
         helpMode = false;
         //set layout slide listener
-        slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
 
         OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
         OneSignal.setSubscription(true);
@@ -268,7 +276,38 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
+    private void showCurrentSlider(){
+        hideSliders();
+        LinearLayout currentPanelLayout = null;
+        switch (currentPanel){
+            case "menu":
+                currentPanelLayout = findViewById(R.id.sosSlider);
+                break;
+            case "routeInitial":
+                currentPanelLayout = findViewById(R.id.route);
+                break;
+            case "help":
+                currentPanelLayout = findViewById(R.id.help);
+                break;
+            case "helpRoute":
+                currentPanelLayout = findViewById(R.id.helpRoute);
+                break;
+        }
+        if (currentPanelLayout!=null){
+            currentPanelLayout.setVisibility(View.VISIBLE);
+            slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            setPanelHeight();
+        }
 
+    }
+
+    private void setPanelHeight() {
+        if (panelHeight.containsKey(currentPanel)){
+            slidingLayout.setPanelHeight(panelHeight.get(currentPanel));
+        }else{
+            slidingLayout.setPanelHeight(144);
+        }
+    }
 
     private void hideSliders(){
         LinearLayout route = findViewById(R.id.route);
@@ -279,8 +318,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         sos.setVisibility(View.GONE);
         help.setVisibility(View.GONE);
         helpRoute.setVisibility(View.GONE);
-        slidingLayout.setPanelHeight(120);
+//        slidingLayout.setPanelHeight(120);
     }
+
 
 
 
@@ -311,6 +351,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                 Intent intent = new Intent("STOP GPS");
                                 LocalBroadcastManager.getInstance(view.getContext()).sendBroadcast(intent);
                                 stopButton.setVisibility(View.GONE);
+                                map.clearMap();
+                                currentLocation.showCurrentLocation();
                             }
                         });
                         String shareID = intent.getStringExtra("ID");
@@ -360,6 +402,45 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     };
 
 
+
+    private void findPanelHeights(){
+        final LinearLayout initialRouteLayout = (LinearLayout)findViewById(R.id.initialRouteLayout);
+        initialRouteLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("routeInitial",initialRouteLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+        /////////////////////when distance,duration is implemented
+//        final LinearLayout routeLayout = (LinearLayout)findViewById(R.id.initialRouteLayout);
+//        routeLayout.post(new Runnable(){
+//            public void run(){
+//                panelHeight.put("routeFull",routeLayout.getHeight());
+//            }
+//        });
+
+        final LinearLayout menuLayout = (LinearLayout)findViewById(R.id.menuLayout);
+        menuLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("menu",menuLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+        final LinearLayout helpLayout = (LinearLayout)findViewById(R.id.helpLayout);
+        helpLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("help",helpLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+        final LinearLayout helpRouteLayout = (LinearLayout)findViewById(R.id.helpRouteLayout);
+        helpRouteLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("helpRoute",helpRouteLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+    }
 
     private void setDestinationMarker(LatLng dest){
         destMarkerOptions = new MarkerOptions();
@@ -562,12 +643,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 locationOfElderly= new LatLng(newLatitude,newLongitude);
 
                 setMarkerForElderlyPerson();
-
-                hideSliders();
-                slidingLayout.setPanelHeight(240);
-                LinearLayout route = findViewById(R.id.help);
-                route.setVisibility(View.VISIBLE);
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                currentPanel = "help";
+                showCurrentSlider();
+//                hideSliders();
+//                slidingLayout.setPanelHeight(240);
+//                LinearLayout route = findViewById(R.id.help);
+//                route.setVisibility(View.VISIBLE);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 
             }
 
@@ -788,10 +870,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         SosButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                hideSliders();
-                LinearLayout helpSlider = findViewById(R.id.sosSlider);
-                helpSlider.setVisibility(View.VISIBLE);
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                currentPanel = "menu";
+                showCurrentSlider();
+//                hideSliders();
+//                LinearLayout helpSlider = findViewById(R.id.sosSlider);
+//                helpSlider.setVisibility(View.VISIBLE);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             }
         });
 
@@ -926,16 +1010,20 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 hideSliders();
 
                 if (helpMode){
-                    slidingLayout.setPanelHeight(400);
-                    LinearLayout helpRouteSlider = findViewById(R.id.helpRoute);
-                    helpRouteSlider.setVisibility(View.VISIBLE);
+                    currentPanel = "helpRoute";
+                    showCurrentSlider();
+//                    slidingLayout.setPanelHeight(400);
+//                    LinearLayout helpRouteSlider = findViewById(R.id.helpRoute);
+//                    helpRouteSlider.setVisibility(View.VISIBLE);
                 }else {
-                    LinearLayout routeSlider = findViewById(R.id.route);
-                    routeSlider.setVisibility(View.VISIBLE);
+                    currentPanel = "routeInitial";
+                    showCurrentSlider();
+//                    LinearLayout routeSlider = findViewById(R.id.route);
+//                    routeSlider.setVisibility(View.VISIBLE);
                 }
 
 
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 
             }
 

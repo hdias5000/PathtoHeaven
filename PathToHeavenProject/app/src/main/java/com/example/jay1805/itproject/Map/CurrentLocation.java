@@ -56,10 +56,18 @@ public class CurrentLocation {
     }
 
     public double getLatitude(){
-        return lastLocation.getLatitude();
+        if (lastLocation!=null){
+
+            return lastLocation.getLatitude();
+        }
+        return Double.parseDouble(null);
     }
 
     public double getLongitude(){
-        return lastLocation.getLongitude();
+        if (lastLocation!=null){
+
+            return lastLocation.getLongitude();
+        }
+        return Double.parseDouble(null);
     }
 }
