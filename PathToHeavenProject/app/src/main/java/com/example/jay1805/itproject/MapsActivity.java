@@ -296,7 +296,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             call.hangup();
         }
         endCallButton.setVisibility(View.GONE);
-        finish();
+//        finish();
     }
 
     private class SinchCallListener implements CallListener {
@@ -416,6 +416,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             else {
                 endCallButton.setVisibility(View.GONE);
             }
+            onServiceConnected();
         }
     };
 
