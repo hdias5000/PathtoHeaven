@@ -24,18 +24,12 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <!--<RelativeLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content">-->
 
-            <fragment
-                android:id="@+id/place_autocomplete_fragment"
-                android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:layout_weight="5"/>
-        </RelativeLayout>
+            <!---->
+        <!--</RelativeLayout>-->
 
         <!--<LinearLayout-->
             <!--android:id="@+id/buttons"-->
@@ -98,10 +92,14 @@
                 android:id="@+id/map"
                 android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="match_parent"
-                android:layout_height="600dp"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentLeft="true"
+                android:layout_height="match_parent"
                 android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="0dp"
+                android:layout_marginLeft="0dp"
+                android:layout_marginTop="-10dp"
+                android:layout_marginBottom="-9dp"
                 tools:context=".MapsActivity" />
 
             <android.support.design.widget.FloatingActionButton
@@ -122,6 +120,31 @@
                 android:visibility="gone"
                 android:backgroundTint="@color/red_A700"
                 android:id="@+id/endCallButton"/>
+
+            <LinearLayout
+                android:layout_width="346dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="19dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="19dp"
+                android:layout_weight="5"
+                android:background="@color/blue_700">
+
+                <fragment
+                    android:id="@+id/place_autocomplete_fragment"
+                    android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/map"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="5" />
+            </LinearLayout>
         </RelativeLayout>
     </LinearLayout>
 
