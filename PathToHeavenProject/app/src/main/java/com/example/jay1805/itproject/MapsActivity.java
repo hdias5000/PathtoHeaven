@@ -28,6 +28,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jay1805.itproject.Map.CurrentLocation;
@@ -65,8 +66,6 @@ import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallEndCause;
 import com.sinch.android.rtc.calling.CallListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
-
-import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -108,9 +107,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private HashMap<Marker, String> markers;
 
-    LatLng currentDestination;
-    Marker marker;
-    Marker markerOfElderly;
+//    LatLng currentDestination;
+//    Marker marker;
+//    Marker markerOfElderly;
 
     ////////////////////////////////////////
     private SlidingUpPanelLayout slidingLayout;
