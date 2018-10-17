@@ -9,12 +9,25 @@
     tools:context=".MyProfileActivity"
     android:background="@color/yellow_50">
 
-    <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="230dp"
-        android:layout_marginTop="10dp"
-        android:id="@+id/profilePic"
-        android:src="@drawable/ic_launcher_background"/>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="230dp"
+            android:layout_marginTop="10dp"
+            android:id="@+id/profilePic"/>
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="match_parent"
+            android:layout_height="230dp"
+            android:layout_centerInParent="true"
+            android:id="@+id/progressBar"
+            android:visibility="visible"/>
+
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
