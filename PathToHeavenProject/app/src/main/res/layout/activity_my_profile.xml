@@ -1,174 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.v4.widget.DrawerLayout
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/drawer">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MyProfileActivity"
+    android:background="@color/yellow_50">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <ImageView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        tools:context=".MyProfileActivity"
-        android:background="@color/yellow_50">
+        android:layout_height="230dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/profilePic"
+        android:src="@drawable/ic_launcher_background"/>
 
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="230dp"
-            android:layout_marginTop="10dp"
-            android:id="@+id/profilePic"
-            android:src="@drawable/ic_launcher_background"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="59dp">
 
-        <LinearLayout
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="59dp">
+            android:padding="10dp"
+            android:text="Name : "
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="17dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="Name : "
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:textSize="17dp" />
-
-            <TextView
-                android:id="@+id/theActualName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:textStyle="bold"
-                android:text="This is the name"
-                android:textSize="17dp"
-                android:textColor="@color/blue_800"/>
-
-        </LinearLayout>
-
-        <LinearLayout
+        <TextView
+            android:id="@+id/theActualName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="58dp"
-            android:layout_marginTop="10dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="Phone Number:"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:textSize="17dp" />
-
-            <TextView
-                android:id="@+id/theRealPhoneNumber"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:textStyle="bold"
-                android:text="Phone Number"
-                android:textSize="17dp"
-                android:textColor="@color/blue_800"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="58dp"
-            android:layout_marginTop="10dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="Date Of Birth:"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:textSize="17dp" />
-
-            <TextView
-                android:id="@+id/theRealDOB"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:textStyle="bold"
-                android:text="dd/mm/yyyy"
-                android:textSize="17dp"
-                android:textColor="@color/blue_800"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="58dp"
-            android:layout_marginTop="10dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="Home Address:"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:textSize="17dp" />
-
-            <TextView
-                android:id="@+id/theRealHomeAddress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="Here is the Address"
-                android:textStyle="bold"
-                android:textSize="17dp"
-                android:textColor="@color/blue_800"/>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="58dp"
-            android:layout_marginTop="10dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="User Type:"
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:textSize="17dp" />
-
-            <TextView
-                android:id="@+id/theRealUserType"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="Elder or Helper"
-                android:textStyle="bold"
-                android:textSize="17dp"
-                android:textColor="@color/blue_800"/>
-
-        </LinearLayout>
+            android:padding="10dp"
+            android:textStyle="bold"
+            android:text="This is the name"
+            android:textSize="17dp"
+            android:textColor="@color/blue_800"/>
 
     </LinearLayout>
 
-    <android.support.design.widget.NavigationView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/navigation_viewID"
-        app:menu="@menu/nav_menu"
-        android:layout_gravity="start"
-        app:headerLayout="@layout/nav_header"
-        app:itemTextAppearance="@style/menu_text_style">
-    </android.support.design.widget.NavigationView>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="10dp">
 
-</android.support.v4.widget.DrawerLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Phone Number:"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="17dp" />
+
+        <TextView
+            android:id="@+id/theRealPhoneNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:textStyle="bold"
+            android:text="Phone Number"
+            android:textSize="17dp"
+            android:textColor="@color/blue_800"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Date Of Birth:"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="17dp" />
+
+        <TextView
+            android:id="@+id/theRealDOB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:textStyle="bold"
+            android:text="dd/mm/yyyy"
+            android:textSize="17dp"
+            android:textColor="@color/blue_800"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Home Address:"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="17dp" />
+
+        <TextView
+            android:id="@+id/theRealHomeAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Here is the Address"
+            android:textStyle="bold"
+            android:textSize="17dp"
+            android:textColor="@color/blue_800"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="User Type:"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="17dp" />
+
+        <TextView
+            android:id="@+id/theRealUserType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Elder or Helper"
+            android:textStyle="bold"
+            android:textSize="17dp"
+            android:textColor="@color/blue_800"/>
+
+    </LinearLayout>
+
+</LinearLayout>
