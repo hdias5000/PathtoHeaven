@@ -69,22 +69,14 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
 
 import java.io.InputStream;
-<<<<<<< HEAD
-=======
 import java.util.ArrayList;
->>>>>>> master
 import java.util.HashMap;
 import java.util.List;
 
-
-<<<<<<< HEAD
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,NavigationView.OnNavigationItemSelectedListener{
-=======
 public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     static final String TAG = MapsActivity.class.getSimpleName();
 
->>>>>>> master
     private CurrentLocation currentLocation;
     private Map map;
     private Location lastKnownLoc;
@@ -99,8 +91,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private PlaceAutocompleteFragment placeAutocompleteFragment;
 
-<<<<<<< HEAD
-=======
     private RecyclerView userListView;
     private RecyclerView.Adapter userListViewAdapter;
     private RecyclerView.LayoutManager userListViewLayoutManager;
@@ -109,7 +99,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     ArrayList<UserObject> userList;
 
->>>>>>> master
     private URLCreator urlCreator;
 
     private double volLat=0;
@@ -139,16 +128,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private String modeOfTransport;
 
-<<<<<<< HEAD
-=======
     private boolean helpMode;
 
-    LatLng currentDestination;
-    Marker marker;
-
-    Marker markerOfElderly;
+//    LatLng currentDestination;
+//    Marker marker;
+//
+//    Marker markerOfElderly;
     LatLng locationOfElderly;
->>>>>>> master
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -186,16 +172,15 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         });
         OneSignal.setInFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification);
 
-        setButtonListeners();
-<<<<<<< HEAD
         markers = new HashMap<Marker, String>();
-=======
+
+        setButtonListeners();
         gettingPermissions();
+        createVolunteerChildrenInDB();
         createAutoCompleteSearch();
         loadMapFragment();
         gpsSharing();
         setUpBroadcastReceivers();
->>>>>>> master
 
         urlCreator = new URLCreator();
         lastKnownLoc = null;
@@ -213,29 +198,43 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         userListViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
         userListView.setLayoutManager(userListViewLayoutManager);
         FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+           @Override
+           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+               if (getSinchServiceInterface() != null) {
+                   Log.d("Sinch", "NIT NULL");
+                   System.out.println("SinchService is not null");
+               } else {
+                   Log.d("Sinch", "YEEt NULL");
+                   System.out.println("SinchService is null");
+               }
+               userListViewAdapter = new UserListAdapter(userList, getSinchServiceInterface(), slidingLayout);
+               userListView.setAdapter(userListViewAdapter);
+               getContactList();
+           }
+
+           @Override
+           public void onCancelled(@NonNull DatabaseError databaseError) {
+
+           }
+       });
+
+        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(getSinchServiceInterface()!=null) {
-                    Log.d("Sinch","NIT NULL");
-                    System.out.println("SinchService is not null");
+                if(dataSnapshot.getValue()!=null) {
+                    System.out.println("###############DATASNAPSHOT: " + dataSnapshot.getValue().toString());
+                    if (dataSnapshot.getValue().toString().equals("True")) {
+                        startActivity(new Intent(getApplicationContext(), NotificationActivity.class));
+                        java.util.Map map = new HashMap<>();
+                        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+                        // map.put("Requested", "False");
+                       // map.put("ElderlyIDRequested","");
+                        userDB.updateChildren(map);
+                    }
                 }
-                else {
-                    Log.d("Sinch","YEEt NULL");
-                    System.out.println("SinchService is null");
-                }
-                userListViewAdapter = new UserListAdapter(userList, getSinchServiceInterface(), slidingLayout);
-                userListView.setAdapter(userListViewAdapter);
-                getContactList();
             }
 
-<<<<<<< HEAD
-
-        createVolunteerChildrenInDB();
-
-
-        SosButton.setOnClickListener(new View.OnClickListener() {
-=======
->>>>>>> master
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
@@ -453,85 +452,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 });
     }
 
-<<<<<<< HEAD
-        myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-        myToggle = new ActionBarDrawerToggle(MapsActivity.this, myDrawerLayout, R.string.open, R.string.close);
-        myDrawerLayout.addDrawerListener(myToggle);
-        myToggle.syncState();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_viewID);
-        navigationView.setNavigationItemSelectedListener(this);
-        View headerView = navigationView.getHeaderView(0);
-        final ImageView myProfileImage = headerView.findViewById(R.id.headerImage);
-        final TextView myHeaderName = headerView.findViewById(R.id.headerTextView);
-        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Profile Picture").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                new DownloadImageTask(myProfileImage)
-                        .execute(dataSnapshot.getValue().toString());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                myHeaderName.setText(dataSnapshot.getValue().toString());
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
-
-
-        //testing alert!!!!
-        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getValue()!=null) {
-                    System.out.println("###############DATASNAPSHOT: " + dataSnapshot.getValue().toString());
-                    if (dataSnapshot.getValue().toString().equals("True")) {
-                        startActivity(new Intent(getApplicationContext(), NotificationActivity.class));
-                        java.util.Map map = new HashMap<>();
-                        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-
-                        // map.put("Requested", "False");
-                       // map.put("ElderlyIDRequested","");
-                        userDB.updateChildren(map);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
-
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-        urlCreator = new URLCreator();
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
-        lastKnownLoc = null;
-
-        String shareID;
-=======
     private void gpsSharing() {
         final String shareID;
->>>>>>> master
         Intent intent = getIntent();
         if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID")) {
 
@@ -583,7 +505,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
                 helpMode = true;
 
-<<<<<<< HEAD
                             Log.d("Coord", "lat is: " +newLatitude);
                             Log.d("Coord", "long is: " +newLongitude);
                             LatLng latLng = new LatLng(newLatitude,newLongitude);
@@ -592,11 +513,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                             mo.title("Location of Elderly");
                             mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer));
                             markerOfElderly = map.addMarker(mo,latLng);
-=======
                 if (markerOfElderly!=null){
                     markerOfElderly.remove();
                 }
->>>>>>> master
 
                 Log.d("Coord", "lat is: " +newLatitude);
                 Log.d("Coord", "long is: " +newLongitude);
@@ -628,7 +547,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
-<<<<<<< HEAD
     private void createVolunteerChildrenInDB() {
         java.util.Map hmap = new HashMap<>();
         final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
@@ -695,23 +613,22 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         });
     }
     ////////////////////////////////////////////////////////
-    private View.OnClickListener onHideListener() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //hide sliding layout
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-//                btnShow.setVisibility(View.VISIBLE);
-            }
-        };
-=======
+//    private View.OnClickListener onHideListener() {
+//        return new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                //hide sliding layout
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+////                btnShow.setVisibility(View.VISIBLE);
+//            }
+//        }
+//    }
     private void setMarkerForElderlyPerson(){
         MarkerOptions mo = new MarkerOptions();
         mo.position(locationOfElderly);
         mo.title("Location of Elderly");
         mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         markerOfElderly = map.addMarker(mo,locationOfElderly);
->>>>>>> master
     }
 
     private void getContactList() {
