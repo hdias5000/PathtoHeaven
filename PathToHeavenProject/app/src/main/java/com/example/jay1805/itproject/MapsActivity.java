@@ -228,6 +228,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             }
         });
 
+        endCallButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                endCall();
+            }
+        });
+
         VolunteersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -409,12 +416,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             else {
                 endCallButton.setVisibility(View.GONE);
             }
-            endCallButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    endCall();
-                }
-            });
         }
     };
 
