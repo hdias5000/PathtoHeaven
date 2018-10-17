@@ -268,72 +268,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
-    @Override
-    public void onServiceConnected() {
-        Call call = getSinchServiceInterface().getCall(mCallId);
-        System.out.println("mcallis is "+mCallId);
-        if (call != null) {
-            call.addCallListener(new SinchCallListener());
-        } else {
-            Log.e(TAG, "Started with invalid callId, aborting.");
-        }
-    }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    private void endCall() {
-        mAudioPlayer.stopProgressTone();
-        Call call = getSinchServiceInterface().getCall(mCallId);
-        if (call != null) {
-            call.hangup();
-        }
-        endCallButton.setVisibility(View.GONE);
-//        finish();
-    }
-
-    private class SinchCallListener implements CallListener {
-
-        @Override
-        public void onCallEnded(Call call) {
-            Log.d("LOLOL","works for on call ended");
-
-            CallEndCause cause = call.getDetails().getEndCause();
-            Log.d(TAG, "Call ended. Reason: " + cause.toString());
-            mAudioPlayer.stopProgressTone();
-            setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
-            String endMsg = "Call ended: " + call.getDetails().toString();
-            Toast.makeText(MapsActivity.this, endMsg, Toast.LENGTH_LONG).show();
-            endCall();
-
-        }
-
-        @Override
-        public void onCallEstablished(Call call) {
-            Log.d("LOLOL","works for on call established");
-            Log.d(TAG, "Call established");
-            mAudioPlayer.stopProgressTone();
-            setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-        }
-
-        @Override
-        public void onCallProgressing(Call call) {
-            Log.d(TAG, "Call progressing");
-            mAudioPlayer.playProgressTone();
-        }
-
-        @Override
-        public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
-            // Send a push through your push provider here, e.g. GCM
-        }
-    }
 
     private void hideSliders(){
         LinearLayout route = findViewById(R.id.route);
@@ -1212,6 +1147,73 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         protected void onPostExecute(Bitmap result) {
             bmImage.setImageBitmap(result);
+        }
+    }
+
+    @Override
+    public void onServiceConnected() {
+        Call call = getSinchServiceInterface().getCall(mCallId);
+        System.out.println("mcallis is "+mCallId);
+        if (call != null) {
+            call.addCallListener(new SinchCallListener());
+        } else {
+            Log.e(TAG, "Started with invalid callId, aborting.");
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    private void endCall() {
+        mAudioPlayer.stopProgressTone();
+        Call call = getSinchServiceInterface().getCall(mCallId);
+        if (call != null) {
+            call.hangup();
+        }
+        endCallButton.setVisibility(View.GONE);
+//        finish();
+    }
+
+    private class SinchCallListener implements CallListener {
+
+        @Override
+        public void onCallEnded(Call call) {
+            Log.d("LOLOL","works for on call ended");
+
+            CallEndCause cause = call.getDetails().getEndCause();
+            Log.d(TAG, "Call ended. Reason: " + cause.toString());
+            mAudioPlayer.stopProgressTone();
+            setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
+            String endMsg = "Call ended: " + call.getDetails().toString();
+            Toast.makeText(MapsActivity.this, endMsg, Toast.LENGTH_LONG).show();
+            endCall();
+
+        }
+
+        @Override
+        public void onCallEstablished(Call call) {
+            Log.d("LOLOL","works for on call established");
+            Log.d(TAG, "Call established");
+            mAudioPlayer.stopProgressTone();
+            setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+        }
+
+        @Override
+        public void onCallProgressing(Call call) {
+            Log.d(TAG, "Call progressing");
+            mAudioPlayer.playProgressTone();
+        }
+
+        @Override
+        public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
+            // Send a push through your push provider here, e.g. GCM
         }
     }
 
