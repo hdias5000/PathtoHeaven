@@ -755,7 +755,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            map = new Map(googleMap);
+            map = new Map(googleMap,getApplicationContext());
             currentLocation = new CurrentLocation(map);
             askForCurrentLocation();
         }
