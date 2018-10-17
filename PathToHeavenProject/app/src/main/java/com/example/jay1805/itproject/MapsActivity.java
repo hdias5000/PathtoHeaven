@@ -227,7 +227,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
             }
         });
-
+        endCallButton = findViewById(R.id.endCallButton);
         endCallButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -405,7 +405,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     BroadcastReceiver callInMaps = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            endCallButton = findViewById(R.id.endCallButton);
+
             mAudioPlayer = new AudioPlayer(getApplicationContext());
             mCallId = intent.getStringExtra(SinchService.CALL_ID);
             System.out.println("mcallis is in receiver "+mCallId);
