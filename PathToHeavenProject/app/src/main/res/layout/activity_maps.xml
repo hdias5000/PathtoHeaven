@@ -118,6 +118,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_marginRight="10dp"
                 android:layout_marginTop="100dp"
+                android:visibility="gone"
                 android:backgroundTint="@color/red_A700"
                 android:id="@+id/endCallButton"/>
         </RelativeLayout>

@@ -148,23 +148,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         //set layout slide listener
         slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
 
-        endCallButton = findViewById(R.id.endCallButton);
-        mAudioPlayer = new AudioPlayer(this);
-        mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
-        if(mCallId!=null) {
-            endCallButton.setVisibility(View.VISIBLE);
-        }
-        else {
-            endCallButton.setVisibility(View.GONE);
-        }
-        endCallButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                endCall();
-            }
-        });
-
-
         OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
         OneSignal.setSubscription(true);
         OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
@@ -281,6 +264,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     @Override
     public void onServiceConnected() {
         Call call = getSinchServiceInterface().getCall(mCallId);
+        System.out.println("mcallis is "+mCallId);
         if (call != null) {
             call.addCallListener(new SinchCallListener());
         } else {
@@ -304,6 +288,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         if (call != null) {
             call.hangup();
         }
+        endCallButton.setVisibility(View.GONE);
         finish();
     }
 
@@ -311,6 +296,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         @Override
         public void onCallEnded(Call call) {
+            Log.d("LOLOL","works for on call ended");
+
             CallEndCause cause = call.getDetails().getEndCause();
             Log.d(TAG, "Call ended. Reason: " + cause.toString());
             mAudioPlayer.stopProgressTone();
@@ -318,10 +305,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             String endMsg = "Call ended: " + call.getDetails().toString();
             Toast.makeText(MapsActivity.this, endMsg, Toast.LENGTH_LONG).show();
             endCall();
+
         }
 
         @Override
         public void onCallEstablished(Call call) {
+            Log.d("LOLOL","works for on call established");
             Log.d(TAG, "Call established");
             mAudioPlayer.stopProgressTone();
             setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
@@ -402,7 +391,32 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         });
                     }
                 }, new IntentFilter("GPS ID"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                callInMaps, new IntentFilter("Call ID"));
     }
+
+    BroadcastReceiver callInMaps = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            endCallButton = findViewById(R.id.endCallButton);
+            mAudioPlayer = new AudioPlayer(getApplicationContext());
+            mCallId = intent.getStringExtra(SinchService.CALL_ID);
+            System.out.println("mcallis is in receiver "+mCallId);
+            Log.d("CALLST",mCallId);
+            if(mCallId!=null) {
+                endCallButton.setVisibility(View.VISIBLE);
+            }
+            else {
+                endCallButton.setVisibility(View.GONE);
+            }
+            endCallButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    endCall();
+                }
+            });
+        }
+    };
 
     private void gettingPermissions() {
         if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
