@@ -110,7 +110,7 @@ public class CurrentLocationActivity extends AppCompatActivity implements
 
     @Override
     public void onLocationChanged(Location location) {
-//        currentLocation.changeCurrentLocation(location);
+//      currentLocation.changeCurrentLocation(location);
         currentLocation = location;
         sendMessageToActivity(location,"");
 
