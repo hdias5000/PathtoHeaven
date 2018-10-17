@@ -2,13 +2,11 @@ package com.example.jay1805.itproject.Map;
 
 import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -49,8 +47,25 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
         }
         currentLocationMarker = mMap.addMarker(markerOptions);
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
+    }
+
+    public void showEntireRoute(LatLng loc1, LatLng loc2){
+        Double loc1Lat = loc1.latitude;
+        Double loc1Lon = loc1.longitude;
+        Double loc2Lat = loc2.latitude;
+        Double loc2Lon = loc2.longitude;
+
+        LatLng northEast = new LatLng(Math.max(loc1Lat,loc2Lat),Math.max(loc1Lon,loc2Lon));
+        LatLng southWest = new LatLng(Math.min(loc1Lat,loc2Lat),Math.min(loc1Lon,loc2Lon));
+        LatLngBounds bounds = new LatLngBounds(southWest,northEast);
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,100));
+    }
+
+    public void zoomToLocation(LatLng location){
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
 //        mMap.animateCamera(CameraUpdateFactory.zoomBy(1));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 17.0f));
     }
 
     public Marker addMarker(MarkerOptions markerOptions, LatLng latLng){

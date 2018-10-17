@@ -17,6 +17,7 @@ public class CurrentLocation {
 
         this.mMap = mMap;
         this.showCurrentLocation = true;
+        this.lastLocation = null;
     }
 
 
@@ -53,6 +54,14 @@ public class CurrentLocation {
     public void showCurrentLocation(){
         showCurrentLocation = true;
         changeCurrentLocation(null);
+    }
+
+    public LatLng getCurrentLocation() {
+        if (lastLocation!=null){
+
+            return new LatLng(lastLocation.getLatitude(),lastLocation.getLongitude());
+        }
+        return null;
     }
 
     public double getLatitude(){

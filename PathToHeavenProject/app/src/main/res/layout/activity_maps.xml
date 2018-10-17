@@ -12,7 +12,7 @@
     sothree:umanoDragView="@+id/dragView"
     sothree:umanoOverlay="true"
     sothree:umanoPanelHeight="50dp"
-    sothree:umanoInitialState="hidden"
+    sothree:umanoInitialState="collapsed"
     sothree:umanoShadowHeight="10dp"
     sothree:umanoParalaxOffset="100dp">
     <!--sothree:umanoFadeColor="@android:color/transparent"-->
@@ -110,6 +110,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_marginTop="200dp"
                 android:layout_marginRight="10dp"
+                android:backgroundTint="@color/pink_500"
                 android:id="@+id/floatingButton"/>
 
             <android.support.design.widget.FloatingActionButton

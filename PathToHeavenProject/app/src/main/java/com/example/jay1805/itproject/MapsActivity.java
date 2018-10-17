@@ -153,6 +153,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         currentPanel = "menu";
         panelHeight = new HashMap<>();
         findPanelHeights();
+        showCurrentSlider();
         helpMode = false;
         //set layout slide listener
 
@@ -284,6 +285,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 currentPanelLayout = findViewById(R.id.sosSlider);
                 break;
             case "routeInitial":
+                Log.d("Lay", "showing current slider");
                 currentPanelLayout = findViewById(R.id.route);
                 break;
             case "help":
@@ -296,13 +298,15 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         if (currentPanelLayout!=null){
             currentPanelLayout.setVisibility(View.VISIBLE);
             slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-            setPanelHeight();
+//            setPanelHeight();
         }
 
     }
 
     private void setPanelHeight() {
         if (panelHeight.containsKey(currentPanel)){
+            Log.d("Lay", "setting correct height");
+            Log.d("Lay", "showing current slider"+panelHeight.get(currentPanel));
             slidingLayout.setPanelHeight(panelHeight.get(currentPanel));
         }else{
             slidingLayout.setPanelHeight(144);
@@ -408,6 +412,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         initialRouteLayout.post(new Runnable(){
             public void run(){
                 panelHeight.put("routeInitial",initialRouteLayout.getHeight());
+                Log.d("Lay", "finding slider height");
                 setPanelHeight();
             }
         });
@@ -716,7 +721,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             @Override
             public void onClick(View v) {
                 //hide sliding layout
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
 //                btnShow.setVisibility(View.VISIBLE);
             }
         };
@@ -759,6 +764,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
     private void findRoute(LatLng currentLocation, LatLng currentDestination){
+        final LatLng curr = currentLocation;
+        final LatLng dest = currentDestination;
         Object dataTransfer[] = new Object[3];
         String url = urlCreator.getDirectionsUrl(currentLocation.latitude, currentLocation.longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
         Log.d("LOL",url);
@@ -767,6 +774,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             @Override
             public void onSuccess(Object object) {
                 printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
+                map.showEntireRoute(curr,dest);
             }
 
             @Override
@@ -827,7 +835,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             lastKnownLoc = (Location) b.getParcelable("Location");
             if (lastKnownLoc != null) {
                 Log.d("BS","I don't believe it"+lastKnownLoc.getLongitude());
-                currentLocation.changeCurrentLocation(lastKnownLoc);
+                if (currentLocation.getCurrentLocation()==null){
+                    currentLocation.changeCurrentLocation(lastKnownLoc);
+                    map.zoomToLocation(currentLocation.getCurrentLocation());
+                }else{
+                    currentLocation.changeCurrentLocation(lastKnownLoc);
+                }
             }
         }
     };
@@ -1007,7 +1020,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
                 modeOfTransport = "walking";
 
-                hideSliders();
+//                hideSliders();
 
                 if (helpMode){
                     currentPanel = "helpRoute";
@@ -1043,6 +1056,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         placeAutocompleteFragment.setText("");
                         view.setVisibility(View.GONE);
                         slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                        currentPanel = "menu";
+                        showCurrentSlider();
                         map.clearMap();
                         currentLocation.showCurrentLocation();
                         modeOfTransport = "driving";
