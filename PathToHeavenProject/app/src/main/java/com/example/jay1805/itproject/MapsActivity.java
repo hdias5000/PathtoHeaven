@@ -127,6 +127,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
     LatLng currentDestination;
     Marker marker;
 
+    HashMap sendRouteInfo = null;
+    String shareIDOfElder = "";
     String nameOfElderly = "Elderly";
     Marker markerOfElderly;
     LatLng locationOfElderly;
@@ -321,6 +323,29 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                                 stopButton.setVisibility(View.GONE);
                             }
                         });
+                        String shareID = intent.getStringExtra("ID");
+                        FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID).child("route").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()){
+                                    double latitude = Double.parseDouble(dataSnapshot.child("destLat").getValue().toString());
+                                    double longitude = Double.parseDouble(dataSnapshot.child("destLon").getValue().toString());
+//                                    double latitude = Double.parseDouble(dataSnapshot.child("destLat").getValue().toString());
+//                                    double longitude = Double.parseDouble(dataSnapshot.child("destLon").getValue().toString());
+                                    LatLng dest = new LatLng(latitude,longitude);
+                                    String mode = dataSnapshot.child("mode").getValue().toString();
+                                    ///////////////////change button when this is pressed
+                                    modeOfTransport = mode;
+                                    LatLng curLoc = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                                    findRoute(curLoc,dest);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
                     }
                 }, new IntentFilter("GPS ID"));
     }
@@ -439,23 +464,23 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
     }
 
     private void gpsSharing() {
-        final String shareID;
+
         String userID;
         Intent intent = getIntent();
         if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID") && intent.getExtras().containsKey("userID")) {
-
-            shareID = intent.getExtras().getString("Share ID");
+            sendRouteInfo = new HashMap<String,String>();
+            shareIDOfElder = intent.getExtras().getString("Share ID");
             userID = intent.getExtras().getString("userID");
             setInitialInfoForHelp(userID);
             System.out.println(userID);
-            System.out.println("Share ID is: " + shareID);
-            Log.d("SHAREID", shareID);
+            System.out.println("Share ID is: " + shareIDOfElder);
+            Log.d("SHAREID", shareIDOfElder);
 
-            FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID).addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareIDOfElder).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()){
-                        setGPSSharing(shareID);
+                        setGPSSharing(shareIDOfElder);
                     }else{
                         /////////send name of elderly person
                         makeToast("Elderly Person has Disabled GPS Sharing");
@@ -474,6 +499,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
     }
 
     private void setInitialInfoForHelp(final String elderlyID) {
+
         ImageButton callHelper;
         ImageButton chatHelper;
         ImageButton callHelper1;
@@ -1007,6 +1033,22 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
                 setMarkerForElderlyPerson();
                 setDestinationMarker();
                 findRoute(locationOfElderly, currentDestination);
+                sendRouteInfo = new HashMap<String,String>();
+                sendRouteInfo.put("destLat",currentDestination.latitude);
+                sendRouteInfo.put("destLon",currentDestination.longitude);
+                sendRouteInfo.put("mode",modeOfTransport);
+            }
+        });
+
+        Button sendRoute = findViewById(R.id.B_SendRoute);
+        sendRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference ref = database.getReference().child("gps-sharing").child(shareIDOfElder);
+                java.util.Map map = new HashMap<>();
+                map.put("route",sendRouteInfo);
+                ref.updateChildren(map);
             }
         });
     }
@@ -1018,6 +1060,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback,Nav
             setMarkerForElderlyPerson();
             LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
             findRoute(location,locationOfElderly);
+            sendRouteInfo.put("destLat",location.latitude);
+            sendRouteInfo.put("destLon",location.longitude);
+            sendRouteInfo.put("mode",modeOfTransport);
         }
     };
 
