@@ -358,7 +358,17 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
         LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        String message = intent.getStringExtra("message");
+                        makeToast(message);
+                    }
+                }, new IntentFilter("Make Toast"));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
                 onRouteSuccess, new IntentFilter("RouteSuccess"));
+
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
                     @Override
@@ -1007,17 +1017,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         DirectionsView.setLayoutManager(DirectionsViewLayoutManager);
         DirectionsViewAdapter = new DirectionsViewAdapter(newSteps);
         DirectionsView.setAdapter(DirectionsViewAdapter);
-
-//        System.out.println(routeInformation.get("Summary"));
-//        System.out.println(routeInformation.get("Distance"));
-//        System.out.println(routeInformation.get("Duration"));
-//        for (int i =0;i<stepInformation.size();i++){
-//            HashMap step = (HashMap) stepInformation.get(i);
-//            System.out.println(step.get("Distance"));
-//            System.out.println(step.get("Duration"));
-//            System.out.println(step.get("Maneuver"));
-//            System.out.println(step.get("Instructions"));
-//        }
     }
 
     private BroadcastReceiver onRouteSuccess = new BroadcastReceiver() {
@@ -1027,11 +1026,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         }
     };
 
-//    public void removeRoute(){
-//        if (route!=null) {
-//            map.removeRoute(route);
-//        }
-//    }
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
