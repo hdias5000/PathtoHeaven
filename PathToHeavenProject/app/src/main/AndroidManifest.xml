@@ -51,11 +51,13 @@
         <activity android:name=".ChatMainPageActivity" />
         <activity android:name=".FindUserActivity" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".ChatActivity"
-            android:theme="@style/Theme.Transparent"/>
+        <activity
+            android:name=".ChatActivity"
+            android:theme="@style/Theme.Transparent" />
         <activity android:name=".CallScreenActivity" />
         <activity android:name=".IncomingCallScreenActivity" />
         <activity android:name=".LaunchGPSActivity" />
+        <activity android:name=".TimerActivity" />
 
         <service
             android:name=".SensorService"
@@ -75,7 +77,7 @@
         <activity android:name=".ProfilePageActivity" />
         <activity android:name=".MyProfileActivity" />
         <activity android:name=".NotificationActivity" />
-        <activity android:name=".VolunteerRedirect"></activity>
+        <activity android:name=".VolunteerRedirect" />
     </application>
 
 </manifest>

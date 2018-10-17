@@ -1,10 +1,15 @@
 package com.example.jay1805.itproject.Map;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.jay1805.itproject.MyProfileActivity;
+import com.example.jay1805.itproject.TimerActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -24,13 +29,16 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
+    private final Context context;
     private GoogleMap mMap;
     private Marker currentLocationMarker;
     private HashMap<Marker, String> listOfVolunteers;
 
 
-    public Map(GoogleMap googleMap) {
+
+    public Map(GoogleMap googleMap, Context applicationContext) {
         mMap = googleMap;
+        this.context = applicationContext;
         enableMyLocation();
 
         mMap.setOnMarkerClickListener(this);
@@ -113,6 +121,8 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
             for(Marker m:listOfVolunteers.keySet()){
                 if (m.equals(marker)){
                     // set "Requested" attribute for the volunteer as "True"
+                    //Start timer intent here
+                    context.startActivity(new Intent(context, TimerActivity.class));
                     updateRequestedChild(m);
                     marker.showInfoWindow();
                     return true;
