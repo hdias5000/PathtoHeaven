@@ -110,6 +110,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     private double volLongi=0;
     private String currentVolunteerName;
 
+    private boolean volunteerMode = false;
+
 
     private HashMap<Marker, String> markers;
 
@@ -533,9 +535,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         }
         if (intent.hasExtra("elderlyID") && intent.getExtras().containsKey("elderlyID")){
             userID = intent.getExtras().getString("elderlyID");
+            elderlyID =userID;
             currentPanel = "volunteer";
             showCurrentSlider();
+            volunteerMode = true;
             setInitialInfoForHelp(userID);
+
         }
     }
 
@@ -545,6 +550,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         ImageButton chatHelper;
         ImageButton callHelper1;
         ImageButton chatHelper1;
+        ImageButton callHelperV;
+        ImageButton chatHelperV;
         final ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
         final ArrayList<String> ToUserChatIDs = new ArrayList<String>();
 
@@ -552,6 +559,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 nameOfElderly = dataSnapshot.getValue().toString();
+                Log.d("NAME", nameOfElderly);
+                TextView nameTextView = findViewById(R.id.name);
+                nameTextView.setText(nameOfElderly);
+                TextView nameTextView1 = findViewById(R.id.name1);
+                nameTextView1.setText(nameOfElderly);
+                TextView VnameTextView = findViewById(R.id.Vname);
+                VnameTextView.setText(nameOfElderly);
             }
 
             @Override
@@ -559,15 +573,14 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
             }
         });
-        TextView nameTextView = findViewById(R.id.name);
-        nameTextView.setText(nameOfElderly);
-        nameTextView = findViewById(R.id.name1);
-        nameTextView.setText(nameOfElderly);
+
 
         callHelper = findViewById(R.id.callButtonHelp);
         chatHelper = findViewById(R.id.chatButtonHelp);
         callHelper1 = findViewById(R.id.callButtonHelp1);
         chatHelper1 = findViewById(R.id.chatButtonHelp1);
+        callHelperV = findViewById(R.id.VcallButtonHelp);
+        chatHelperV = findViewById(R.id.VchatButtonHelp);
 
         FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -588,7 +601,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             public void onClick(View v) {
                 Call call = getSinchServiceInterface().callUser(elderlyID);
                 String callId = call.getCallId();
+                if (volunteerMode){
 
+                    FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("call");
+
+                }
                 Intent callScreen = new Intent(v.getContext(), CallScreenActivity.class);
                 callScreen.putExtra(SinchService.CALL_ID, callId);
                 startActivity(callScreen);
@@ -597,6 +614,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         callHelper.setOnClickListener(callListener);
         callHelper1.setOnClickListener(callListener);
+        callHelperV.setOnClickListener(callListener);
 
 
         View.OnClickListener chatListener = new View.OnClickListener() {
@@ -635,6 +653,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                   else {
                                       Toast.makeText(getApplicationContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
                                   }
+                                  if (volunteerMode){
+                                      FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("chat");
+                                  }
 
                                   Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
                                   Bundle bundle = new Bundle();
@@ -652,6 +673,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 );}};
         chatHelper.setOnClickListener(chatListener);
         chatHelper1.setOnClickListener(chatListener);
+        chatHelperV.setOnClickListener(chatListener);
+
 
 
     }
@@ -1047,7 +1070,16 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     private void setButtonListeners(){
         sosButtonListener();
         modesOfTransportListeners();
-
+        ImageButton cancelVolunteer = findViewById(R.id.cancelConnectionButton);
+        cancelVolunteer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent mapScreen = new Intent(getApplicationContext(), MapsActivity.class);
+                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("null");
+                FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").setValue("False");
+                startActivity(mapScreen);
+            }
+        });
     }
 
     private void sosButtonListener() {
@@ -1081,6 +1113,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         routeToElderlyButton.setOnClickListener(alrightalrightalright);
         Button routeToElderlyButton1 = findViewById(R.id.B_RouteToElder1);
         routeToElderlyButton1.setOnClickListener(alrightalrightalright);
+        Button routeToElderlyButtonV = findViewById(R.id.B_VRouteToElder);
+        routeToElderlyButtonV.setOnClickListener(alrightalrightalright);
 
         Button elderToDestination = findViewById(R.id.B_ElderToDestination);
         elderToDestination.setOnClickListener(new View.OnClickListener() {
