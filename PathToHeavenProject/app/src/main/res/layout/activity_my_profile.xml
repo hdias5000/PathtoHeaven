@@ -12,16 +12,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center">
-    <TextView
-        android:id="@+id/profileWelcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_marginTop="20dp"
-        android:text="Your Profile"
-        android:textSize="20dp"
-        android:textStyle="bold"
-        android:textColor="@color/black"/>
+    <!--<TextView-->
+        <!--android:id="@+id/profileWelcome"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:padding="10dp"-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:text="Your Profile"-->
+        <!--android:textSize="20dp"-->
+        <!--android:textStyle="bold"-->
+        <!--android:textColor="@color/black"/>-->
     </LinearLayout>
 
 
@@ -71,7 +71,7 @@
 
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="130dp">
@@ -93,7 +93,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="130dp">
@@ -115,7 +115,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="130dp">
@@ -138,7 +138,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="130dp">
@@ -172,15 +172,27 @@
             android:id="@+id/volunteerIcon"
             android:src="@mipmap/ic_volunteer2"/>
 
-        <TextView
-            android:id="@+id/isVolunteerTextView"
+
+
+        <Switch
+            android:id="@+id/setSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="10dp"
-            android:text=""
-            android:textSize="17dp"
-            android:textColor="@color/black"/>
+            android:paddingLeft="15dp"/>
+
 
     </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="200dp"
+            android:layout_gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/submitMyProfile"
+                android:text="Save details"/>
+        </LinearLayout>
 
 </LinearLayout>
