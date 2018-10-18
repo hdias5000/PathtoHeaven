@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="80dp"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
-    android:background="@drawable/custom_border"
-    >
+    android:background="@drawable/custom_border">
     <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="140dp"
+        android:layout_height="75dp"
         android:id="@+id/contact_layout"
+        android:layout_gravity="center"
         android:padding="10dp"
         android:layout_marginRight="20dp">
 
@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="contact"
-            android:textSize="20dp"
+            android:textSize="17dp"
             android:textStyle="bold"
             android:textColor="@color/black"
             android:id="@+id/name"/>
@@ -27,7 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="phone"
-            android:textSize="20dp"
+            android:textSize="17dp"
             android:textStyle="bold"
             android:textColor="@color/black"
             android:id="@+id/phone"/>
@@ -35,28 +35,37 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:gravity="right">
 
         <ImageButton
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
             android:src="@drawable/ic_chat_white_24dp"
             android:backgroundTint="@color/blue_800"
+            android:layout_gravity="center"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/rounded_corner_button"
             android:id="@+id/chatButton" />
 
         <ImageButton
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
             android:src="@drawable/ic_call_white_24dp"
             android:backgroundTint="@color/blue_800"
+            android:layout_gravity="center"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/rounded_corner_button"
             android:id="@+id/callButton"/>
 
         <ImageButton
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:src="@drawable/ic_people_white_24dp"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:src="@drawable/ic_hands20_512"
+            android:layout_gravity="center"
+            android:layout_marginRight="10dp"
             android:backgroundTint="@color/blue_800"
+            android:background="@drawable/rounded_corner_button"
             android:id="@+id/helpButton"/>
 
     </LinearLayout>
