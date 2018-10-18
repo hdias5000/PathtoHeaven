@@ -715,61 +715,61 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     ///////////////////////////////////////////////////////
 
-//    private void PlaceVolunteerMarkerOnMap() {
-//
-//        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-//                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
-//                    {
-//
-//                        // getting volunteers' coordinates
-//                        if (volunteersnapshot.getKey().equals("Volunteer") && volunteersnapshot.getValue().toString().equals("Yes")) {
-//                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
-//                            {
-//                                if (volunteersnapshot2.getKey().equals("latitude")) {
-//                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
-//                                }
-//                                if (volunteersnapshot2.getKey().equals("longitude")) {
-//                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
-//
-//                                }
-//                                if (volunteersnapshot2.getKey().equals("name")) {
-//                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
-//                                }
-//
-//
-//                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
-//                                {
-//                                    System.out.println("current vol: "+currentVolunteerName);
-//                                    MarkerOptions mo = new MarkerOptions();
-//                                    LatLng volLatLng = new LatLng(volLat,volLongi);
-//
-//                                    mo.position(volLatLng);
-//                                    mo.title(currentVolunteerName);
-//                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
-//                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
-//
-//
-//                                    markers.put(map.addMarker(mo,volLatLng), childsnapshot.getKey());
-//                                    currentVolunteerName = "";
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//
-//                }
-//                map.setListOfVolunteers(markers);
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
-//    }
+    private void PlaceVolunteerMarkerOnMap() {
+
+        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
+                    {
+
+                        // getting volunteers' coordinates
+                        if (volunteersnapshot.getKey().equals("Volunteer") && volunteersnapshot.getValue().toString().equals("Yes")) {
+                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
+                            {
+                                if (volunteersnapshot2.getKey().equals("latitude")) {
+                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
+                                }
+                                if (volunteersnapshot2.getKey().equals("longitude")) {
+                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
+
+                                }
+                                if (volunteersnapshot2.getKey().equals("name")) {
+                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
+                                }
+
+
+                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
+                                {
+                                    System.out.println("current vol: "+currentVolunteerName);
+                                    MarkerOptions mo = new MarkerOptions();
+                                    LatLng volLatLng = new LatLng(volLat,volLongi);
+
+                                    mo.position(volLatLng);
+                                    mo.title(currentVolunteerName);
+                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
+                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
+
+
+                                    markers.put(map.addMarker(mo,volLatLng,true), childsnapshot.getKey());
+                                    currentVolunteerName = "";
+                                }
+                            }
+                        }
+                    }
+
+
+                }
+                map.setListOfVolunteers(markers);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
     ////////////////////////////////////////////////////////
 //    private View.OnClickListener onHideListener() {
 //        return new View.OnClickListener() {
@@ -1292,61 +1292,61 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     ///////////////////////////////////////////////////////
 
-    private void PlaceVolunteerMarkerOnMap() {
-
-        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
-                    {
-
-                        // getting volunteers' coordinates
-                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
-                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
-                            {
-                                if (volunteersnapshot2.getKey().equals("latitude")) {
-                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
-                                }
-                                if (volunteersnapshot2.getKey().equals("longitude")) {
-                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
-
-                                }
-                                if (volunteersnapshot2.getKey().equals("name")) {
-                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
-                                }
-
-
-                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
-                                {
-                                    System.out.println("current vol: "+currentVolunteerName);
-                                    MarkerOptions mo = new MarkerOptions();
-                                    LatLng volLatLng = new LatLng(volLat,volLongi);
-
-                                    mo.position(volLatLng);
-                                    mo.title(currentVolunteerName);
-                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
-                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
-
-
-                                    markers.put(map.addMarker(mo,volLatLng, true), childsnapshot.getKey());
-                                    currentVolunteerName = "";
-                                }
-                            }
-                        }
-                    }
-
-
-                }
-                map.setListOfVolunteers(markers);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
+//    private void PlaceVolunteerMarkerOnMap() {
+//
+//        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+//                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
+//                    {
+//
+//                        // getting volunteers' coordinates
+//                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
+//                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
+//                            {
+//                                if (volunteersnapshot2.getKey().equals("latitude")) {
+//                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
+//                                }
+//                                if (volunteersnapshot2.getKey().equals("longitude")) {
+//                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
+//
+//                                }
+//                                if (volunteersnapshot2.getKey().equals("name")) {
+//                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
+//                                }
+//
+//
+//                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
+//                                {
+//                                    System.out.println("current vol: "+currentVolunteerName);
+//                                    MarkerOptions mo = new MarkerOptions();
+//                                    LatLng volLatLng = new LatLng(volLat,volLongi);
+//
+//                                    mo.position(volLatLng);
+//                                    mo.title(currentVolunteerName);
+//                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
+//                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
+//
+//
+//                                    markers.put(map.addMarker(mo,volLatLng, true), childsnapshot.getKey());
+//                                    currentVolunteerName = "";
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//
+//                }
+//                map.setListOfVolunteers(markers);
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
 
     private void getContactList() {
         String isoPrefix = getCountryIso();
