@@ -532,7 +532,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         }
         if (intent.hasExtra("elderlyID") && intent.getExtras().containsKey("elderlyID")){
-            userID = intent.getExtras().getString("userID");
+            userID = intent.getExtras().getString("elderlyID");
             currentPanel = "volunteer";
             showCurrentSlider();
             setInitialInfoForHelp(userID);
