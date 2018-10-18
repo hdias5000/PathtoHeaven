@@ -70,7 +70,7 @@ public class VolunteerRedirect extends BaseActivity {
                 callScreen.putExtra(SinchService.CALL_ID, callId);
 
 
-                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("true");
+                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("call");
                 startActivity(callScreen);
             }
         });
@@ -112,7 +112,7 @@ public class VolunteerRedirect extends BaseActivity {
                             Toast.makeText(getApplicationContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
                         }
 
-                        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("true");
+                        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("chat");
                         Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
                         Bundle bundle = new Bundle();
                         bundle.putString("chatID", chatIDKey);
@@ -142,6 +142,7 @@ public class VolunteerRedirect extends BaseActivity {
             public void onClick(View v) {
                 Intent mapScreen = new Intent(VolunteerRedirect.this, MapsActivity.class);
                 FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("null");
+                FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").setValue("False");
                 startActivity(mapScreen);
             }
         });

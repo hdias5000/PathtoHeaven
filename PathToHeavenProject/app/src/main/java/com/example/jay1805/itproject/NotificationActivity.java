@@ -55,6 +55,8 @@ public class NotificationActivity extends AppCompatActivity {
                         dialog.cancel();
                         System.out.println("\n Elderly ud: "+elderlyID);
                         FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("false");
+                        System.out.println("\n DUST TILL DAWN!!!!!!!!!!! "+FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").toString());
+                        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").setValue("False");
                         // do nothing
                         startActivity(new Intent(getApplicationContext(), MapsActivity.class));
                     }

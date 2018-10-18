@@ -65,10 +65,16 @@ public class TimerActivity extends AppCompatActivity{
                         child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("accepted").addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        if(dataSnapshot.getValue().equals("true")){
-                            Toast.makeText(TimerActivity.this, "Please wait while the volunteer is connecting...", Toast.LENGTH_SHORT).show();
+                        if(dataSnapshot.getValue().equals("call")){
                             cancel();
+                            Toast.makeText(TimerActivity.this, "Please wait while the volunteer is calling you...", Toast.LENGTH_SHORT).show();
                             finish();
+                        }
+                        else if (dataSnapshot.getValue().equals("chat")){
+                            cancel();
+                            Toast.makeText(TimerActivity.this, "Please wait while the volunteer is connecting with you through chat..", Toast.LENGTH_SHORT).show();
+                            finish();
+
                         }
                         else if (dataSnapshot.getValue().equals("false")){
                             Toast.makeText(TimerActivity.this, "Volunteer cancelled request. Please try again. ", Toast.LENGTH_SHORT).show();

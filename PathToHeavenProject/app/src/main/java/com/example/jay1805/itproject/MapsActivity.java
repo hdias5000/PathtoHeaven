@@ -227,7 +227,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 if(dataSnapshot.getValue()!=null) {
                     System.out.println("###############DATASNAPSHOT: " + dataSnapshot.getValue().toString());
                     if (dataSnapshot.getValue().toString().equals("True")) {
-                        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("ElderlyIDRequested").addValueEventListener(new ValueEventListener() {
+                        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("ElderlyIDRequested").addListenerForSingleValueEvent(new ValueEventListener() {
 
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -250,6 +250,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 ////                        map.put("ElderlyIDRequested","");
 //                        userDB.updateChildren(map);
                     }
+
+//
                 }
             }
 
