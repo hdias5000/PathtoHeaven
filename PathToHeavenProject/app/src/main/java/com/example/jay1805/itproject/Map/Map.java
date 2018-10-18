@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
 import android.view.View;
 import android.widget.Toast;
+
 
 import com.example.jay1805.itproject.ChatActivity;
 import com.example.jay1805.itproject.MapsActivity;
@@ -17,8 +19,9 @@ import com.example.jay1805.itproject.SinchService;
 import com.example.jay1805.itproject.TimerActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -62,13 +65,58 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
         }
         currentLocationMarker = mMap.addMarker(markerOptions);
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-//        mMap.animateCamera(CameraUpdateFactory.zoomBy(1));
     }
 
-    public Marker addMarker(MarkerOptions markerOptions, LatLng latLng){
+    public void showLocation(LatLng pos){
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(pos));
+    }
 
-        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+
+
+    public void showEntireRoute(LatLng loc1, LatLng loc2){
+        Double loc1Lat = loc1.latitude;
+        Double loc1Lon = loc1.longitude;
+        Double loc2Lat = loc2.latitude;
+        Double loc2Lon = loc2.longitude;
+
+        LatLng northEast = new LatLng(Math.max(loc1Lat,loc2Lat),Math.max(loc1Lon,loc2Lon));
+        LatLng southWest = new LatLng(Math.min(loc1Lat,loc2Lat),Math.min(loc1Lon,loc2Lon));
+        LatLngBounds bounds = new LatLngBounds(southWest,northEast);
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,100));
+    }
+
+    public void updateCameraBearing(float bearing) {
+        if ( mMap == null) return;
+        Log.d("CameraMap","work pwleeeeeeease");
+
+        CameraPosition camPos = CameraPosition
+                .builder(
+                        mMap.getCameraPosition() // current Camera
+                )
+                .bearing(bearing)
+                .build();
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos));
+    }
+
+
+
+    public void zoomToLocation(LatLng location){
+
+        Log.d("CameraMap","work pwease");
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
+//        mMap.animateCamera(CameraUpdateFactory.zoomBy(1));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 17.0f));
+    }
+
+    public void currentLocationZoom(LatLng location){
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 20.0f));
+    }
+
+    public Marker addMarker(MarkerOptions markerOptions, LatLng latLng, boolean zoom){
+        if (zoom){
+
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+        }
         return mMap.addMarker(markerOptions);
 //        mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
     }

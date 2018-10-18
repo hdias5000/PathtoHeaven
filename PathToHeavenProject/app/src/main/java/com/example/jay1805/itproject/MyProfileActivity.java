@@ -9,7 +9,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -27,6 +29,7 @@ public class MyProfileActivity extends AppCompatActivity {
     private TextView Name;
     private TextView DoB;
     private TextView HomeAddress;
+    private ProgressBar progressBar;
     private TextView UserType;
     private TextView PhoneNumber;
     private DrawerLayout myDrawerLayout;
@@ -47,7 +50,11 @@ public class MyProfileActivity extends AppCompatActivity {
         HomeAddress = findViewById(R.id.theRealHomeAddress);
         UserType = findViewById(R.id.theRealUserType);
         PhoneNumber = findViewById(R.id.theRealPhoneNumber);
+
         isVolunteer = findViewById(R.id.isVolunteerTextView);
+
+        progressBar = findViewById(R.id.progressBar);
+
 
         currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         userRef = FirebaseDatabase.getInstance().getReference().child("user").child(currentUserUid);
@@ -110,6 +117,7 @@ public class MyProfileActivity extends AppCompatActivity {
 
         protected void onPostExecute(Bitmap result) {
             bmImage.setImageBitmap(result);
+            progressBar.setVisibility(View.GONE);
         }
     }
 }

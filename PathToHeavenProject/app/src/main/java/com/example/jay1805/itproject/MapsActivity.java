@@ -23,11 +23,15 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jay1805.itproject.Map.CurrentLocation;
@@ -66,8 +70,6 @@ import com.sinch.android.rtc.calling.CallEndCause;
 import com.sinch.android.rtc.calling.CallListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -79,7 +81,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private CurrentLocation currentLocation;
     private Map map;
+    private View mapView;
     private Location lastKnownLoc;
+    private LatLng currentRouteLocation;
 
     private AudioPlayer mAudioPlayer;
     private String mCallId;
@@ -109,9 +113,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private HashMap<Marker, String> markers;
 
-    LatLng currentDestination;
-    Marker marker;
-    Marker markerOfElderly;
+//    LatLng currentDestination;
+//    Marker marker;
+//    Marker markerOfElderly;
 
     ////////////////////////////////////////
     private SlidingUpPanelLayout slidingLayout;
@@ -130,37 +134,36 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     private String modeOfTransport;
 
     private boolean helpMode;
+    private boolean isEnRoute;
+    Marker marker;
 
-//    LatLng currentDestination;
-//    Marker marker;
-//
-//    Marker markerOfElderly;
+
+    LatLng currentDestination;
+
+    HashMap sendRouteInfo = null;
+    String shareIDOfElder = "";
+    String nameOfElderly = "Elderly";
+    Marker markerOfElderly;
+
     LatLng locationOfElderly;
+
+    HashMap<String,Integer> panelHeight;
+
+    String currentPanel;
+    String previousPanel="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
+        isEnRoute = false;
+        currentPanel = "menu";
+        panelHeight = new HashMap<>();
+        findPanelHeights();
+        showCurrentSlider();
         helpMode = false;
         //set layout slide listener
-        slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
-
-        endCallButton = findViewById(R.id.endCallButton);
-        mAudioPlayer = new AudioPlayer(this);
-        mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
-        if(mCallId!=null) {
-            endCallButton.setVisibility(View.VISIBLE);
-        }
-        else {
-            endCallButton.setVisibility(View.GONE);
-        }
-        endCallButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                endCall();
-            }
-        });
-
 
         OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
         OneSignal.setSubscription(true);
@@ -175,13 +178,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         markers = new HashMap<Marker, String>();
 
-        setButtonListeners();
         gettingPermissions();
         createVolunteerChildrenInDB();
         createAutoCompleteSearch();
         loadMapFragment();
         gpsSharing();
         setUpBroadcastReceivers();
+        setButtonListeners();
 
         urlCreator = new URLCreator();
         lastKnownLoc = null;
@@ -260,11 +263,18 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
             }
         });
+        endCallButton = findViewById(R.id.endCallButton);
+        endCallButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                endCall();
+            }
+        });
 
         VolunteersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
                 //startActivity(new Intent(getApplicationContext(),MapsActivity.class));
                 PlaceVolunteerMarkerOnMap();
 
@@ -294,64 +304,41 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
-    @Override
-    public void onServiceConnected() {
-        Call call = getSinchServiceInterface().getCall(mCallId);
-        if (call != null) {
-            call.addCallListener(new SinchCallListener());
-        } else {
-            Log.e(TAG, "Started with invalid callId, aborting.");
+    private void showCurrentSlider(){
+        hideSliders();
+        LinearLayout currentPanelLayout = null;
+        switch (currentPanel){
+            case "menu":
+                currentPanelLayout = findViewById(R.id.sosSlider);
+                break;
+            case "routeInitial":
+                Log.d("Lay", "showing current slider");
+                currentPanelLayout = findViewById(R.id.route);
+                break;
+            case "help":
+                currentPanelLayout = findViewById(R.id.help);
+                break;
+            case "helpRoute":
+                currentPanelLayout = findViewById(R.id.helpRoute);
+                break;
         }
+        if (currentPanelLayout!=null){
+
+            currentPanelLayout.setVisibility(View.VISIBLE);
+            slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+//            setPanelHeight();
+            findPanelHeights();
+        }
+
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    private void endCall() {
-        mAudioPlayer.stopProgressTone();
-        Call call = getSinchServiceInterface().getCall(mCallId);
-        if (call != null) {
-            call.hangup();
-        }
-        finish();
-    }
-
-    private class SinchCallListener implements CallListener {
-
-        @Override
-        public void onCallEnded(Call call) {
-            CallEndCause cause = call.getDetails().getEndCause();
-            Log.d(TAG, "Call ended. Reason: " + cause.toString());
-            mAudioPlayer.stopProgressTone();
-            setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
-            String endMsg = "Call ended: " + call.getDetails().toString();
-            Toast.makeText(MapsActivity.this, endMsg, Toast.LENGTH_LONG).show();
-            endCall();
-        }
-
-        @Override
-        public void onCallEstablished(Call call) {
-            Log.d(TAG, "Call established");
-            mAudioPlayer.stopProgressTone();
-            setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-        }
-
-        @Override
-        public void onCallProgressing(Call call) {
-            Log.d(TAG, "Call progressing");
-            mAudioPlayer.playProgressTone();
-        }
-
-        @Override
-        public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
-            // Send a push through your push provider here, e.g. GCM
+    private void setPanelHeight() {
+        if (panelHeight.containsKey(currentPanel)){
+            Log.d("Lay", "setting correct height");
+            Log.d("Lay", "showing current slider"+panelHeight.get(currentPanel));
+            slidingLayout.setPanelHeight(panelHeight.get(currentPanel));
+        }else{
+            slidingLayout.setPanelHeight(144);
         }
     }
 
@@ -364,21 +351,27 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         sos.setVisibility(View.GONE);
         help.setVisibility(View.GONE);
         helpRoute.setVisibility(View.GONE);
-        slidingLayout.setPanelHeight(120);
+//        slidingLayout.setPanelHeight(120);
     }
 
-    private void loadMapFragment() {
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-    }
+
+
 
     private void setUpBroadcastReceivers() {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
         LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        String message = intent.getStringExtra("message");
+                        makeToast(message);
+                    }
+                }, new IntentFilter("Make Toast"));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
                 onRouteSuccess, new IntentFilter("RouteSuccess"));
+
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
                     @Override
@@ -391,104 +384,131 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                 Intent intent = new Intent("STOP GPS");
                                 LocalBroadcastManager.getInstance(view.getContext()).sendBroadcast(intent);
                                 stopButton.setVisibility(View.GONE);
+                                map.clearMap();
+                                currentLocation.showCurrentLocation();
+                            }
+                        });
+                        String shareID = intent.getStringExtra("ID");
+                        FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID).child("route").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.exists()){
+                                    double latitude = Double.parseDouble(dataSnapshot.child("destLat").getValue().toString());
+                                    double longitude = Double.parseDouble(dataSnapshot.child("destLon").getValue().toString());
+                                    LatLng dest = new LatLng(latitude,longitude);
+                                    String mode = dataSnapshot.child("mode").getValue().toString();
+                                    ///////////////////change button when this is pressed
+                                    modeOfTransport = mode;
+                                    LatLng curLoc = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                                    setDestinationMarker(dest,true);
+                                    findRoute(curLoc,dest);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
                             }
                         });
                     }
                 }, new IntentFilter("GPS ID"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                callInMaps, new IntentFilter("Call ID"));
     }
 
-    private void gettingPermissions() {
-        if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MapsActivity.this,
-                    new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
-                    1);
-        }
-    }
+    BroadcastReceiver callInMaps = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
 
-    private void setDestinationMarker(){
-        destMarkerOptions = new MarkerOptions();
-        destMarkerOptions.position(currentDestination);
-        destMarkerOptions.title("Your search results");
-        destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-        destinationMarker = map.addMarker(destMarkerOptions,currentDestination);
-    }
-
-    private void createAutoCompleteSearch() {
-        placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
-
-        placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").build());
-
-        placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                currentLocation.hideCurrentLocation();
-                final LatLng latLngLoc = place.getLatLng();
-                if(marker!=null){
-                    marker.remove();
-                }
-                map.clearMap();
-                currentDestination = latLngLoc;
-
-                setDestinationMarker();
-
-                modeOfTransport = "walking";
-
-                hideSliders();
-
-                if (helpMode){
-                    slidingLayout.setPanelHeight(400);
-                    LinearLayout helpRouteSlider = findViewById(R.id.helpRoute);
-                    helpRouteSlider.setVisibility(View.VISIBLE);
-                }else {
-                    LinearLayout routeSlider = findViewById(R.id.route);
-                    routeSlider.setVisibility(View.VISIBLE);
-                }
-
-
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-
+            mAudioPlayer = new AudioPlayer(getApplicationContext());
+            mCallId = intent.getStringExtra(SinchService.CALL_ID);
+            System.out.println("mcallis is in receiver "+mCallId);
+            Log.d("CALLST",mCallId);
+            if(mCallId!=null) {
+                endCallButton.setVisibility(View.VISIBLE);
             }
+            else {
+                endCallButton.setVisibility(View.GONE);
+            }
+            onServiceConnected();
+        }
+    };
 
-            @Override
-            public void onError(Status status) {
-                Toast.makeText(MapsActivity.this, ""+status.toString(), Toast.LENGTH_SHORT).show();
+
+
+    private void findPanelHeights(){
+        final LinearLayout initialRouteLayout = (LinearLayout)findViewById(R.id.initialRouteLayout);
+        initialRouteLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("routeInitial",initialRouteLayout.getHeight());
+                Log.d("Lay", "finding slider height");
+                setPanelHeight();
             }
         });
+        /////////////////////when distance,duration is implemented
+//        final LinearLayout routeLayout = (LinearLayout)findViewById(R.id.initialRouteLayout);
+//        routeLayout.post(new Runnable(){
+//            public void run(){
+//                panelHeight.put("routeFull",routeLayout.getHeight());
+//            }
+//        });
 
-        placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_clear_button)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        // example : way to access view from PlaceAutoCompleteFragment
-                        // ((EditText) autocompleteFragment.getView()
-                        // .findViewById(R.id.place_autocomplete_search_input)).setText("");
-                        placeAutocompleteFragment.setText("");
-                        view.setVisibility(View.GONE);
-                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-                        map.clearMap();
-                        currentLocation.showCurrentLocation();
-                        modeOfTransport = "driving";
-                    }
-                });
+        final LinearLayout menuLayout = (LinearLayout)findViewById(R.id.menuLayout);
+        menuLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("menu",menuLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+        final LinearLayout helpLayout = (LinearLayout)findViewById(R.id.helpLayout);
+        helpLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("help",helpLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+        final LinearLayout helpRouteLayout = (LinearLayout)findViewById(R.id.helpRouteLayout);
+        helpRouteLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("helpRoute",helpRouteLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+    }
+
+    private void setDestinationMarker(LatLng dest,boolean zoom){
+        destMarkerOptions = new MarkerOptions();
+        destMarkerOptions.position(dest);
+        destMarkerOptions.title("Your search results");
+        destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        destinationMarker = map.addMarker(destMarkerOptions, dest,zoom);
     }
 
     private void gpsSharing() {
-        final String shareID;
+
+        String userID;
         Intent intent = getIntent();
-        if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID")) {
+        if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID") && intent.getExtras().containsKey("userID")) {
+            sendRouteInfo = new HashMap<String,String>();
+            shareIDOfElder = intent.getExtras().getString("Share ID");
+            userID = intent.getExtras().getString("userID");
+            setInitialInfoForHelp(userID);
+            System.out.println(userID);
+            System.out.println("Share ID is: " + shareIDOfElder);
+            Log.d("SHAREID", shareIDOfElder);
+            currentPanel = "help";
+            showCurrentSlider();
 
-            shareID = intent.getExtras().getString("Share ID");
-            System.out.println("Share ID is: " + shareID);
-            Log.d("SHAREID", shareID);
-
-            FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID).addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareIDOfElder).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()){
-                        setGPSSharing(shareID);
+                        setGPSSharing(shareIDOfElder);
                     }else{
                         /////////send name of elderly person
                         makeToast("Elderly Person has Disabled GPS Sharing");
+                        helpMode = false;
+                        startActivity(new Intent(getApplicationContext(), MapsActivity.class));
                     }
                 }
 
@@ -501,6 +521,123 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             });
 
         }
+    }
+
+    private void setInitialInfoForHelp(final String elderlyID) {
+
+        ImageButton callHelper;
+        ImageButton chatHelper;
+        ImageButton callHelper1;
+        ImageButton chatHelper1;
+        final ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
+        final ArrayList<String> ToUserChatIDs = new ArrayList<String>();
+
+        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                nameOfElderly = dataSnapshot.getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        TextView nameTextView = findViewById(R.id.name);
+        nameTextView.setText(nameOfElderly);
+        nameTextView = findViewById(R.id.name1);
+        nameTextView.setText(nameOfElderly);
+
+        callHelper = findViewById(R.id.callButtonHelp);
+        chatHelper = findViewById(R.id.chatButtonHelp);
+        callHelper1 = findViewById(R.id.callButtonHelp1);
+        chatHelper1 = findViewById(R.id.chatButtonHelp1);
+
+        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
+                    CurrentUserChatIDs.add(childSnapShot.getKey());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        View.OnClickListener callListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Call call = getSinchServiceInterface().callUser(elderlyID);
+                String callId = call.getCallId();
+
+                Intent callScreen = new Intent(v.getContext(), CallScreenActivity.class);
+                callScreen.putExtra(SinchService.CALL_ID, callId);
+                startActivity(callScreen);
+            }
+        };
+
+        callHelper.setOnClickListener(callListener);
+        callHelper1.setOnClickListener(callListener);
+
+
+        View.OnClickListener chatListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").addListenerForSingleValueEvent(
+                        new ValueEventListener() {
+                              @Override
+                              public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                  String chatIDKey = null;
+
+                                  for (DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
+                                      ToUserChatIDs.add(childSnapShot.getKey());
+                                  }
+
+                                  Boolean chatExists = false;
+                                  for(String MyChatIDs : CurrentUserChatIDs) {
+                                      for(String ToChatIDs : ToUserChatIDs) {
+                                          if(MyChatIDs.equals(ToChatIDs)) {
+                                              chatIDKey = MyChatIDs;
+                                              chatExists = true;
+                                          }
+                                      }
+                                  }
+
+                                  if(chatExists.equals(false)) {
+                                      String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+                                      CurrentUserChatIDs.add(key);
+                                      ToUserChatIDs.add(key);
+                                      chatIDKey = key;
+                                      FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("chat").child(key).setValue(true);
+                                      FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").child(key).setValue(true);
+                                  }
+
+                                  else {
+                                      Toast.makeText(getApplicationContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
+                                  }
+
+                                  Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
+                                  Bundle bundle = new Bundle();
+                                  bundle.putString("chatID", chatIDKey);
+                                  intent.putExtras(bundle);
+                                  getApplicationContext().startActivity(intent);
+
+                              }
+
+                              @Override
+                              public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                              }
+                        }
+                );}};
+        chatHelper.setOnClickListener(chatListener);
+        chatHelper1.setOnClickListener(chatListener);
+
+
     }
 
     private void setGPSSharing(String shareID){
@@ -524,15 +661,15 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 }
 
                 helpMode = true;
-
-                            Log.d("Coord", "lat is: " +newLatitude);
-                            Log.d("Coord", "long is: " +newLongitude);
-                            LatLng latLng = new LatLng(newLatitude,newLongitude);
-                            MarkerOptions mo = new MarkerOptions();
-                            mo.position(latLng);
-                            mo.title("Location of Elderly");
-                            mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer));
-                            markerOfElderly = map.addMarker(mo,latLng);
+//
+//                            Log.d("Coord", "lat is: " +newLatitude);
+//                            Log.d("Coord", "long is: " +newLongitude);
+//                            LatLng latLng = new LatLng(newLatitude,newLongitude);
+//                            MarkerOptions mo = new MarkerOptions();
+//                            mo.position(latLng);
+//                            mo.title("Location of Elderly");
+//                            mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer));
+//                            markerOfElderly = map.addMarker(mo,latLng);
                 if (markerOfElderly!=null){
                     markerOfElderly.remove();
                 }
@@ -543,11 +680,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
                 setMarkerForElderlyPerson();
 
-                hideSliders();
-                slidingLayout.setPanelHeight(240);
-                LinearLayout route = findViewById(R.id.help);
-                route.setVisibility(View.VISIBLE);
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+//                hideSliders();
+//                slidingLayout.setPanelHeight(240);
+//                LinearLayout route = findViewById(R.id.help);
+//                route.setVisibility(View.VISIBLE);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 
             }
 
@@ -578,6 +715,583 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     ///////////////////////////////////////////////////////
 
+//    private void PlaceVolunteerMarkerOnMap() {
+//
+//        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+//                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
+//                    {
+//
+//                        // getting volunteers' coordinates
+//                        if (volunteersnapshot.getKey().equals("Volunteer") && volunteersnapshot.getValue().toString().equals("Yes")) {
+//                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
+//                            {
+//                                if (volunteersnapshot2.getKey().equals("latitude")) {
+//                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
+//                                }
+//                                if (volunteersnapshot2.getKey().equals("longitude")) {
+//                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
+//
+//                                }
+//                                if (volunteersnapshot2.getKey().equals("name")) {
+//                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
+//                                }
+//
+//
+//                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
+//                                {
+//                                    System.out.println("current vol: "+currentVolunteerName);
+//                                    MarkerOptions mo = new MarkerOptions();
+//                                    LatLng volLatLng = new LatLng(volLat,volLongi);
+//
+//                                    mo.position(volLatLng);
+//                                    mo.title(currentVolunteerName);
+//                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
+//                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
+//
+//
+//                                    markers.put(map.addMarker(mo,volLatLng), childsnapshot.getKey());
+//                                    currentVolunteerName = "";
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//
+//                }
+//                map.setListOfVolunteers(markers);
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
+    ////////////////////////////////////////////////////////
+//    private View.OnClickListener onHideListener() {
+//        return new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                //hide sliding layout
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+////                btnShow.setVisibility(View.VISIBLE);
+//            }
+//        }
+//    }
+    private void setMarkerForElderlyPerson(){
+        MarkerOptions mo = new MarkerOptions();
+        mo.position(locationOfElderly);
+        mo.title("Location of Elderly");
+        mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        markerOfElderly = map.addMarker(mo,locationOfElderly, true);
+    }
+
+
+
+//    private void initializeRecyclerView() {
+//
+//        userListView = findViewById(R.id.userList);
+//        userListView.setNestedScrollingEnabled(false);
+//        userListView.setHasFixedSize(false);
+//        userListViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
+//        userListView.setLayoutManager(userListViewLayoutManager);
+//        if(getSinchServiceInterface()!=null) {
+//            Log.d("Sinch","NIT NULL");
+//            System.out.println("SinchService is not null");
+//        }
+//        else {
+//            Log.d("Sinch","YEEt NULL");
+//            System.out.println("SinchService is null");
+//        }
+//        userListViewAdapter = new UserListAdapter(userList);
+//        userListView.setAdapter(userListViewAdapter);
+//    }
+
+    ////////////////////////////////////////////////////////
+    private View.OnClickListener onHideListener() {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //hide sliding layout
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                btnShow.setVisibility(View.VISIBLE);
+            }
+        };
+    }
+    ///////////////////////////////////////////////////////
+
+
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just add a marker near Sydney, Australia.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+//    @Override
+//    public void onMapReady(GoogleMap googleMap) {
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//            map = new Map(googleMap, getApplicationContext());
+//            currentLocation = new CurrentLocation(map);
+//            askForCurrentLocation();
+//        }
+//
+//    }
+
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+
+//            case R.id.B_Hospital:
+//                showNearbyPlaces("hospital",latitude,longitude);
+//                break;
+//
+//            case R.id.B_Restaurant:
+//                showNearbyPlaces("restaurant",latitude,longitude);
+//                break;
+//
+//            case R.id.B_School:
+//                showNearbyPlaces("school",latitude,longitude);
+//                break;
+
+            case R.id.B_to:
+//                removeRoute();
+                map.clearMap();
+                destinationMarker = map.addMarker(destMarkerOptions,currentDestination, true);
+                LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                findRoute(location,currentDestination);
+//                while (!getDirectionsData.isSuccess()){
+//
+//                }
+//                getDirectionsData
+
+                break;
+        }
+
+    }
+
+    private void findRoute(final LatLng currentLocation, final LatLng currentDestination){
+        final LatLng curr = currentLocation;
+        final LatLng dest = currentDestination;
+        Object dataTransfer[] = new Object[3];
+        String url = urlCreator.getDirectionsUrl(currentLocation.latitude, currentLocation.longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
+        Log.d("LOL",url);
+        currentRouteData = new RouteData();
+        GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData, new OnEventListener() {
+            @Override
+            public void onSuccess(Object object) {
+                if (!isEnRoute){
+
+                    map.showEntireRoute(curr,dest);
+                }
+                currentRouteLocation = currentLocation;
+                printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                makeToast("Route Not Found");
+            }
+        });
+        dataTransfer[0] = map;
+        dataTransfer[1] = url;
+        dataTransfer[2] = currentDestination;
+        getDirectionsData.execute(dataTransfer);
+        sendMessageToActivity(url, currentDestination);
+        route = getDirectionsData.getRoute();
+    }
+
+    private ArrayList change(ArrayList step){
+        ArrayList <HashMap> stepUpdated = new ArrayList<>();
+
+        for (int i=0;i<step.size();i++){
+            HashMap info = (HashMap) step.get(i);
+            String str = info.get("Maneuver").toString().replaceAll("-","_");
+            String drawable = "direction_"+str;
+            int resID =getResources().getIdentifier(drawable, "drawable", getPackageName());
+            System.out.println("Jay is shit "+ drawable);
+            info.put("manRes", Integer.toString(resID));
+            stepUpdated.add(info);
+        }
+        return stepUpdated;
+    }
+
+
+    ///////////////////////add route information
+    private void printRouteInfo(HashMap<String,String> routeInformation, ArrayList stepInformation) {
+        LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
+        enRouteLayout.setVisibility(View.VISIBLE);
+        findPanelHeights();
+        TextView distDur = findViewById(R.id.distanceDuration);
+        String summary="Path Information";
+        if (routeInformation.containsKey("Summary")){
+            summary = routeInformation.get("Summary");
+        }
+        distDur.setText(summary+":- "+routeInformation.get("Distance")+"("+routeInformation.get("Duration")+")");
+        final Button enRoute = findViewById(R.id.enRoute);
+        enRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isEnRoute){
+                    isEnRoute = false;
+                    map.showEntireRoute(currentLocation.getCurrentLocation(),currentDestination);
+                    enRoute.setText("En Route");
+                }else{
+                    isEnRoute=true;
+                    enRoute.setText("Terminate");
+                    map.currentLocationZoom(currentLocation.getCurrentLocation());
+//                    map.updateCameraBearing(currentLocation.getBearing());
+                }
+            }
+        });
+        ArrayList newSteps = change(stepInformation);
+        DirectionsView = findViewById(R.id.List_Directions);
+        DirectionsView.setNestedScrollingEnabled(false);
+        DirectionsView.setHasFixedSize(false);
+        DirectionsViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
+        DirectionsView.setLayoutManager(DirectionsViewLayoutManager);
+        DirectionsViewAdapter = new DirectionsViewAdapter(newSteps);
+        DirectionsView.setAdapter(DirectionsViewAdapter);
+    }
+
+    private BroadcastReceiver onRouteSuccess = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
+        }
+    };
+
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            String message = intent.getStringExtra("Status");
+            Bundle b = intent.getBundleExtra("Location");
+            lastKnownLoc = (Location) b.getParcelable("Location");
+            if (lastKnownLoc != null) {
+                Log.d("BS","I don't believe it"+lastKnownLoc.getLongitude());
+                if (currentLocation.getCurrentLocation()==null){
+                    currentLocation.changeCurrentLocation(lastKnownLoc);
+                    map.zoomToLocation(currentLocation.getCurrentLocation());
+                }else{
+                    currentLocation.changeCurrentLocation(lastKnownLoc);
+                }
+                if (isEnRoute){
+                    map.currentLocationZoom(currentLocation.getCurrentLocation());
+//                    map.updateCameraBearing(lastKnownLoc.getBearing());
+//                    map.showLocation(new LatLng(lastKnownLoc.getLatitude(),lastKnownLoc.getLongitude()));
+                    Location prevLoc = new Location("");
+                    prevLoc.setLatitude(currentRouteLocation.latitude);
+                    prevLoc.setLongitude(currentRouteLocation.longitude);
+                    if (prevLoc.distanceTo(lastKnownLoc)>10){
+//                        isEnRoute = false;
+                        map.clearMap();
+                        setDestinationMarker(currentDestination,false);
+                        findRoute(currentLocation.getCurrentLocation(),new LatLng(currentDestination.latitude,currentDestination.longitude));
+                    }
+//                map.updateCameraBearing(currentLocation.getBearing());
+                }
+            }
+        }
+    };
+
+    private void sendMessageToActivity(String url, LatLng dest) {
+        Intent intent = new Intent("New Route");
+        // You can also include some extra data.
+        intent.putExtra("url", url);
+        Bundle b = new Bundle();
+        b.putParcelable("dest", dest);
+        intent.putExtra("dest", b);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+//    private void showNearbyPlaces(String tag, double latitude, double longitude){
+//        GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+//        Object dataTransfer[] = new Object[2];
+//        map.clearMap();
+//        String url = urlCreator.getUrl(latitude, longitude, tag);
+//        dataTransfer[0] = map;
+//        dataTransfer[1] = url;
+//
+//        getNearbyPlacesData.execute(dataTransfer);
+//        makeToast("Showing Nearby "+tag);
+//
+//    }
+
+    public void makeToast(String message){
+        Toast.makeText(MapsActivity.this, message, Toast.LENGTH_LONG).show();
+    }
+
+    private void setButtonListeners(){
+        sosButtonListener();
+        modesOfTransportListeners();
+
+    }
+
+    private void sosButtonListener() {
+        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+        SosButton = findViewById(R.id.floatingButton);
+        SosButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (previousPanel.equals("routeInitial")&&currentPanel.equals("menu")){
+                    currentPanel = "routeInitial";
+                    previousPanel = "menu";
+                    showCurrentSlider();
+                }else if (currentPanel.equals("routeInitial")){
+                    currentPanel = "menu";
+                    previousPanel ="routeInitial";
+                    showCurrentSlider();
+                }else{
+                    currentPanel = "menu";
+                    showCurrentSlider();
+                }
+//                setPanelHeight();
+//                hideSliders();
+//                LinearLayout helpSlider = findViewById(R.id.sosSlider);
+//                helpSlider.setVisibility(View.VISIBLE);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            }
+        });
+
+
+        Button routeToElderlyButton = findViewById(R.id.B_RouteToElder);
+        routeToElderlyButton.setOnClickListener(alrightalrightalright);
+        Button routeToElderlyButton1 = findViewById(R.id.B_RouteToElder1);
+        routeToElderlyButton1.setOnClickListener(alrightalrightalright);
+
+        Button elderToDestination = findViewById(R.id.B_ElderToDestination);
+        elderToDestination.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                map.clearMap();
+                setMarkerForElderlyPerson();
+                setDestinationMarker(currentDestination,true);
+                findRoute(locationOfElderly, currentDestination);
+                sendRouteInfo = new HashMap<String,String>();
+                sendRouteInfo.put("destLat",currentDestination.latitude);
+                sendRouteInfo.put("destLon",currentDestination.longitude);
+                sendRouteInfo.put("mode",modeOfTransport);
+            }
+        });
+
+        Button sendRoute = findViewById(R.id.B_SendRoute);
+        sendRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference ref = database.getReference().child("gps-sharing").child(shareIDOfElder);
+                java.util.Map map = new HashMap<>();
+                map.put("route",sendRouteInfo);
+                ref.updateChildren(map);
+            }
+        });
+    }
+
+    View.OnClickListener alrightalrightalright = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            map.clearMap();
+            setMarkerForElderlyPerson();
+            LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+            findRoute(location,locationOfElderly);
+            sendRouteInfo.put("destLat",location.latitude);
+            sendRouteInfo.put("destLon",location.longitude);
+            sendRouteInfo.put("mode",modeOfTransport);
+        }
+    };
+
+    private void modesOfTransportListeners() {
+        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
+        button_Walk.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                setBackgroundForModesOfTransport(button_Walk);
+                modeOfTransport = "walking";
+            }
+        });
+        final ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
+        button_Drive.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                setBackgroundForModesOfTransport(button_Drive);
+                modeOfTransport = "driving";
+            }
+        });
+        final ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
+        button_Bike.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                setBackgroundForModesOfTransport(button_Bike);
+                modeOfTransport = "bicycling";
+            }
+        });
+        final ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
+        button_Transit.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                setBackgroundForModesOfTransport(button_Transit);
+                modeOfTransport = "transit";
+            }
+        });
+    }
+
+    private void setBackgroundForModesOfTransport(ImageButton selectedButton){
+        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
+        ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
+        ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
+        ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
+        button_Walk.setBackgroundResource(R.color.blue_A400);
+        button_Drive.setBackgroundResource(R.color.blue_A400);
+        button_Transit.setBackgroundResource(R.color.blue_A400);
+        button_Bike.setBackgroundResource(R.color.blue_A400);
+        selectedButton.setBackgroundResource(R.color.grey_700);
+
+    }
+
+    private void askForCurrentLocation() {
+        Intent intent = new Intent("SEND GPS");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+
+    private void gettingPermissions() {
+        if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MapsActivity.this,
+                    new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
+                    1);
+        }
+    }
+
+    private void createAutoCompleteSearch() {
+        placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
+        placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").build());
+
+        EditText SearchInput = placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input);
+        SearchInput.setHintTextColor(getResources().getColor(R.color.grey_700));
+        
+        placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                SosButton.setVisibility(View.VISIBLE);
+                currentLocation.hideCurrentLocation();
+                final LatLng latLngLoc = place.getLatLng();
+                if(marker!=null){
+                    marker.remove();
+                }
+                map.clearMap();
+                currentDestination = latLngLoc;
+
+                setDestinationMarker(currentDestination,true);
+
+                modeOfTransport = "walking";
+
+//                hideSliders();
+
+                if (helpMode){
+                    currentPanel = "helpRoute";
+                    showCurrentSlider();
+//                    slidingLayout.setPanelHeight(400);
+//                    LinearLayout helpRouteSlider = findViewById(R.id.helpRoute);
+//                    helpRouteSlider.setVisibility(View.VISIBLE);
+                }else {
+                    currentPanel = "routeInitial";
+                    showCurrentSlider();
+//                    LinearLayout routeSlider = findViewById(R.id.route);
+//                    routeSlider.setVisibility(View.VISIBLE);
+                }
+
+
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+
+            }
+
+            @Override
+            public void onError(Status status) {
+                Toast.makeText(MapsActivity.this, ""+status.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_clear_button)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        // example : way to access view from PlaceAutoCompleteFragment
+                        // ((EditText) autocompleteFragment.getView()
+                        // .findViewById(R.id.place_autocomplete_search_input)).setText("");
+                        SosButton.setVisibility(View.GONE);
+                        placeAutocompleteFragment.setText("");
+                        view.setVisibility(View.GONE);
+                        LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
+                        enRouteLayout.setVisibility(View.INVISIBLE);
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                        currentPanel = "menu";
+                        showCurrentSlider();
+//                        setPanelHeight();
+                        map.clearMap();
+                        currentLocation.showCurrentLocation();
+                        map.zoomToLocation(currentLocation.getCurrentLocation());
+                        modeOfTransport = "driving";
+                        isEnRoute = false;
+                    }
+                });
+    }
+
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just add a marker near Sydney, Australia.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            map = new Map(googleMap,getApplicationContext());
+            currentLocation = new CurrentLocation(map);
+            askForCurrentLocation();
+        }
+
+        if (mapView != null &&
+                mapView.findViewById(Integer.parseInt("1")) != null) {
+            // Get the button view
+            View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+            // and next place it, on bottom right (as Google Maps app)
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
+                    locationButton.getLayoutParams();
+            // position on right bottom
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            layoutParams.setMargins(0, 0, 30, 900);
+        }
+
+    }
+    private void loadMapFragment() {
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapView = mapFragment.getView();
+        mapFragment.getMapAsync(this);
+    }
+
+//    private void createVolunteerChildrenInDB() {
+//        java.util.Map hmap = new HashMap<>();
+//        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+//        hmap.put("Requested", "False");
+//        hmap.put("ElderlyIDRequested","");
+//        userDB.updateChildren(hmap);
+//    }
+
+    ///////////////////////////////////////////////////////
+
     private void PlaceVolunteerMarkerOnMap() {
 
         FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -588,7 +1302,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                     {
 
                         // getting volunteers' coordinates
-                        if (volunteersnapshot.getKey().equals("Volunteer") && volunteersnapshot.getValue().toString().equals("Yes")) {
+                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
                             for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
                             {
                                 if (volunteersnapshot2.getKey().equals("latitude")) {
@@ -615,7 +1329,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                     //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
 
 
-                                    markers.put(map.addMarker(mo,volLatLng), childsnapshot.getKey());
+                                    markers.put(map.addMarker(mo,volLatLng, true), childsnapshot.getKey());
                                     currentVolunteerName = "";
                                 }
                             }
@@ -632,24 +1346,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
             }
         });
-    }
-    ////////////////////////////////////////////////////////
-//    private View.OnClickListener onHideListener() {
-//        return new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                //hide sliding layout
-//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-////                btnShow.setVisibility(View.VISIBLE);
-//            }
-//        }
-//    }
-    private void setMarkerForElderlyPerson(){
-        MarkerOptions mo = new MarkerOptions();
-        mo.position(locationOfElderly);
-        mo.title("Location of Elderly");
-        mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-        markerOfElderly = map.addMarker(mo,locationOfElderly);
     }
 
     private void getContactList() {
@@ -730,306 +1426,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         return CountryToPhonePrefix.getPhone(ISO);
 
     }
-
-//    private void initializeRecyclerView() {
-//
-//        userListView = findViewById(R.id.userList);
-//        userListView.setNestedScrollingEnabled(false);
-//        userListView.setHasFixedSize(false);
-//        userListViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
-//        userListView.setLayoutManager(userListViewLayoutManager);
-//        if(getSinchServiceInterface()!=null) {
-//            Log.d("Sinch","NIT NULL");
-//            System.out.println("SinchService is not null");
-//        }
-//        else {
-//            Log.d("Sinch","YEEt NULL");
-//            System.out.println("SinchService is null");
-//        }
-//        userListViewAdapter = new UserListAdapter(userList);
-//        userListView.setAdapter(userListViewAdapter);
-//    }
-
-    ////////////////////////////////////////////////////////
-    private View.OnClickListener onHideListener() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //hide sliding layout
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-//                btnShow.setVisibility(View.VISIBLE);
-            }
-        };
-    }
-    ///////////////////////////////////////////////////////
-
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            map = new Map(googleMap,getApplicationContext());
-            currentLocation = new CurrentLocation(map);
-            askForCurrentLocation();
-        }
-
-
-    }
-
-    public void onClick(View v) {
-
-        switch (v.getId()) {
-
-//            case R.id.B_Hospital:
-//                showNearbyPlaces("hospital",latitude,longitude);
-//                break;
-//
-//            case R.id.B_Restaurant:
-//                showNearbyPlaces("restaurant",latitude,longitude);
-//                break;
-//
-//            case R.id.B_School:
-//                showNearbyPlaces("school",latitude,longitude);
-//                break;
-
-            case R.id.B_to:
-//                removeRoute();
-                map.clearMap();
-                destinationMarker = map.addMarker(destMarkerOptions,currentDestination);
-                LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
-                findRoute(location,currentDestination);
-//                while (!getDirectionsData.isSuccess()){
-//
-//                }
-//                getDirectionsData
-
-                break;
-        }
-
-    }
-
-    private void findRoute(LatLng currentLocation, LatLng currentDestination){
-        Object dataTransfer[] = new Object[3];
-        String url = urlCreator.getDirectionsUrl(currentLocation.latitude, currentLocation.longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
-        Log.d("LOL",url);
-        currentRouteData = new RouteData();
-        GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData, new OnEventListener() {
-            @Override
-            public void onSuccess(Object object) {
-                printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                makeToast("Route Not Found");
-            }
-        });
-        dataTransfer[0] = map;
-        dataTransfer[1] = url;
-        dataTransfer[2] = currentDestination;
-        getDirectionsData.execute(dataTransfer);
-        sendMessageToActivity(url, currentDestination);
-        route = getDirectionsData.getRoute();
-    }
-
-    private ArrayList change(ArrayList step){
-        ArrayList <HashMap> stepUpdated = new ArrayList<>();
-
-        for (int i=0;i<step.size();i++){
-            HashMap info = (HashMap) step.get(i);
-            String str = info.get("Maneuver").toString().replaceAll("-","_");
-            String drawable = "direction_"+str;
-            int resID =getResources().getIdentifier(drawable, "drawable", getPackageName());
-            System.out.println("Jay is shit "+ drawable);
-            info.put("manRes", Integer.toString(resID));
-            stepUpdated.add(info);
-        }
-        return stepUpdated;
-    }
-
-    private void printRouteInfo(HashMap<String,String> routeInformation, ArrayList stepInformation) {
-        ArrayList newSteps = change(stepInformation);
-        DirectionsView = findViewById(R.id.List_Directions);
-        DirectionsView.setNestedScrollingEnabled(false);
-        DirectionsView.setHasFixedSize(false);
-        DirectionsViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
-        DirectionsView.setLayoutManager(DirectionsViewLayoutManager);
-        DirectionsViewAdapter = new DirectionsViewAdapter(newSteps);
-        DirectionsView.setAdapter(DirectionsViewAdapter);
-
-//        System.out.println(routeInformation.get("Summary"));
-//        System.out.println(routeInformation.get("Distance"));
-//        System.out.println(routeInformation.get("Duration"));
-//        for (int i =0;i<stepInformation.size();i++){
-//            HashMap step = (HashMap) stepInformation.get(i);
-//            System.out.println(step.get("Distance"));
-//            System.out.println(step.get("Duration"));
-//            System.out.println(step.get("Maneuver"));
-//            System.out.println(step.get("Instructions"));
-//        }
-    }
-
-    private BroadcastReceiver onRouteSuccess = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
-        }
-    };
-
-//    public void removeRoute(){
-//        if (route!=null) {
-//            map.removeRoute(route);
-//        }
-//    }
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Get extra data included in the Intent
-            String message = intent.getStringExtra("Status");
-            Bundle b = intent.getBundleExtra("Location");
-            lastKnownLoc = (Location) b.getParcelable("Location");
-            if (lastKnownLoc != null) {
-                Log.d("BS","I don't believe it"+lastKnownLoc.getLongitude());
-                currentLocation.changeCurrentLocation(lastKnownLoc);
-            }
-        }
-    };
-
-    private void sendMessageToActivity(String url, LatLng dest) {
-        Intent intent = new Intent("New Route");
-        // You can also include some extra data.
-        intent.putExtra("url", url);
-        Bundle b = new Bundle();
-        b.putParcelable("dest", dest);
-        intent.putExtra("dest", b);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-    }
-
-//    private void showNearbyPlaces(String tag, double latitude, double longitude){
-//        GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
-//        Object dataTransfer[] = new Object[2];
-//        map.clearMap();
-//        String url = urlCreator.getUrl(latitude, longitude, tag);
-//        dataTransfer[0] = map;
-//        dataTransfer[1] = url;
-//
-//        getNearbyPlacesData.execute(dataTransfer);
-//        makeToast("Showing Nearby "+tag);
-//
-//    }
-
-    public void makeToast(String message){
-        Toast.makeText(MapsActivity.this, message, Toast.LENGTH_LONG).show();
-    }
-
-    private void setButtonListeners(){
-        sosButtonListener();
-        modesOfTransportListeners();
-
-    }
-
-    private void sosButtonListener() {
-        SosButton = findViewById(R.id.floatingButton);
-        SosButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hideSliders();
-                LinearLayout helpSlider = findViewById(R.id.sosSlider);
-                helpSlider.setVisibility(View.VISIBLE);
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-            }
-        });
-
-
-        Button routeToElderlyButton = findViewById(R.id.B_RouteToElder);
-        routeToElderlyButton.setOnClickListener(alrightalrightalright);
-        Button routeToElderlyButton1 = findViewById(R.id.B_RouteToElder1);
-        routeToElderlyButton1.setOnClickListener(alrightalrightalright);
-
-        Button elderToDestination = findViewById(R.id.B_ElderToDestination);
-        elderToDestination.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                map.clearMap();
-                setMarkerForElderlyPerson();
-                setDestinationMarker();
-                findRoute(locationOfElderly, currentDestination);
-            }
-        });
-    }
-
-    View.OnClickListener alrightalrightalright = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            map.clearMap();
-            setMarkerForElderlyPerson();
-            LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
-            findRoute(location,locationOfElderly);
-        }
-    };
-
-    private void modesOfTransportListeners() {
-        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
-        button_Walk.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                setBackgroundForModesOfTransport(button_Walk);
-                modeOfTransport = "walking";
-            }
-        });
-        final ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
-        button_Drive.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                setBackgroundForModesOfTransport(button_Drive);
-                modeOfTransport = "driving";
-            }
-        });
-        final ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
-        button_Bike.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                setBackgroundForModesOfTransport(button_Bike);
-                modeOfTransport = "bicycling";
-            }
-        });
-        final ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
-        button_Transit.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                setBackgroundForModesOfTransport(button_Transit);
-                modeOfTransport = "transit";
-            }
-        });
-    }
-
-    private void setBackgroundForModesOfTransport(ImageButton selectedButton){
-        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
-        ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
-        ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
-        ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
-        button_Walk.setBackgroundResource(R.color.blue_A400);
-        button_Drive.setBackgroundResource(R.color.blue_A400);
-        button_Transit.setBackgroundResource(R.color.blue_A400);
-        button_Bike.setBackgroundResource(R.color.blue_A400);
-        selectedButton.setBackgroundResource(R.color.grey_700);
-
-    }
-
-    private void askForCurrentLocation() {
-        Intent intent = new Intent("SEND GPS");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-    }
-
-
    
 
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
@@ -1054,6 +1450,148 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         protected void onPostExecute(Bitmap result) {
             bmImage.setImageBitmap(result);
+        }
+    }
+
+    @Override
+    public void onServiceConnected() {
+        Call call = getSinchServiceInterface().getCall(mCallId);
+        System.out.println("mcallis is "+mCallId);
+        if (call != null) {
+            call.addCallListener(new SinchCallListener());
+        } else {
+            Log.e(TAG, "Started with invalid callId, aborting.");
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    private void endCall() {
+        mAudioPlayer.stopProgressTone();
+        Call call = getSinchServiceInterface().getCall(mCallId);
+        if (call != null) {
+            call.hangup();
+        }
+        endCallButton.setVisibility(View.GONE);
+//        finish();
+    }
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        Log.d("touch","something");
+
+        View w = getCurrentFocus();
+        int scrcoords[] = new int[2];
+        w.getLocationOnScreen(scrcoords);
+//            float x = event.getRawX() + w.getLeft() - scrcoords[0];
+        float y = event.getRawY() + w.getTop() - scrcoords[1];
+        int condition = slidingLayout.getPanelHeight();
+        if (event.getAction()!=MotionEvent.ACTION_BUTTON_PRESS &&event.getAction()==MotionEvent.ACTION_UP&&event.getAction()!=MotionEvent.ACTION_MOVE&&event.getAction()!=MotionEvent.ACTION_BUTTON_RELEASE&&y>(2220-(condition+500))&&y<(2220-condition)){
+            Log.d("touch","button press");
+//
+//                if (currentPanel.equals("routeInitial")){
+//                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                    currentPanel = "menu";
+//                    previousPanel = "routeInitial";
+//                    showCurrentSlider();
+////                    setPanelHeight();
+////                    findPanelHeights();
+//                }else if (previousPanel.equals("routeInitial")&&currentPanel.equals("menu")){
+//                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                    previousPanel = "menu";
+//                    currentPanel = "routeInitial";
+//                    showCurrentSlider();
+////                    setPanelHeight();
+////                    findPanelHeights();
+//                }else
+                    if (currentPanel.equals("menu")){
+                    if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                    }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    }
+//                }
+            }
+        }
+
+        View v = getCurrentFocus();
+
+
+//            Log.d("touch","y is"+y);
+//            if (event.getAction() == MotionEvent.ACTION_UP
+//                    && (x < w.getLeft() || x >= w.getRight() || y < w.getTop() || y > w
+//                    .getBottom())) {
+//                    Log.d("touch","somethinghjbhjhjbhj");
+////                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+////                imm.hideSoftInputFromWindow(getWindow().getCurrentFocus()
+////                        .getWindowToken(), 0);
+//            }
+
+        boolean ret = super.dispatchTouchEvent(event);
+        return ret;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.d("touch","c'est magnifique");
+        switch (event.getAction()){
+            case MotionEvent.EDGE_BOTTOM:
+                Log.d("touch","c'est magnifiqueee");
+                if (currentPanel.equals("menu")){
+                    if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                    }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    }
+                }
+                break;
+
+        }
+
+
+        return super.onTouchEvent(event);
+    }
+
+    private class SinchCallListener implements CallListener {
+
+        @Override
+        public void onCallEnded(Call call) {
+            Log.d("LOLOL","works for on call ended");
+
+            CallEndCause cause = call.getDetails().getEndCause();
+            Log.d(TAG, "Call ended. Reason: " + cause.toString());
+            mAudioPlayer.stopProgressTone();
+            setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
+            String endMsg = "Call ended: " + call.getDetails().toString();
+            Toast.makeText(MapsActivity.this, endMsg, Toast.LENGTH_LONG).show();
+            endCall();
+
+        }
+
+        @Override
+        public void onCallEstablished(Call call) {
+            Log.d("LOLOL","works for on call established");
+            Log.d(TAG, "Call established");
+            mAudioPlayer.stopProgressTone();
+            setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+        }
+
+        @Override
+        public void onCallProgressing(Call call) {
+            Log.d(TAG, "Call progressing");
+            mAudioPlayer.playProgressTone();
+        }
+
+        @Override
+        public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
+            // Send a push through your push provider here, e.g. GCM
         }
     }
 

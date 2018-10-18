@@ -54,7 +54,7 @@ public class GetNearbyPlacesData extends AsyncTask<Object,String,String> {
             markerOptions.title(placeName+" : "+vicinity);
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
 
-            mMap.addMarker(markerOptions,latLng);
+            mMap.addMarker(markerOptions,latLng, true);
         }
     }
 }

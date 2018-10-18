@@ -13,13 +13,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -36,19 +34,10 @@ public class SensorService extends Service implements com.google.android.gms.loc
     Context appContext;
     private String sharingID;
     private boolean share = false;
-    private LatLng newDest;
-    private String newURL = "";
+
     private String currentUserId;
     private DatabaseReference userRef;
 
-    public SensorService(Context applicationContext) {
-        super();
-        appContext = applicationContext;
-        Log.i("HERE", "here I am!");
-    }
-    public SensorService() {
-
-    }
 
     private Location currentLocation = null;
 
@@ -67,11 +56,6 @@ public class SensorService extends Service implements com.google.android.gms.loc
                 startTracking, new IntentFilter("UPLOAD GPS"));
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 stopTracking, new IntentFilter("STOP GPS"));
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                saveNewRoute, new IntentFilter("New Route"));
-
-//        currentLocation = null;
-
     }
 
     @SuppressLint("MissingPermission")
@@ -89,21 +73,22 @@ public class SensorService extends Service implements com.google.android.gms.loc
         return START_STICKY;
     }
 
-    private BroadcastReceiver saveNewRoute = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            newURL = intent.getStringExtra("url");
-            Bundle b = intent.getBundleExtra("dest");
-            newDest = (LatLng) b.getParcelable("dest");
-        }
-    };
-
     private BroadcastReceiver startTracking = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            startFirebase();
+            if (currentLocation!=null){
+                startFirebase();
+            }else{
+                makeToast("GPS is not activated!!\nPlease activate GPS and try again!");
+            }
         }
     };
+
+    private void makeToast(String toast){
+        Intent intent = new Intent("Make Toast");
+        intent.putExtra("message",toast);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
 
     private BroadcastReceiver stopTracking = new BroadcastReceiver() {
         @Override
@@ -146,12 +131,6 @@ public class SensorService extends Service implements com.google.android.gms.loc
 
         map.put("longitude", Double.toString(currentLocation.getLongitude()));
 
-        if (!newURL.equals("")){
-            Map routeMap = new HashMap<>();
-            routeMap.put("url",newURL);
-            routeMap.put("dest",newDest);
-            map.put("route",routeMap);
-        }
         ref.updateChildren(map);
     }
 
@@ -218,7 +197,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d("LOC","Start Location Tracking");
+//        Log.d("LOC","Start Location Tracking");
         if (currentLocation==null){
             makeUseOfNewLocation(location);
         } else if ((location.getLatitude() != currentLocation.getLatitude()) || (location.getLongitude() != currentLocation.getLongitude())){
