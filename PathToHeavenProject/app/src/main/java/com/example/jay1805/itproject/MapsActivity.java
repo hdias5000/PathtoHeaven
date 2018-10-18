@@ -923,12 +923,14 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
     private void sosButtonListener() {
+        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
         SosButton = findViewById(R.id.floatingButton);
         SosButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 currentPanel = "menu";
                 showCurrentSlider();
+                setPanelHeight();
 //                hideSliders();
 //                LinearLayout helpSlider = findViewById(R.id.sosSlider);
 //                helpSlider.setVisibility(View.VISIBLE);
@@ -1099,9 +1101,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         // .findViewById(R.id.place_autocomplete_search_input)).setText("");
                         placeAutocompleteFragment.setText("");
                         view.setVisibility(View.GONE);
+                        LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
+                        enRouteLayout.setVisibility(View.INVISIBLE);
                         slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
                         currentPanel = "menu";
                         showCurrentSlider();
+                        setPanelHeight();
                         map.clearMap();
                         currentLocation.showCurrentLocation();
                         map.showLocation(currentLocation.getCurrentLocation());
