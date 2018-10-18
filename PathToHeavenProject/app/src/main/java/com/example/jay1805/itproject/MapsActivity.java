@@ -540,8 +540,20 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             showCurrentSlider();
             volunteerMode = true;
             setInitialInfoForHelp(userID);
-
+            showElderlyLocationForVolunteer(elderlyID);
         }
+    }
+
+    private void showElderlyLocationForVolunteer(String elderlyID) {
+        double newLatitude = 0;
+        double newLongitude = 0;
+        if (markerOfElderly!=null){
+            markerOfElderly.remove();
+        }
+
+        locationOfElderly= new LatLng(newLatitude,newLongitude);
+
+        setMarkerForElderlyPerson();
     }
 
     private void setInitialInfoForHelp(final String elderlyID) {
@@ -713,8 +725,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                     markerOfElderly.remove();
                 }
 
-                Log.d("Coord", "lat is: " +newLatitude);
-                Log.d("Coord", "long is: " +newLongitude);
                 locationOfElderly= new LatLng(newLatitude,newLongitude);
 
                 setMarkerForElderlyPerson();
