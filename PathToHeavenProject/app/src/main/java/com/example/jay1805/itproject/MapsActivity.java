@@ -321,6 +321,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             case "helpRoute":
                 currentPanelLayout = findViewById(R.id.helpRoute);
                 break;
+            case "volunteer":
+                currentPanelLayout = findViewById(R.id.volunteerLayout);
+                break;
         }
         if (currentPanelLayout!=null){
 
@@ -347,10 +350,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         LinearLayout sos = findViewById(R.id.sosSlider);
         LinearLayout help = findViewById(R.id.help);
         LinearLayout helpRoute = findViewById(R.id.helpRoute);
+        LinearLayout volunteer = findViewById(R.id.volunteerLayout);
         route.setVisibility(View.GONE);
         sos.setVisibility(View.GONE);
         help.setVisibility(View.GONE);
         helpRoute.setVisibility(View.GONE);
+        volunteer.setVisibility(View.GONE);
 //        slidingLayout.setPanelHeight(120);
     }
 
@@ -474,6 +479,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 setPanelHeight();
             }
         });
+        final LinearLayout volunteerLayout = (LinearLayout)findViewById(R.id.volunteerSliderLayout);
+        helpRouteLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("volunteer",volunteerLayout.getHeight());
+                setPanelHeight();
+            }
+        });
     }
 
     private void setDestinationMarker(LatLng dest,boolean zoom){
@@ -489,6 +501,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         String userID;
         Intent intent = getIntent();
         if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID") && intent.getExtras().containsKey("userID")) {
+            currentPanel = "help";
+            showCurrentSlider();
             sendRouteInfo = new HashMap<String,String>();
             shareIDOfElder = intent.getExtras().getString("Share ID");
             userID = intent.getExtras().getString("userID");
@@ -496,8 +510,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             System.out.println(userID);
             System.out.println("Share ID is: " + shareIDOfElder);
             Log.d("SHAREID", shareIDOfElder);
-            currentPanel = "help";
-            showCurrentSlider();
 
             FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareIDOfElder).addValueEventListener(new ValueEventListener() {
                 @Override
@@ -520,6 +532,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 }
             });
 
+        }
+        if (intent.hasExtra("elderlyID") && intent.getExtras().containsKey("elderlyID")){
+            userID = intent.getExtras().getString("userID");
+            currentPanel = "volunteer";
+            showCurrentSlider();
+            setInitialInfoForHelp(userID);
         }
     }
 
