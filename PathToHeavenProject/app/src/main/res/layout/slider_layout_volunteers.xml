@@ -31,7 +31,7 @@
                     android:layout_marginRight="20dp"
                     android:textStyle="bold"
                     android:textColor="@color/black"
-                    android:id="@+id/name"/>
+                    android:id="@+id/Vname"/>
             </LinearLayout>
 
             <LinearLayout
@@ -44,14 +44,14 @@
                     android:layout_height="50dp"
                     android:layout_marginRight="20dp"
                     android:src="@drawable/ic_chats"
-                    android:id="@+id/chatButtonHelp" />
+                    android:id="@+id/VchatButtonHelp" />
 
                 <ImageButton
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:src="@drawable/ic_call_black_24dp"
                     android:layout_marginRight="20dp"
-                    android:id="@+id/callButtonHelp"/>
+                    android:id="@+id/VcallButtonHelp"/>
                 <ImageButton
                     android:layout_width="50dp"
                     android:layout_height="50dp"
@@ -66,7 +66,7 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/B_walk"
+                android:id="@+id/B_Vwalk"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -75,7 +75,7 @@
                 tools:background="@color/grey_700"
                 tools:ignore="VectorDrawableCompat" />
             <ImageButton
-                android:id="@+id/B_car"
+                android:id="@+id/B_Vcar"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -84,7 +84,7 @@
                 tools:ignore="VectorDrawableCompat" />
 
             <ImageButton
-                android:id="@+id/B_bike"
+                android:id="@+id/B_Vbike"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -92,7 +92,7 @@
                 app:srcCompat="@drawable/ic_directions_bike_white_24dp"
                 tools:ignore="VectorDrawableCompat" />
             <ImageButton
-                android:id="@+id/B_transit"
+                android:id="@+id/B_Vtransit"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -101,7 +101,7 @@
                 tools:ignore="VectorDrawableCompat" />
 
             <Button
-                android:id="@+id/B_RouteToElder"
+                android:id="@+id/B_VRouteToElder"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
