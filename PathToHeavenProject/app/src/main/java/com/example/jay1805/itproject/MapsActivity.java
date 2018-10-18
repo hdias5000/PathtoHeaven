@@ -177,13 +177,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         markers = new HashMap<Marker, String>();
 
-        setButtonListeners();
         gettingPermissions();
         createVolunteerChildrenInDB();
         createAutoCompleteSearch();
         loadMapFragment();
         gpsSharing();
         setUpBroadcastReceivers();
+        setButtonListeners();
 
         urlCreator = new URLCreator();
         lastKnownLoc = null;
@@ -476,6 +476,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             System.out.println(userID);
             System.out.println("Share ID is: " + shareIDOfElder);
             Log.d("SHAREID", shareIDOfElder);
+            currentPanel = "help";
+            showCurrentSlider();
 
             FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareIDOfElder).addValueEventListener(new ValueEventListener() {
                 @Override
@@ -657,8 +659,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 locationOfElderly= new LatLng(newLatitude,newLongitude);
 
                 setMarkerForElderlyPerson();
-                currentPanel = "help";
-                showCurrentSlider();
+
 //                hideSliders();
 //                slidingLayout.setPanelHeight(240);
 //                LinearLayout route = findViewById(R.id.help);
@@ -1076,6 +1077,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
+                SosButton.setVisibility(View.VISIBLE);
                 currentLocation.hideCurrentLocation();
                 final LatLng latLngLoc = place.getLatLng();
                 if(marker!=null){
@@ -1121,6 +1123,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         // example : way to access view from PlaceAutoCompleteFragment
                         // ((EditText) autocompleteFragment.getView()
                         // .findViewById(R.id.place_autocomplete_search_input)).setText("");
+                        SosButton.setVisibility(View.GONE);
                         placeAutocompleteFragment.setText("");
                         view.setVisibility(View.GONE);
                         LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);

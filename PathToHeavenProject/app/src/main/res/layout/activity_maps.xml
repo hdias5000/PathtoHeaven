@@ -109,7 +109,8 @@
                 android:layout_marginTop="200dp"
                 android:layout_marginRight="10dp"
                 android:backgroundTint="@color/pink_500"
-                android:id="@+id/floatingButton"/>
+                android:id="@+id/floatingButton"
+                android:visibility="gone"/>
 
             <android.support.design.widget.FloatingActionButton
                 android:layout_width="wrap_content"
