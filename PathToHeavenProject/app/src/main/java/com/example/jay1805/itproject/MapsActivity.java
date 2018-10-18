@@ -303,9 +303,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 break;
         }
         if (currentPanelLayout!=null){
+
             currentPanelLayout.setVisibility(View.VISIBLE);
             slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 //            setPanelHeight();
+            findPanelHeights();
         }
 
     }
@@ -935,9 +937,19 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         SosButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                currentPanel = "menu";
-                showCurrentSlider();
-                setPanelHeight();
+                if (previousPanel.equals("routeInitial")&&currentPanel.equals("menu")){
+                    currentPanel = "routeInitial";
+                    previousPanel = "menu";
+                    showCurrentSlider();
+                }else if (currentPanel.equals("routeInitial")){
+                    currentPanel = "menu";
+                    previousPanel ="routeInitial";
+                    showCurrentSlider();
+                }else{
+                    currentPanel = "menu";
+                    showCurrentSlider();
+                }
+//                setPanelHeight();
 //                hideSliders();
 //                LinearLayout helpSlider = findViewById(R.id.sosSlider);
 //                helpSlider.setVisibility(View.VISIBLE);
@@ -1116,7 +1128,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
                         currentPanel = "menu";
                         showCurrentSlider();
-                        setPanelHeight();
+//                        setPanelHeight();
                         map.clearMap();
                         currentLocation.showCurrentLocation();
                         map.zoomToLocation(currentLocation.getCurrentLocation());
@@ -1378,18 +1390,21 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         int condition = slidingLayout.getPanelHeight();
         if (event.getAction()!=MotionEvent.ACTION_BUTTON_PRESS &&event.getAction()==MotionEvent.ACTION_UP&&event.getAction()!=MotionEvent.ACTION_MOVE&&event.getAction()!=MotionEvent.ACTION_BUTTON_RELEASE&&y>(2220-(condition+500))&&y<(2220-condition)){
             Log.d("touch","button press");
-//            if (currentPanel.equals("menu")||currentPanel.equals("routeInitial")){
+//
 //                if (currentPanel.equals("routeInitial")){
-
+//                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
 //                    currentPanel = "menu";
 //                    previousPanel = "routeInitial";
 //                    showCurrentSlider();
-//                    setPanelHeight();
+////                    setPanelHeight();
+////                    findPanelHeights();
 //                }else if (previousPanel.equals("routeInitial")&&currentPanel.equals("menu")){
+//                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
 //                    previousPanel = "menu";
 //                    currentPanel = "routeInitial";
 //                    showCurrentSlider();
-//                    setPanelHeight();
+////                    setPanelHeight();
+////                    findPanelHeights();
 //                }else
                     if (currentPanel.equals("menu")){
                     if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
