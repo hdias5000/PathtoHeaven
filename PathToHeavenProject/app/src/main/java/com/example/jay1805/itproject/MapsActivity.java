@@ -85,6 +85,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     private String mCallId;
     private FloatingActionButton endCallButton;
 
+    private String elderlyID;
     private RecyclerView DirectionsView;
     private RecyclerView.Adapter DirectionsViewAdapter;
     private RecyclerView.LayoutManager DirectionsViewLayoutManager;
@@ -197,6 +198,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         userListView.setHasFixedSize(false);
         userListViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
         userListView.setLayoutManager(userListViewLayoutManager);
+
         FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
            @Override
            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -218,19 +220,35 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
            }
        });
 
+
         FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.getValue()!=null) {
                     System.out.println("###############DATASNAPSHOT: " + dataSnapshot.getValue().toString());
                     if (dataSnapshot.getValue().toString().equals("True")) {
-                        startActivity(new Intent(getApplicationContext(), NotificationActivity.class));
-                        java.util.Map map = new HashMap<>();
-                        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("ElderlyIDRequested").addValueEventListener(new ValueEventListener() {
 
-                        // map.put("Requested", "False");
-                       // map.put("ElderlyIDRequested","");
-                        userDB.updateChildren(map);
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                elderlyID = dataSnapshot.getValue().toString();
+                                    Intent intent = new Intent(getApplicationContext(),NotificationActivity.class);
+                                    intent.putExtra("elderlyID",elderlyID);
+                                    startActivity(intent);
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                                });
+
+//                        java.util.Map map = new HashMap<>();
+//                        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+//
+////                        map.put("Requested", "False");
+////                        map.put("ElderlyIDRequested","");
+//                        userDB.updateChildren(map);
                     }
                 }
             }
@@ -552,6 +570,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
         hmap.put("Requested", "False");
         hmap.put("ElderlyIDRequested","");
+        hmap.put("accepted","null");
         userDB.updateChildren(hmap);
     }
 

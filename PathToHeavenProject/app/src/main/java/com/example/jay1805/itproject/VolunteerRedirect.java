@@ -24,6 +24,7 @@ public class VolunteerRedirect extends BaseActivity {
     TextView elderlyNameTV;
     Button callVolunteer;
     Button chatVolunteer;
+    Button exitVolunteer;
     Button mapRoute;
 
 
@@ -40,6 +41,7 @@ public class VolunteerRedirect extends BaseActivity {
         elderlyNameTV = findViewById(R.id.textViewElderlyName);
         callVolunteer = findViewById(R.id.call_volunteer);
         chatVolunteer = findViewById(R.id.chat_volunteer);
+        exitVolunteer = findViewById(R.id.exit_volunteer);
         mapRoute = findViewById(R.id.map_volunteer);
 
 
@@ -66,6 +68,9 @@ public class VolunteerRedirect extends BaseActivity {
 
                 Intent callScreen = new Intent(VolunteerRedirect.this, CallScreenActivity.class);
                 callScreen.putExtra(SinchService.CALL_ID, callId);
+
+
+                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("true");
                 startActivity(callScreen);
             }
         });
@@ -100,12 +105,14 @@ public class VolunteerRedirect extends BaseActivity {
                             chatIDKey = key;
                             FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("chat").child(key).setValue(true);
                             FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").child(key).setValue(true);
+
                         }
 
                         else {
                             Toast.makeText(getApplicationContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
                         }
 
+                        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("true");
                         Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
                         Bundle bundle = new Bundle();
                         bundle.putString("chatID", chatIDKey);
@@ -126,6 +133,16 @@ public class VolunteerRedirect extends BaseActivity {
             @Override
             public void onClick(View v) {
 
+            }
+        });
+
+
+        exitVolunteer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent mapScreen = new Intent(VolunteerRedirect.this, MapsActivity.class);
+                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("null");
+                startActivity(mapScreen);
             }
         });
 

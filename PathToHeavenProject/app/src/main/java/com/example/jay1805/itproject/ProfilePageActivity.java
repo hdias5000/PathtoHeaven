@@ -176,8 +176,6 @@ public class ProfilePageActivity extends AppCompatActivity {
         }
         if(!rb.getText().toString().isEmpty()) {
             userMap.put("User Type", rb.getText().toString());
-            System.out.println( "User type:"+rb.getText().toString());
-            userMap.put("Accepted","False");
 
         }
 
@@ -190,6 +188,8 @@ public class ProfilePageActivity extends AppCompatActivity {
         else
         {
             userMap.put("Volunteer","No");
+            userMap.put("accepted","null");
+
         }
         if(!selectedImageUri.isEmpty()) {
             final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Profile Pictures");

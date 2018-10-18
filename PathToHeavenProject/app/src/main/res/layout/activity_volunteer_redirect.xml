@@ -54,4 +54,15 @@
         android:text="Map View"
         android:textColor="@color/common_google_signin_btn_text_dark_default" />
 
+    <Button
+        android:id="@+id/exit_volunteer"
+        android:layout_width="282dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
+        android:background="@color/orange_900"
+        android:text="I do not wish to connect"
+        android:textColor="@color/common_google_signin_btn_text_dark_default" />
+
+
 </LinearLayout>

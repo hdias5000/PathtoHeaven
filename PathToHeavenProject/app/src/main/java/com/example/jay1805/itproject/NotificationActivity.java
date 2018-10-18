@@ -34,7 +34,7 @@ public class NotificationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notification);
-
+        elderlyID = getIntent().getStringExtra("elderlyID");
 
         // if current user id's REQUEST_IN is set to TRUE and long+lat of elderly is displayed
         AlertDialog.Builder a_builder = new AlertDialog.Builder(NotificationActivity.this);
@@ -53,6 +53,8 @@ public class NotificationActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
+                        System.out.println("\n Elderly ud: "+elderlyID);
+                        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("false");
                         // do nothing
                         startActivity(new Intent(getApplicationContext(), MapsActivity.class));
                     }

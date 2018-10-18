@@ -3,12 +3,17 @@ package com.example.jay1805.itproject.Map;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
+import com.example.jay1805.itproject.ChatActivity;
+import com.example.jay1805.itproject.MapsActivity;
 import com.example.jay1805.itproject.MyProfileActivity;
+import com.example.jay1805.itproject.SinchService;
 import com.example.jay1805.itproject.TimerActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -125,6 +130,7 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
                     context.startActivity(new Intent(context, TimerActivity.class));
                     updateRequestedChild(m);
                     marker.showInfoWindow();
+
                     return true;
                 }
             }

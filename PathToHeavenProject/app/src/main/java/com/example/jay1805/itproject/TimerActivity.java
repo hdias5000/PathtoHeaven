@@ -1,5 +1,7 @@
 package com.example.jay1805.itproject;
 
+import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -8,9 +10,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Locale;
-public class TimerActivity extends AppCompatActivity {
+public class TimerActivity extends AppCompatActivity{
 
     private static final long START_TIME_IN_MILLIS = 46000;
 
@@ -20,6 +29,7 @@ public class TimerActivity extends AppCompatActivity {
 
     private Button mButtonCancel;
 
+    private boolean flag;
     private boolean mTimerRunning;
 
     private long mTimeLeftInMillis = START_TIME_IN_MILLIS;
@@ -29,6 +39,7 @@ public class TimerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timer);
 
+        flag = false;
         mTextViewCountDown = findViewById(R.id.text_view_countdown);
         mButtonCancel = findViewById(R.id.cancel_button);
 
@@ -50,8 +61,29 @@ public class TimerActivity extends AppCompatActivity {
             public void onTick(long millisUntilFinished) {
                 mTimeLeftInMillis = millisUntilFinished;
                 updateCountDownText();
-            }
+                FirebaseDatabase.getInstance().getReference().child("user").
+                        child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("accepted").addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.getValue().equals("true")){
+                            Toast.makeText(TimerActivity.this, "Please wait while the volunteer is connecting...", Toast.LENGTH_SHORT).show();
+                            cancel();
+                            finish();
+                        }
+                        else if (dataSnapshot.getValue().equals("false")){
+                            Toast.makeText(TimerActivity.this, "Volunteer cancelled request. Please try again. ", Toast.LENGTH_SHORT).show();
+                            cancel();
+                            finish();
+                        }
+                    }
 
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+                }
             @Override
             public void onFinish() {
                 mTimerRunning = false;
