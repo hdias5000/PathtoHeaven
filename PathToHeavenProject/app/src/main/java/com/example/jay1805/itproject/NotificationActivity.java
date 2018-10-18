@@ -40,6 +40,7 @@ public class NotificationActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Toast.makeText(NotificationActivity.this, "You are being connected..", Toast.LENGTH_SHORT).show();
+                        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("true");
                         getUserDetails();
                         // display elderly user's lat long on map
                         // navigate to destination

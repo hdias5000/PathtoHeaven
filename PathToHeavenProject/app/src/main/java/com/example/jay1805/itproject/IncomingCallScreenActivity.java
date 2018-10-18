@@ -63,8 +63,8 @@ public class IncomingCallScreenActivity extends BaseActivity {
                 }
             });
 //            remoteUser.setText(call.getRemoteUserId());
-            TextView remoteUserLocation = (TextView) findViewById(R.id.remoteUserLocation);
-            remoteUserLocation.setText("Calling from " + mCallLocation);
+//            TextView remoteUserLocation = (TextView) findViewById(R.id.remoteUserLocation);
+//            remoteUserLocation.setText("Calling from " + mCallLocation);
         } else {
             Log.e(TAG, "Started with invalid callId, aborting");
             finish();

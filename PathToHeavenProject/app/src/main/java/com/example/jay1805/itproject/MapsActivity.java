@@ -142,7 +142,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     LatLng currentDestination;
 
-    HashMap sendRouteInfo = null;
+    HashMap sendRouteInfo = new HashMap<String,String>();
     String shareIDOfElder = "";
     String nameOfElderly = "Elderly";
     Marker markerOfElderly;
@@ -369,6 +369,36 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
+                        Log.d("WORK","Work Bitch");
+                        FirebaseDatabase.getInstance().getReference().child("user").
+                                child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("accepted").setValue("null");
+                    }
+                }, new IntentFilter("Make Null"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        FirebaseDatabase.getInstance().getReference().child("user").
+                                child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("accepted").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.getValue().toString().equals("false")){
+                                    makeToast("Volunteer has Disconnected.");
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                }, new IntentFilter("Start Listener for Cancel Connection"));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
                         String message = intent.getStringExtra("message");
                         makeToast(message);
                     }
@@ -545,15 +575,34 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
     private void showElderlyLocationForVolunteer(String elderlyID) {
-        double newLatitude = 0;
-        double newLongitude = 0;
-        if (markerOfElderly!=null){
-            markerOfElderly.remove();
-        }
+//        String currentUserId;
+        DatabaseReference userRef;
 
-        locationOfElderly= new LatLng(newLatitude,newLongitude);
+        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                double newLatitude = 0;
+                double newLongitude = 0;
+                newLatitude = Double.parseDouble(dataSnapshot.child("latitude").getValue().toString());
 
-        setMarkerForElderlyPerson();
+                newLongitude = Double.parseDouble(dataSnapshot.child("longitude").getValue().toString());
+
+                if (markerOfElderly!=null){
+                    markerOfElderly.remove();
+                }
+
+                locationOfElderly= new LatLng(newLatitude,newLongitude);
+
+                setMarkerForElderlyPerson();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
     }
 
     private void setInitialInfoForHelp(final String elderlyID) {
@@ -613,11 +662,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             public void onClick(View v) {
                 Call call = getSinchServiceInterface().callUser(elderlyID);
                 String callId = call.getCallId();
-                if (volunteerMode){
-
-                    FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("call");
-
-                }
                 Intent callScreen = new Intent(v.getContext(), CallScreenActivity.class);
                 callScreen.putExtra(SinchService.CALL_ID, callId);
                 startActivity(callScreen);
@@ -664,9 +708,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
                                   else {
                                       Toast.makeText(getApplicationContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
-                                  }
-                                  if (volunteerMode){
-                                      FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("chat");
                                   }
 
                                   Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
@@ -1085,7 +1126,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             @Override
             public void onClick(View view) {
                 Intent mapScreen = new Intent(getApplicationContext(), MapsActivity.class);
-                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("null");
+                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("false");
                 FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").setValue("False");
                 startActivity(mapScreen);
             }

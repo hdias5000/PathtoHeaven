@@ -24,16 +24,16 @@
                 android:textColor="@color/sinch_purple"
                 android:textSize="28sp"/>
 
-        <TextView
-                android:id="@+id/remoteUserLocation"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="Calling from Example"
-                android:textColor="@color/sinch_purple"
-                android:textSize="16sp"
-                android:textAllCaps="true"
-                />
+        <!--<TextView-->
+                <!--android:id="@+id/remoteUserLocation"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_gravity="center_horizontal"-->
+                <!--android:text="Calling from Example"-->
+                <!--android:textColor="@color/sinch_purple"-->
+                <!--android:textSize="16sp"-->
+                <!--android:textAllCaps="true"-->
+                <!--/>-->
 
     </LinearLayout>
 
