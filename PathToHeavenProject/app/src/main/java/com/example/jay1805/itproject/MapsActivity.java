@@ -23,11 +23,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -78,7 +81,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private CurrentLocation currentLocation;
     private Map map;
+    private View mapView;
     private Location lastKnownLoc;
+    private LatLng currentRouteLocation;
 
     private AudioPlayer mAudioPlayer;
     private String mCallId;
@@ -128,10 +133,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     private String modeOfTransport;
 
     private boolean helpMode;
+    private boolean isEnRoute;
+    Marker marker;
 
 
     LatLng currentDestination;
-    Marker marker;
 
     HashMap sendRouteInfo = null;
     String shareIDOfElder = "";
@@ -140,13 +146,23 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     LatLng locationOfElderly;
 
+    HashMap<String,Integer> panelHeight;
+
+    String currentPanel;
+    String previousPanel="";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
+        isEnRoute = false;
+        currentPanel = "menu";
+        panelHeight = new HashMap<>();
+        findPanelHeights();
+        showCurrentSlider();
         helpMode = false;
         //set layout slide listener
-        slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
 
         OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
         OneSignal.setSubscription(true);
@@ -161,13 +177,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         markers = new HashMap<Marker, String>();
 
-        setButtonListeners();
         gettingPermissions();
         createVolunteerChildrenInDB();
         createAutoCompleteSearch();
         loadMapFragment();
         gpsSharing();
         setUpBroadcastReceivers();
+        setButtonListeners();
 
         urlCreator = new URLCreator();
         lastKnownLoc = null;
@@ -238,7 +254,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         VolunteersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
                 //startActivity(new Intent(getApplicationContext(),MapsActivity.class));
                 PlaceVolunteerMarkerOnMap();
 
@@ -268,7 +284,43 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
+    private void showCurrentSlider(){
+        hideSliders();
+        LinearLayout currentPanelLayout = null;
+        switch (currentPanel){
+            case "menu":
+                currentPanelLayout = findViewById(R.id.sosSlider);
+                break;
+            case "routeInitial":
+                Log.d("Lay", "showing current slider");
+                currentPanelLayout = findViewById(R.id.route);
+                break;
+            case "help":
+                currentPanelLayout = findViewById(R.id.help);
+                break;
+            case "helpRoute":
+                currentPanelLayout = findViewById(R.id.helpRoute);
+                break;
+        }
+        if (currentPanelLayout!=null){
 
+            currentPanelLayout.setVisibility(View.VISIBLE);
+            slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+//            setPanelHeight();
+            findPanelHeights();
+        }
+
+    }
+
+    private void setPanelHeight() {
+        if (panelHeight.containsKey(currentPanel)){
+            Log.d("Lay", "setting correct height");
+            Log.d("Lay", "showing current slider"+panelHeight.get(currentPanel));
+            slidingLayout.setPanelHeight(panelHeight.get(currentPanel));
+        }else{
+            slidingLayout.setPanelHeight(144);
+        }
+    }
 
     private void hideSliders(){
         LinearLayout route = findViewById(R.id.route);
@@ -279,15 +331,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         sos.setVisibility(View.GONE);
         help.setVisibility(View.GONE);
         helpRoute.setVisibility(View.GONE);
-        slidingLayout.setPanelHeight(120);
+//        slidingLayout.setPanelHeight(120);
     }
 
-    private void loadMapFragment() {
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-    }
+
+
 
     private void setUpBroadcastReceivers() {
         LocalBroadcastManager.getInstance(this).registerReceiver(
@@ -316,6 +364,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                 Intent intent = new Intent("STOP GPS");
                                 LocalBroadcastManager.getInstance(view.getContext()).sendBroadcast(intent);
                                 stopButton.setVisibility(View.GONE);
+                                map.clearMap();
+                                currentLocation.showCurrentLocation();
                             }
                         });
                         String shareID = intent.getStringExtra("ID");
@@ -325,13 +375,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                 if (dataSnapshot.exists()){
                                     double latitude = Double.parseDouble(dataSnapshot.child("destLat").getValue().toString());
                                     double longitude = Double.parseDouble(dataSnapshot.child("destLon").getValue().toString());
-//                                    double latitude = Double.parseDouble(dataSnapshot.child("destLat").getValue().toString());
-//                                    double longitude = Double.parseDouble(dataSnapshot.child("destLon").getValue().toString());
                                     LatLng dest = new LatLng(latitude,longitude);
                                     String mode = dataSnapshot.child("mode").getValue().toString();
                                     ///////////////////change button when this is pressed
                                     modeOfTransport = mode;
                                     LatLng curLoc = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                                    setDestinationMarker(dest,true);
                                     findRoute(curLoc,dest);
                                 }
                             }
@@ -365,79 +414,54 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         }
     };
 
-    private void gettingPermissions() {
-        if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MapsActivity.this,
-                    new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
-                    1);
-        }
-    }
-
-    private void setDestinationMarker(){
-        destMarkerOptions = new MarkerOptions();
-        destMarkerOptions.position(currentDestination);
-        destMarkerOptions.title("Your search results");
-        destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-        destinationMarker = map.addMarker(destMarkerOptions,currentDestination);
-    }
-
-    private void createAutoCompleteSearch() {
-        placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
-
-        placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").build());
-
-        placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                currentLocation.hideCurrentLocation();
-                final LatLng latLngLoc = place.getLatLng();
-                if(marker!=null){
-                    marker.remove();
-                }
-                map.clearMap();
-                currentDestination = latLngLoc;
-
-                setDestinationMarker();
-
-                modeOfTransport = "walking";
-
-                hideSliders();
-
-                if (helpMode){
-                    slidingLayout.setPanelHeight(400);
-                    LinearLayout helpRouteSlider = findViewById(R.id.helpRoute);
-                    helpRouteSlider.setVisibility(View.VISIBLE);
-                }else {
-                    LinearLayout routeSlider = findViewById(R.id.route);
-                    routeSlider.setVisibility(View.VISIBLE);
-                }
 
 
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-
-            }
-
-            @Override
-            public void onError(Status status) {
-                Toast.makeText(MapsActivity.this, ""+status.toString(), Toast.LENGTH_SHORT).show();
+    private void findPanelHeights(){
+        final LinearLayout initialRouteLayout = (LinearLayout)findViewById(R.id.initialRouteLayout);
+        initialRouteLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("routeInitial",initialRouteLayout.getHeight());
+                Log.d("Lay", "finding slider height");
+                setPanelHeight();
             }
         });
+        /////////////////////when distance,duration is implemented
+//        final LinearLayout routeLayout = (LinearLayout)findViewById(R.id.initialRouteLayout);
+//        routeLayout.post(new Runnable(){
+//            public void run(){
+//                panelHeight.put("routeFull",routeLayout.getHeight());
+//            }
+//        });
 
-        placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_clear_button)
-                .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        // example : way to access view from PlaceAutoCompleteFragment
-                        // ((EditText) autocompleteFragment.getView()
-                        // .findViewById(R.id.place_autocomplete_search_input)).setText("");
-                        placeAutocompleteFragment.setText("");
-                        view.setVisibility(View.GONE);
-                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-                        map.clearMap();
-                        currentLocation.showCurrentLocation();
-                        modeOfTransport = "driving";
-                    }
-                });
+        final LinearLayout menuLayout = (LinearLayout)findViewById(R.id.menuLayout);
+        menuLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("menu",menuLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+        final LinearLayout helpLayout = (LinearLayout)findViewById(R.id.helpLayout);
+        helpLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("help",helpLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+        final LinearLayout helpRouteLayout = (LinearLayout)findViewById(R.id.helpRouteLayout);
+        helpRouteLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("helpRoute",helpRouteLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+    }
+
+    private void setDestinationMarker(LatLng dest,boolean zoom){
+        destMarkerOptions = new MarkerOptions();
+        destMarkerOptions.position(dest);
+        destMarkerOptions.title("Your search results");
+        destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        destinationMarker = map.addMarker(destMarkerOptions, dest,zoom);
     }
 
     private void gpsSharing() {
@@ -452,6 +476,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             System.out.println(userID);
             System.out.println("Share ID is: " + shareIDOfElder);
             Log.d("SHAREID", shareIDOfElder);
+            currentPanel = "help";
+            showCurrentSlider();
 
             FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareIDOfElder).addValueEventListener(new ValueEventListener() {
                 @Override
@@ -634,11 +660,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
                 setMarkerForElderlyPerson();
 
-                hideSliders();
-                slidingLayout.setPanelHeight(240);
-                LinearLayout route = findViewById(R.id.help);
-                route.setVisibility(View.VISIBLE);
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+//                hideSliders();
+//                slidingLayout.setPanelHeight(240);
+//                LinearLayout route = findViewById(R.id.help);
+//                route.setVisibility(View.VISIBLE);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 
             }
 
@@ -658,71 +684,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
-    private void createVolunteerChildrenInDB() {
-        java.util.Map hmap = new HashMap<>();
-        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        hmap.put("Requested", "False");
-        hmap.put("ElderlyIDRequested","");
-        userDB.updateChildren(hmap);
-    }
 
-    ///////////////////////////////////////////////////////
-
-    private void PlaceVolunteerMarkerOnMap() {
-
-        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
-                    {
-
-                        // getting volunteers' coordinates
-                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
-                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
-                            {
-                                if (volunteersnapshot2.getKey().equals("latitude")) {
-                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
-                                }
-                                if (volunteersnapshot2.getKey().equals("longitude")) {
-                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
-
-                                }
-                                if (volunteersnapshot2.getKey().equals("name")) {
-                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
-                                }
-
-
-                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
-                                {
-                                    System.out.println("current vol: "+currentVolunteerName);
-                                    MarkerOptions mo = new MarkerOptions();
-                                    LatLng volLatLng = new LatLng(volLat,volLongi);
-
-                                    mo.position(volLatLng);
-                                    mo.title(currentVolunteerName);
-                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
-                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
-
-
-                                    markers.put(map.addMarker(mo,volLatLng), childsnapshot.getKey());
-                                    currentVolunteerName = "";
-                                }
-                            }
-                        }
-                    }
-
-
-                }
-                map.setListOfVolunteers(markers);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
     ////////////////////////////////////////////////////////
 //    private View.OnClickListener onHideListener() {
 //        return new View.OnClickListener() {
@@ -739,87 +701,10 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         mo.position(locationOfElderly);
         mo.title("Location of Elderly");
         mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-        markerOfElderly = map.addMarker(mo,locationOfElderly);
+        markerOfElderly = map.addMarker(mo,locationOfElderly, true);
     }
 
-    private void getContactList() {
-        String isoPrefix = getCountryIso();
-        Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-        while (phones.moveToNext()) {
-            String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-            String phone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
 
-            phone = phone.replace(" ", "");
-            phone = phone.replace("-", "");
-            phone = phone.replace("(", "");
-            phone = phone.replace(")", "");
-
-            if(!String.valueOf(phone.charAt(0)).equals("+")) {
-                phone = isoPrefix + phone;
-            }
-            UserObject mContacts = new UserObject(name, phone, "", "");
-            contactList.add(mContacts);
-            getUserDetails(mContacts);
-        }
-    }
-
-    private void getUserDetails(UserObject mContacts) {
-        DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user");
-        Query query = userDB.orderByChild("phone").equalTo(mContacts.getPhone());
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()) {
-                    String phone = "", name = "", myNotificationKey="";
-                    for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
-                        if(childSnapshot.child("phone").getValue() != null) {
-                            phone = childSnapshot.child("phone").getValue().toString();
-                        }
-                        if(childSnapshot.child("name").getValue() != null) {
-                            name = childSnapshot.child("name").getValue().toString();
-                        }
-                        if(childSnapshot.child("notificationKey").getValue() != null) {
-                            myNotificationKey = childSnapshot.child("notificationKey").getValue().toString();
-                        }
-
-                        UserObject mUser = new UserObject(name, phone, childSnapshot.getKey(), myNotificationKey);
-                        for(UserObject mContactIterator : contactList) {
-                            if(mContactIterator.getPhone().equals(phone)) {
-                                mUser.setName(mContactIterator.getName());
-
-                            }
-                        }
-
-                        userList.add(mUser);
-                        userListViewAdapter.notifyDataSetChanged();
-                        return;
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private String getCountryIso() {
-        String ISO = null;
-
-        TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(getApplicationContext().TELEPHONY_SERVICE);
-
-        if(telephonyManager.getNetworkCountryIso() != null) {
-            if(telephonyManager.getNetworkCountryIso().toString().equals("")) {
-                ISO = telephonyManager.getNetworkCountryIso().toString();
-            }
-        }
-        if (ISO == null) {
-            return "";
-        }
-        return CountryToPhonePrefix.getPhone(ISO);
-
-    }
 
 //    private void initializeRecyclerView() {
 //
@@ -846,7 +731,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             @Override
             public void onClick(View v) {
                 //hide sliding layout
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
 //                btnShow.setVisibility(View.VISIBLE);
             }
         };
@@ -854,25 +739,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     ///////////////////////////////////////////////////////
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            map = new Map(googleMap);
-            currentLocation = new CurrentLocation(map);
-            askForCurrentLocation();
-        }
 
-
-    }
 
     public void onClick(View v) {
 
@@ -893,7 +760,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             case R.id.B_to:
 //                removeRoute();
                 map.clearMap();
-                destinationMarker = map.addMarker(destMarkerOptions,currentDestination);
+                destinationMarker = map.addMarker(destMarkerOptions,currentDestination, true);
                 LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
                 findRoute(location,currentDestination);
 //                while (!getDirectionsData.isSuccess()){
@@ -906,7 +773,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
-    private void findRoute(LatLng currentLocation, LatLng currentDestination){
+    private void findRoute(final LatLng currentLocation, final LatLng currentDestination){
+        final LatLng curr = currentLocation;
+        final LatLng dest = currentDestination;
         Object dataTransfer[] = new Object[3];
         String url = urlCreator.getDirectionsUrl(currentLocation.latitude, currentLocation.longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
         Log.d("LOL",url);
@@ -914,6 +783,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData, new OnEventListener() {
             @Override
             public void onSuccess(Object object) {
+                if (!isEnRoute){
+
+                    map.showEntireRoute(curr,dest);
+                }
+                currentRouteLocation = currentLocation;
                 printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
             }
 
@@ -945,7 +819,34 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         return stepUpdated;
     }
 
+
+    ///////////////////////add route information
     private void printRouteInfo(HashMap<String,String> routeInformation, ArrayList stepInformation) {
+        LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
+        enRouteLayout.setVisibility(View.VISIBLE);
+        findPanelHeights();
+        TextView distDur = findViewById(R.id.distanceDuration);
+        String summary="Path Information";
+        if (routeInformation.containsKey("Summary")){
+            summary = routeInformation.get("Summary");
+        }
+        distDur.setText(summary+":- "+routeInformation.get("Distance")+"("+routeInformation.get("Duration")+")");
+        final Button enRoute = findViewById(R.id.enRoute);
+        enRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isEnRoute){
+                    isEnRoute = false;
+                    map.showEntireRoute(currentLocation.getCurrentLocation(),currentDestination);
+                    enRoute.setText("En Route");
+                }else{
+                    isEnRoute=true;
+                    enRoute.setText("Terminate");
+                    map.currentLocationZoom(currentLocation.getCurrentLocation());
+//                    map.updateCameraBearing(currentLocation.getBearing());
+                }
+            }
+        });
         ArrayList newSteps = change(stepInformation);
         DirectionsView = findViewById(R.id.List_Directions);
         DirectionsView.setNestedScrollingEnabled(false);
@@ -973,7 +874,27 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             lastKnownLoc = (Location) b.getParcelable("Location");
             if (lastKnownLoc != null) {
                 Log.d("BS","I don't believe it"+lastKnownLoc.getLongitude());
-                currentLocation.changeCurrentLocation(lastKnownLoc);
+                if (currentLocation.getCurrentLocation()==null){
+                    currentLocation.changeCurrentLocation(lastKnownLoc);
+                    map.zoomToLocation(currentLocation.getCurrentLocation());
+                }else{
+                    currentLocation.changeCurrentLocation(lastKnownLoc);
+                }
+                if (isEnRoute){
+                    map.currentLocationZoom(currentLocation.getCurrentLocation());
+//                    map.updateCameraBearing(lastKnownLoc.getBearing());
+//                    map.showLocation(new LatLng(lastKnownLoc.getLatitude(),lastKnownLoc.getLongitude()));
+                    Location prevLoc = new Location("");
+                    prevLoc.setLatitude(currentRouteLocation.latitude);
+                    prevLoc.setLongitude(currentRouteLocation.longitude);
+                    if (prevLoc.distanceTo(lastKnownLoc)>10){
+//                        isEnRoute = false;
+                        map.clearMap();
+                        setDestinationMarker(currentDestination,false);
+                        findRoute(currentLocation.getCurrentLocation(),new LatLng(currentDestination.latitude,currentDestination.longitude));
+                    }
+//                map.updateCameraBearing(currentLocation.getBearing());
+                }
             }
         }
     };
@@ -1012,14 +933,28 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
     private void sosButtonListener() {
+        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
         SosButton = findViewById(R.id.floatingButton);
         SosButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                hideSliders();
-                LinearLayout helpSlider = findViewById(R.id.sosSlider);
-                helpSlider.setVisibility(View.VISIBLE);
-                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                if (previousPanel.equals("routeInitial")&&currentPanel.equals("menu")){
+                    currentPanel = "routeInitial";
+                    previousPanel = "menu";
+                    showCurrentSlider();
+                }else if (currentPanel.equals("routeInitial")){
+                    currentPanel = "menu";
+                    previousPanel ="routeInitial";
+                    showCurrentSlider();
+                }else{
+                    currentPanel = "menu";
+                    showCurrentSlider();
+                }
+//                setPanelHeight();
+//                hideSliders();
+//                LinearLayout helpSlider = findViewById(R.id.sosSlider);
+//                helpSlider.setVisibility(View.VISIBLE);
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             }
         });
 
@@ -1035,7 +970,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             public void onClick(View view) {
                 map.clearMap();
                 setMarkerForElderlyPerson();
-                setDestinationMarker();
+                setDestinationMarker(currentDestination,true);
                 findRoute(locationOfElderly, currentDestination);
                 sendRouteInfo = new HashMap<String,String>();
                 sendRouteInfo.put("destLat",currentDestination.latitude);
@@ -1123,6 +1058,272 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     }
 
 
+    private void gettingPermissions() {
+        if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MapsActivity.this,
+                    new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
+                    1);
+        }
+    }
+
+    private void createAutoCompleteSearch() {
+        placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
+        placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").build());
+
+        EditText SearchInput = placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input);
+        SearchInput.setHintTextColor(getResources().getColor(R.color.grey_700));
+        
+        placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                SosButton.setVisibility(View.VISIBLE);
+                currentLocation.hideCurrentLocation();
+                final LatLng latLngLoc = place.getLatLng();
+                if(marker!=null){
+                    marker.remove();
+                }
+                map.clearMap();
+                currentDestination = latLngLoc;
+
+                setDestinationMarker(currentDestination,true);
+
+                modeOfTransport = "walking";
+
+//                hideSliders();
+
+                if (helpMode){
+                    currentPanel = "helpRoute";
+                    showCurrentSlider();
+//                    slidingLayout.setPanelHeight(400);
+//                    LinearLayout helpRouteSlider = findViewById(R.id.helpRoute);
+//                    helpRouteSlider.setVisibility(View.VISIBLE);
+                }else {
+                    currentPanel = "routeInitial";
+                    showCurrentSlider();
+//                    LinearLayout routeSlider = findViewById(R.id.route);
+//                    routeSlider.setVisibility(View.VISIBLE);
+                }
+
+
+//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+
+            }
+
+            @Override
+            public void onError(Status status) {
+                Toast.makeText(MapsActivity.this, ""+status.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_clear_button)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        // example : way to access view from PlaceAutoCompleteFragment
+                        // ((EditText) autocompleteFragment.getView()
+                        // .findViewById(R.id.place_autocomplete_search_input)).setText("");
+                        SosButton.setVisibility(View.GONE);
+                        placeAutocompleteFragment.setText("");
+                        view.setVisibility(View.GONE);
+                        LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
+                        enRouteLayout.setVisibility(View.INVISIBLE);
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                        currentPanel = "menu";
+                        showCurrentSlider();
+//                        setPanelHeight();
+                        map.clearMap();
+                        currentLocation.showCurrentLocation();
+                        map.zoomToLocation(currentLocation.getCurrentLocation());
+                        modeOfTransport = "driving";
+                        isEnRoute = false;
+                    }
+                });
+    }
+
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just add a marker near Sydney, Australia.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            map = new Map(googleMap);
+            currentLocation = new CurrentLocation(map);
+            askForCurrentLocation();
+        }
+
+        if (mapView != null &&
+                mapView.findViewById(Integer.parseInt("1")) != null) {
+            // Get the button view
+            View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+            // and next place it, on bottom right (as Google Maps app)
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
+                    locationButton.getLayoutParams();
+            // position on right bottom
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            layoutParams.setMargins(0, 0, 30, 900);
+        }
+
+    }
+    private void loadMapFragment() {
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapView = mapFragment.getView();
+        mapFragment.getMapAsync(this);
+    }
+
+    private void createVolunteerChildrenInDB() {
+        java.util.Map hmap = new HashMap<>();
+        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        hmap.put("Requested", "False");
+        hmap.put("ElderlyIDRequested","");
+        userDB.updateChildren(hmap);
+    }
+
+    ///////////////////////////////////////////////////////
+
+    private void PlaceVolunteerMarkerOnMap() {
+
+        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
+                    {
+
+                        // getting volunteers' coordinates
+                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
+                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
+                            {
+                                if (volunteersnapshot2.getKey().equals("latitude")) {
+                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
+                                }
+                                if (volunteersnapshot2.getKey().equals("longitude")) {
+                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
+
+                                }
+                                if (volunteersnapshot2.getKey().equals("name")) {
+                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
+                                }
+
+
+                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
+                                {
+                                    System.out.println("current vol: "+currentVolunteerName);
+                                    MarkerOptions mo = new MarkerOptions();
+                                    LatLng volLatLng = new LatLng(volLat,volLongi);
+
+                                    mo.position(volLatLng);
+                                    mo.title(currentVolunteerName);
+                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
+                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
+
+
+                                    markers.put(map.addMarker(mo,volLatLng, true), childsnapshot.getKey());
+                                    currentVolunteerName = "";
+                                }
+                            }
+                        }
+                    }
+
+
+                }
+                map.setListOfVolunteers(markers);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void getContactList() {
+        String isoPrefix = getCountryIso();
+        Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+        while (phones.moveToNext()) {
+            String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+            String phone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+
+            phone = phone.replace(" ", "");
+            phone = phone.replace("-", "");
+            phone = phone.replace("(", "");
+            phone = phone.replace(")", "");
+
+            if(!String.valueOf(phone.charAt(0)).equals("+")) {
+                phone = isoPrefix + phone;
+            }
+            UserObject mContacts = new UserObject(name, phone, "", "");
+            contactList.add(mContacts);
+            getUserDetails(mContacts);
+        }
+    }
+
+    private void getUserDetails(UserObject mContacts) {
+        DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user");
+        Query query = userDB.orderByChild("phone").equalTo(mContacts.getPhone());
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    String phone = "", name = "", myNotificationKey="";
+                    for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                        if(childSnapshot.child("phone").getValue() != null) {
+                            phone = childSnapshot.child("phone").getValue().toString();
+                        }
+                        if(childSnapshot.child("name").getValue() != null) {
+                            name = childSnapshot.child("name").getValue().toString();
+                        }
+                        if(childSnapshot.child("notificationKey").getValue() != null) {
+                            myNotificationKey = childSnapshot.child("notificationKey").getValue().toString();
+                        }
+
+                        UserObject mUser = new UserObject(name, phone, childSnapshot.getKey(), myNotificationKey);
+                        for(UserObject mContactIterator : contactList) {
+                            if(mContactIterator.getPhone().equals(phone)) {
+                                mUser.setName(mContactIterator.getName());
+
+                            }
+                        }
+
+                        userList.add(mUser);
+                        userListViewAdapter.notifyDataSetChanged();
+                        return;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private String getCountryIso() {
+        String ISO = null;
+
+        TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+
+        if(telephonyManager.getNetworkCountryIso() != null) {
+            if(telephonyManager.getNetworkCountryIso().toString().equals("")) {
+                ISO = telephonyManager.getNetworkCountryIso().toString();
+            }
+        }
+        if (ISO == null) {
+            return "";
+        }
+        return CountryToPhonePrefix.getPhone(ISO);
+
+    }
    
 
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
@@ -1179,6 +1380,81 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         }
         endCallButton.setVisibility(View.GONE);
 //        finish();
+    }
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        Log.d("touch","something");
+
+        View w = getCurrentFocus();
+        int scrcoords[] = new int[2];
+        w.getLocationOnScreen(scrcoords);
+//            float x = event.getRawX() + w.getLeft() - scrcoords[0];
+        float y = event.getRawY() + w.getTop() - scrcoords[1];
+        int condition = slidingLayout.getPanelHeight();
+        if (event.getAction()!=MotionEvent.ACTION_BUTTON_PRESS &&event.getAction()==MotionEvent.ACTION_UP&&event.getAction()!=MotionEvent.ACTION_MOVE&&event.getAction()!=MotionEvent.ACTION_BUTTON_RELEASE&&y>(2220-(condition+500))&&y<(2220-condition)){
+            Log.d("touch","button press");
+//
+//                if (currentPanel.equals("routeInitial")){
+//                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                    currentPanel = "menu";
+//                    previousPanel = "routeInitial";
+//                    showCurrentSlider();
+////                    setPanelHeight();
+////                    findPanelHeights();
+//                }else if (previousPanel.equals("routeInitial")&&currentPanel.equals("menu")){
+//                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+//                    previousPanel = "menu";
+//                    currentPanel = "routeInitial";
+//                    showCurrentSlider();
+////                    setPanelHeight();
+////                    findPanelHeights();
+//                }else
+                    if (currentPanel.equals("menu")){
+                    if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                    }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    }
+//                }
+            }
+        }
+
+        View v = getCurrentFocus();
+
+
+//            Log.d("touch","y is"+y);
+//            if (event.getAction() == MotionEvent.ACTION_UP
+//                    && (x < w.getLeft() || x >= w.getRight() || y < w.getTop() || y > w
+//                    .getBottom())) {
+//                    Log.d("touch","somethinghjbhjhjbhj");
+////                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+////                imm.hideSoftInputFromWindow(getWindow().getCurrentFocus()
+////                        .getWindowToken(), 0);
+//            }
+
+        boolean ret = super.dispatchTouchEvent(event);
+        return ret;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        Log.d("touch","c'est magnifique");
+        switch (event.getAction()){
+            case MotionEvent.EDGE_BOTTOM:
+                Log.d("touch","c'est magnifiqueee");
+                if (currentPanel.equals("menu")){
+                    if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                    }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    }
+                }
+                break;
+
+        }
+
+
+        return super.onTouchEvent(event);
     }
 
     private class SinchCallListener implements CallListener {

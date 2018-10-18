@@ -17,6 +17,7 @@ public class CurrentLocation {
 
         this.mMap = mMap;
         this.showCurrentLocation = true;
+        this.lastLocation = null;
     }
 
 
@@ -49,17 +50,36 @@ public class CurrentLocation {
         showCurrentLocation = false;
     }
 
+    public float getBearing(){
+        return lastLocation.getBearing();
+    }
 
     public void showCurrentLocation(){
         showCurrentLocation = true;
         changeCurrentLocation(null);
     }
 
+    public LatLng getCurrentLocation() {
+        if (lastLocation!=null){
+
+            return new LatLng(lastLocation.getLatitude(),lastLocation.getLongitude());
+        }
+        return null;
+    }
+
     public double getLatitude(){
-        return lastLocation.getLatitude();
+        if (lastLocation!=null){
+
+            return lastLocation.getLatitude();
+        }
+        return Double.parseDouble(null);
     }
 
     public double getLongitude(){
-        return lastLocation.getLongitude();
+        if (lastLocation!=null){
+
+            return lastLocation.getLongitude();
+        }
+        return Double.parseDouble(null);
     }
 }
