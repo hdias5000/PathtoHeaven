@@ -594,6 +594,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 locationOfElderly= new LatLng(newLatitude,newLongitude);
 
                 setMarkerForElderlyPerson();
+                map.zoomToLocation(locationOfElderly);
             }
 
             @Override
@@ -769,6 +770,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 locationOfElderly= new LatLng(newLatitude,newLongitude);
 
                 setMarkerForElderlyPerson();
+                map.zoomToLocation(locationOfElderly);
 
 //                hideSliders();
 //                slidingLayout.setPanelHeight(240);
@@ -936,19 +938,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     public void onClick(View v) {
 
         switch (v.getId()) {
-
-//            case R.id.B_Hospital:
-//                showNearbyPlaces("hospital",latitude,longitude);
-//                break;
-//
-//            case R.id.B_Restaurant:
-//                showNearbyPlaces("restaurant",latitude,longitude);
-//                break;
-//
-//            case R.id.B_School:
-//                showNearbyPlaces("school",latitude,longitude);
-//                break;
-
             case R.id.B_to:
 //                removeRoute();
                 map.clearMap();
@@ -959,8 +948,24 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 //
 //                }
 //                getDirectionsData
-
                 break;
+            case R.id.B_bike:
+                setBackgroundForModesOfTransport(R.id.B_bike);
+                modeOfTransport = "bicycling";
+                break;
+            case R.id.B_car:
+                setBackgroundForModesOfTransport(R.id.B_car);
+                modeOfTransport = "driving";
+                break;
+            case R.id.B_walk:
+                setBackgroundForModesOfTransport(R.id.B_walk);
+                modeOfTransport = "walking";
+                break;
+            case R.id.B_transit:
+                setBackgroundForModesOfTransport(R.id.B_transit);
+                modeOfTransport = "transit";
+                break;
+
         }
 
     }
@@ -1120,7 +1125,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private void setButtonListeners(){
         sosButtonListener();
-        modesOfTransportListeners();
+//        modesOfTransportListeners();
         ImageButton cancelVolunteer = findViewById(R.id.cancelConnectionButton);
         cancelVolunteer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1208,41 +1213,41 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         }
     };
 
-    private void modesOfTransportListeners() {
-        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
-        button_Walk.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                setBackgroundForModesOfTransport(button_Walk);
-                modeOfTransport = "walking";
-            }
-        });
-        final ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
-        button_Drive.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
+//    private void modesOfTransportListeners() {
+//        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
+//        button_Walk.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                setBackgroundForModesOfTransport(button_Walk);
+//                modeOfTransport = "walking";
+//            }
+//        });
+//        final ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
+//        button_Drive.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//
+//                setBackgroundForModesOfTransport(button_Drive);
+//                modeOfTransport = "driving";
+//            }
+//        });
+//        final ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
+//        button_Bike.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//
+//                setBackgroundForModesOfTransport(button_Bike);
+//                modeOfTransport = "bicycling";
+//            }
+//        });
+//        final ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
+//        button_Transit.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//
+//                setBackgroundForModesOfTransport(button_Transit);
+//                modeOfTransport = "transit";
+//            }
+//        });
+//    }
 
-                setBackgroundForModesOfTransport(button_Drive);
-                modeOfTransport = "driving";
-            }
-        });
-        final ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
-        button_Bike.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                setBackgroundForModesOfTransport(button_Bike);
-                modeOfTransport = "bicycling";
-            }
-        });
-        final ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
-        button_Transit.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                setBackgroundForModesOfTransport(button_Transit);
-                modeOfTransport = "transit";
-            }
-        });
-    }
-
-    private void setBackgroundForModesOfTransport(ImageButton selectedButton){
+    private void setBackgroundForModesOfTransport(Integer selectedButton){
         final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
         ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
         ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
@@ -1251,7 +1256,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         button_Drive.setBackgroundResource(R.color.blue_A400);
         button_Transit.setBackgroundResource(R.color.blue_A400);
         button_Bike.setBackgroundResource(R.color.blue_A400);
-        selectedButton.setBackgroundResource(R.color.grey_700);
+        ImageButton button = (ImageButton) findViewById(selectedButton);
+        button.setBackgroundResource(R.color.grey_700);
 
     }
 
@@ -1280,7 +1286,10 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                SosButton.setVisibility(View.VISIBLE);
+                if (!helpMode){
+
+                    SosButton.setVisibility(View.VISIBLE);
+                }
                 currentLocation.hideCurrentLocation();
                 final LatLng latLngLoc = place.getLatLng();
                 if(marker!=null){
@@ -1330,8 +1339,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         placeAutocompleteFragment.setText("");
                         view.setVisibility(View.GONE);
                         LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
-                        enRouteLayout.setVisibility(View.INVISIBLE);
-                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                        enRouteLayout.setVisibility(View.GONE);
+//                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
                         currentPanel = "menu";
                         showCurrentSlider();
 //                        setPanelHeight();
