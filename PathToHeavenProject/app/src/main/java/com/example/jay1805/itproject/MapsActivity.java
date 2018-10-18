@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -1051,6 +1052,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").build());
 
+        EditText SearchInput = placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input);
+        SearchInput.setHintTextColor(getResources().getColor(R.color.grey_700));
+        
         placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
