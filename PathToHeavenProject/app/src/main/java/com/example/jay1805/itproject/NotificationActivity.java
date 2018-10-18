@@ -2,22 +2,18 @@ package com.example.jay1805.itproject;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.MediaDrm;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.jay1805.itproject.User.UserObject;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 public class NotificationActivity extends AppCompatActivity {
@@ -92,11 +88,13 @@ public class NotificationActivity extends AppCompatActivity {
                                 elderlyName = dataSnapshot.getValue().toString();
 
 
-                                Intent intent = new Intent(getApplicationContext(), VolunteerRedirect.class);
-                                Bundle bundle = new Bundle();
-                                bundle.putString("elderlyName", elderlyName);
-                                bundle.putString("elderlyID", elderlyID);
-                                intent.putExtras(bundle);
+                                Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                                intent.putExtra("elderlyName",elderlyName);
+                                intent.putExtra("elderlyID",elderlyID);
+//                                Bundle bundle = new Bundle();
+//                                bundle.putString("elderlyName", elderlyName);
+//                                bundle.putString("elderlyID", elderlyID);
+//                                intent.putExtras(bundle);
                                 getApplicationContext().startActivity(intent);
 
                             }

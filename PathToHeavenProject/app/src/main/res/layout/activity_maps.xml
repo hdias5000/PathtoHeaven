@@ -181,6 +181,12 @@
             layout="@layout/slider_layout_help_route"
             android:visibility="gone"/>
 
+        <include android:id="@+id/volunteerLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            layout="@layout/slider_layout_volunteers"
+            android:visibility="gone"/>
+
     </LinearLayout>
 
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>
