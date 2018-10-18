@@ -234,9 +234,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                elderlyID = dataSnapshot.getValue().toString();
+                                    elderlyID = dataSnapshot.getValue().toString();
                                     Intent intent = new Intent(getApplicationContext(),NotificationActivity.class);
                                     intent.putExtra("elderlyID",elderlyID);
+                                    java.util.Map map = new HashMap<>();
+                                    final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                    map.put("Requested", "False");
+                                    userDB.updateChildren(map);
                                     startActivity(intent);
                                 }
 
@@ -246,12 +250,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                 }
                                 });
 
-//                        java.util.Map map = new HashMap<>();
-//                        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-//
-////                        map.put("Requested", "False");
-////                        map.put("ElderlyIDRequested","");
-//                        userDB.updateChildren(map);
                     }
 
 //

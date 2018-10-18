@@ -59,6 +59,7 @@ public class NotificationActivity extends AppCompatActivity {
                         FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").setValue("False");
                         // do nothing
                         startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+                        finish();
                     }
                 });
         AlertDialog alert = a_builder.create();

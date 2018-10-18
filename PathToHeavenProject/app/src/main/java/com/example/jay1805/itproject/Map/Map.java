@@ -175,8 +175,9 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
                 if (m.equals(marker)){
                     // set "Requested" attribute for the volunteer as "True"
                     //Start timer intent here
-                    context.startActivity(new Intent(context, TimerActivity.class));
                     updateRequestedChild(m);
+                    context.startActivity(new Intent(context, TimerActivity.class));
+                    //updateRequestedChild(m);
                     marker.showInfoWindow();
 
                     return true;
