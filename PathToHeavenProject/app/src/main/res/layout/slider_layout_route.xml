@@ -26,7 +26,8 @@
                 android:background="#616161"
                 app:srcCompat="@drawable/ic_directions_walk_white_24dp"
                 tools:background="@color/grey_700"
-                tools:ignore="VectorDrawableCompat" />
+                tools:ignore="VectorDrawableCompat"
+                android:onClick="onClick"/>
 
             <ImageButton
                 android:id="@+id/B_car"
@@ -35,7 +36,8 @@
                 android:layout_weight="1"
                 android:background="@color/blue_A400"
                 app:srcCompat="@drawable/ic_directions_car_white_24dp"
-                tools:ignore="VectorDrawableCompat" />
+                tools:ignore="VectorDrawableCompat"
+                android:onClick="onClick"/>
 
             <ImageButton
                 android:id="@+id/B_bike"
@@ -44,7 +46,8 @@
                 android:layout_weight="1"
                 android:background="@color/blue_A400"
                 app:srcCompat="@drawable/ic_directions_bike_white_24dp"
-                tools:ignore="VectorDrawableCompat" />
+                tools:ignore="VectorDrawableCompat"
+                android:onClick="onClick"/>
 
             <ImageButton
                 android:id="@+id/B_transit"
@@ -53,7 +56,8 @@
                 android:layout_weight="1"
                 android:background="@color/blue_A400"
                 app:srcCompat="@drawable/ic_directions_transit_white_24dp"
-                tools:ignore="VectorDrawableCompat" />
+                tools:ignore="VectorDrawableCompat"
+                android:onClick="onClick"/>
 
             <ImageButton
                 android:id="@+id/B_to"

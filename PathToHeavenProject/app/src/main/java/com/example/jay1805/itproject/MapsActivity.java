@@ -527,8 +527,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         ImageButton callHelper;
         ImageButton chatHelper;
-        ImageButton callHelper1;
-        ImageButton chatHelper1;
+        ImageButton callHelperRoute;
+        ImageButton chatHelperRoute;
         final ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
         final ArrayList<String> ToUserChatIDs = new ArrayList<String>();
 
@@ -543,15 +543,15 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
             }
         });
-        TextView nameTextView = findViewById(R.id.name);
+        TextView nameTextView = findViewById(R.id.nameHelp);
         nameTextView.setText(nameOfElderly);
-        nameTextView = findViewById(R.id.name1);
+        nameTextView = findViewById(R.id.nameHelpRoute);
         nameTextView.setText(nameOfElderly);
 
         callHelper = findViewById(R.id.callButtonHelp);
         chatHelper = findViewById(R.id.chatButtonHelp);
-        callHelper1 = findViewById(R.id.callButtonHelp1);
-        chatHelper1 = findViewById(R.id.chatButtonHelp1);
+        callHelperRoute = findViewById(R.id.callButtonHelpRoute);
+        chatHelperRoute = findViewById(R.id.chatButtonHelpRoute);
 
         FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -580,7 +580,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         };
 
         callHelper.setOnClickListener(callListener);
-        callHelper1.setOnClickListener(callListener);
+        callHelperRoute.setOnClickListener(callListener);
 
 
         View.OnClickListener chatListener = new View.OnClickListener() {
@@ -635,7 +635,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         }
                 );}};
         chatHelper.setOnClickListener(chatListener);
-        chatHelper1.setOnClickListener(chatListener);
+        chatHelperRoute.setOnClickListener(chatListener);
 
 
     }
@@ -811,16 +811,16 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 //    }
 
     ////////////////////////////////////////////////////////
-    private View.OnClickListener onHideListener() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //hide sliding layout
-//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-//                btnShow.setVisibility(View.VISIBLE);
-            }
-        };
-    }
+//    private View.OnClickListener onHideListener() {
+//        return new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                //hide sliding layout
+////                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+////                btnShow.setVisibility(View.VISIBLE);
+//            }
+//        };
+//    }
     ///////////////////////////////////////////////////////
 
 
@@ -871,6 +871,34 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 //                getDirectionsData
 
                 break;
+            case R.id.B_RouteToElder:
+                map.clearMap();
+                setMarkerForElderlyPerson();
+                LatLng location_current = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                findRoute(location_current,locationOfElderly);
+                sendRouteInfo = new HashMap<String,String>();
+                sendRouteInfo.put("destLat",location_current.latitude);
+                sendRouteInfo.put("destLon",location_current.longitude);
+                sendRouteInfo.put("mode",modeOfTransport);
+                break;
+            case R.id.B_SendRoute:
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference ref = database.getReference().child("gps-sharing").child(shareIDOfElder);
+                java.util.Map hashMap = new HashMap<>();
+                hashMap.put("route",sendRouteInfo);
+                ref.updateChildren(hashMap);
+                break;
+            case R.id.B_ElderToDestination:
+                map.clearMap();
+                setMarkerForElderlyPerson();
+                setDestinationMarker(currentDestination,true);
+                findRoute(locationOfElderly, currentDestination);
+                sendRouteInfo = new HashMap<String,String>();
+                sendRouteInfo.put("destLat",currentDestination.latitude);
+                sendRouteInfo.put("destLon",currentDestination.longitude);
+                sendRouteInfo.put("mode",modeOfTransport);
+                break;
+
         }
 
     }
@@ -1061,51 +1089,51 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         });
 
 
-        Button routeToElderlyButton = findViewById(R.id.B_RouteToElder);
-        routeToElderlyButton.setOnClickListener(alrightalrightalright);
-        Button routeToElderlyButton1 = findViewById(R.id.B_RouteToElder1);
-        routeToElderlyButton1.setOnClickListener(alrightalrightalright);
+//        Button routeToElderlyButton = findViewById(R.id.B_RouteToElder);
+//        routeToElderlyButton.setOnClickListener(alrightalrightalright);
+//        Button routeToElderlyButton1 = findViewById(R.id.B_RouteToElder1);
+//        routeToElderlyButton1.setOnClickListener(alrightalrightalright);
 
-        Button elderToDestination = findViewById(R.id.B_ElderToDestination);
-        elderToDestination.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                map.clearMap();
-                setMarkerForElderlyPerson();
-                setDestinationMarker(currentDestination,true);
-                findRoute(locationOfElderly, currentDestination);
-                sendRouteInfo = new HashMap<String,String>();
-                sendRouteInfo.put("destLat",currentDestination.latitude);
-                sendRouteInfo.put("destLon",currentDestination.longitude);
-                sendRouteInfo.put("mode",modeOfTransport);
-            }
-        });
+//        Button elderToDestination = findViewById(R.id.B_ElderToDestination);
+//        elderToDestination.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                map.clearMap();
+//                setMarkerForElderlyPerson();
+//                setDestinationMarker(currentDestination,true);
+//                findRoute(locationOfElderly, currentDestination);
+//                sendRouteInfo = new HashMap<String,String>();
+//                sendRouteInfo.put("destLat",currentDestination.latitude);
+//                sendRouteInfo.put("destLon",currentDestination.longitude);
+//                sendRouteInfo.put("mode",modeOfTransport);
+//            }
+//        });
 
-        Button sendRoute = findViewById(R.id.B_SendRoute);
-        sendRoute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference ref = database.getReference().child("gps-sharing").child(shareIDOfElder);
-                java.util.Map map = new HashMap<>();
-                map.put("route",sendRouteInfo);
-                ref.updateChildren(map);
-            }
-        });
+//        Button sendRoute = findViewById(R.id.B_SendRoute);
+//        sendRoute.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                FirebaseDatabase database = FirebaseDatabase.getInstance();
+//                DatabaseReference ref = database.getReference().child("gps-sharing").child(shareIDOfElder);
+//                java.util.Map map = new HashMap<>();
+//                map.put("route",sendRouteInfo);
+//                ref.updateChildren(map);
+//            }
+//        });
     }
 
-    View.OnClickListener alrightalrightalright = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            map.clearMap();
-            setMarkerForElderlyPerson();
-            LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
-            findRoute(location,locationOfElderly);
-            sendRouteInfo.put("destLat",location.latitude);
-            sendRouteInfo.put("destLon",location.longitude);
-            sendRouteInfo.put("mode",modeOfTransport);
-        }
-    };
+//    View.OnClickListener alrightalrightalright = new View.OnClickListener() {
+//        @Override
+//        public void onClick(View view) {
+//            map.clearMap();
+//            setMarkerForElderlyPerson();
+//            LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+//            findRoute(location,locationOfElderly);
+//            sendRouteInfo.put("destLat",location.latitude);
+//            sendRouteInfo.put("destLon",location.longitude);
+//            sendRouteInfo.put("mode",modeOfTransport);
+//        }
+//    };
 
     private void modesOfTransportListeners() {
         final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
@@ -1270,7 +1298,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             // position on right bottom
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-            layoutParams.setMargins(0, 0, 30, 900);
+            layoutParams.setMargins(0, 0, 30, 1500);
         }
 
     }

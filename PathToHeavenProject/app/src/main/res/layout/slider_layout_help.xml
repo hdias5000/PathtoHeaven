@@ -32,7 +32,7 @@
                     android:layout_marginRight="20dp"
                     android:textStyle="bold"
                     android:textColor="@color/black"
-                    android:id="@+id/name"/>
+                    android:id="@+id/nameHelp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -55,7 +55,7 @@
                     android:background="@drawable/rounded_corner_button"
                     android:src="@drawable/ic_call_white_24dp"
                     android:id="@+id/callButtonHelp"
-                    android:layout_marginRight="20dp"/>
+                    android:layout_marginRight="20dp" />
 
             </LinearLayout>
         </LinearLayout>
@@ -72,7 +72,8 @@
                 android:background="#616161"
                 app:srcCompat="@drawable/ic_directions_walk_white_24dp"
                 tools:background="@color/grey_700"
-                tools:ignore="VectorDrawableCompat" />
+                tools:ignore="VectorDrawableCompat"
+                android:onClick="onClick"/>
             <ImageButton
                 android:id="@+id/B_car"
                 android:layout_width="wrap_content"
@@ -80,7 +81,8 @@
                 android:layout_weight="1"
                 android:background="@color/blue_A400"
                 app:srcCompat="@drawable/ic_directions_car_white_24dp"
-                tools:ignore="VectorDrawableCompat" />
+                tools:ignore="VectorDrawableCompat"
+                android:onClick="onClick"/>
 
             <ImageButton
                 android:id="@+id/B_bike"
@@ -89,7 +91,8 @@
                 android:layout_weight="1"
                 android:background="@color/blue_A400"
                 app:srcCompat="@drawable/ic_directions_bike_white_24dp"
-                tools:ignore="VectorDrawableCompat" />
+                tools:ignore="VectorDrawableCompat"
+                android:onClick="onClick"/>
             <ImageButton
                 android:id="@+id/B_transit"
                 android:layout_width="wrap_content"
@@ -97,7 +100,8 @@
                 android:layout_weight="1"
                 android:background="@color/blue_A400"
                 app:srcCompat="@drawable/ic_directions_transit_white_24dp"
-                tools:ignore="VectorDrawableCompat" />
+                tools:ignore="VectorDrawableCompat"
+                android:onClick="onClick"/>
 
             <Button
                 android:id="@+id/B_RouteToElder"
@@ -108,7 +112,8 @@
                 android:layout_gravity="center"
                 android:textColor="@color/white"
                 android:background="@drawable/curved_edges_button"
-                android:text="Route To Elder" />
+                android:text="Route To Elder"
+                android:onClick="onClick"/>
 
         </LinearLayout>
     </LinearLayout>
