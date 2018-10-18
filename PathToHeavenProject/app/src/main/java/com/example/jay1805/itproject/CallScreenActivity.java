@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -16,6 +17,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallEndCause;
@@ -43,6 +50,8 @@ public class CallScreenActivity extends BaseActivity {
     private TextView mCallerName;
     private DrawerLayout myDrawerLayout;
     private ActionBarDrawerToggle myToggle;
+    private String currentUserUid;
+    private DatabaseReference userRef;
 
     private class UpdateCallDurationTask extends TimerTask {
 
@@ -80,10 +89,23 @@ public class CallScreenActivity extends BaseActivity {
 
     @Override
     public void onServiceConnected() {
+        currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         Call call = getSinchServiceInterface().getCall(mCallId);
         if (call != null) {
             call.addCallListener(new SinchCallListener());
-            mCallerName.setText(call.getRemoteUserId());
+
+            FirebaseDatabase.getInstance().getReference().child("user").child(call.getRemoteUserId()).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    mCallerName.setText(dataSnapshot.getValue().toString());
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
             mCallState.setText(call.getState().toString());
         } else {
             Log.e(TAG, "Started with invalid callId, aborting.");
