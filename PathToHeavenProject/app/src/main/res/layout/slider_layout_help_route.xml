@@ -2,6 +2,7 @@
 <LinearLayout android:layout_height="wrap_content"
     android:layout_width="match_parent"
     android:orientation="vertical"
+    android:background="@color/grey_300"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,7 +13,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="70dp"
             android:orientation="horizontal">
 
             <LinearLayout
@@ -22,6 +23,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:layout_marginLeft="10dp"
                     android:text="contact"
                     android:textSize="30dp"
                     android:gravity="center"
@@ -34,20 +36,24 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center">
+                android:gravity="right"
+                android:layout_gravity="center">
 
                 <ImageButton
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:layout_marginRight="20dp"
-                    android:src="@drawable/ic_chats"
+                    android:background="@drawable/rounded_corner_button"
+                    android:src="@drawable/ic_chat_white_24dp"
                     android:id="@+id/chatButtonHelp1" />
 
                 <ImageButton
                     android:layout_width="50dp"
                     android:layout_height="50dp"
-                    android:src="@drawable/ic_call_black_24dp"
-                    android:id="@+id/callButtonHelp1"/>
+                    android:background="@drawable/rounded_corner_button"
+                    android:src="@drawable/ic_call_white_24dp"
+                    android:id="@+id/callButtonHelp1"
+                    android:layout_marginRight="20dp"/>
 
             </LinearLayout>
         </LinearLayout>
@@ -95,42 +101,59 @@
                 app:srcCompat="@drawable/ic_directions_transit_white_24dp"
                 tools:ignore="VectorDrawableCompat" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/B_to"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:onClick="onClick"
-                android:text="Route" />
+                android:src="@drawable/ic_route"
+                android:onClick="onClick"/>
+
+            <!--<Button-->
+                <!--android:id="@+id/B_to"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:layout_weight="1"-->
+                <!--android:gravity="center"-->
+                <!--android:onClick="onClick"-->
+                <!--android:text="Route" />-->
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="70dp"
             android:orientation="horizontal"
             android:visibility="visible"
-            android:id="@+id/sendRouteLayout">
+            android:id="@+id/sendRouteLayout"
+            android:gravity="center">
 
             <Button
-                android:layout_width="150dp"
-                android:layout_height="match_parent"
-                android:gravity="center"
+                android:layout_width="140dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:textColor="@color/white"
+                android:background="@drawable/curved_edges_button"
                 android:text= "Elder To Destination"
                 android:id="@+id/B_ElderToDestination"/>
 
             <Button
-                android:layout_width="150dp"
-                android:layout_height="match_parent"
-                android:gravity="center"
+                android:layout_width="120dp"
+                android:layout_height="50dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="12dp"
+                android:layout_gravity="center"
+                android:textColor="@color/white"
+                android:background="@drawable/curved_edges_button"
                 android:text="Route To Elder"
                 android:id="@+id/B_RouteToElder1"/>
 
             <Button
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_width="68dp"
+                android:layout_height="50dp"
+                android:layout_marginLeft="5dp"
                 android:layout_gravity="center"
+                android:textColor="@color/white"
+                android:background="@drawable/curved_edges_button"
                 android:text="Send Route"
                 android:id="@+id/B_SendRoute"/>
 

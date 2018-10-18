@@ -30,6 +30,8 @@ public class SensorService extends Service implements com.google.android.gms.loc
         GoogleApiClient.OnConnectionFailedListener{
 
     private LocationRequest locationRequest;
+    private Location lastSharedGPSLoc;
+    private Location lastSharedForVolunteer;
     private GoogleApiClient client;
     Context appContext;
     private String sharingID;
@@ -56,6 +58,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
                 startTracking, new IntentFilter("UPLOAD GPS"));
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 stopTracking, new IntentFilter("STOP GPS"));
+        lastSharedForVolunteer = null;
     }
 
     @SuppressLint("MissingPermission")
@@ -107,6 +110,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
     }
 
     private void startFirebase(){
+        lastSharedGPSLoc = null;
         removeSharingFromFirebase();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference().child("gps-sharing");
@@ -120,32 +124,46 @@ public class SensorService extends Service implements com.google.android.gms.loc
         share = true;
     }
 
-    private void updateLocation(){
+    private Location updateLocation(){
+        if (lastSharedGPSLoc!=null){
+            if (lastSharedGPSLoc.distanceTo(currentLocation)<5){
+                return null;
+            }
+        }
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference().child("gps-sharing").child(sharingID);
         Map map = new HashMap<>();
 
         ////////////////check if location exists
+        lastSharedGPSLoc = currentLocation;
 
         map.put("latitude", Double.toString(currentLocation.getLatitude()));
 
         map.put("longitude", Double.toString(currentLocation.getLongitude()));
 
         ref.updateChildren(map);
+        return null;
     }
 
-    private void uploadLocation(){
+    private Location uploadLocation(){
+        if (lastSharedForVolunteer!=null){
+            if (lastSharedForVolunteer.distanceTo(currentLocation)<10){
+                return null;
+            }
+        }
 
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         userRef = FirebaseDatabase.getInstance().getReference().child("user").child(currentUserId);
 
 
         Map map = new HashMap<>();
-
+        lastSharedForVolunteer = currentLocation;
         map.put("latitude", Double.toString(currentLocation.getLatitude()));
         map.put("longitude", Double.toString(currentLocation.getLongitude()));
 
         userRef.updateChildren(map);
+
+        return null;
     }
 
 

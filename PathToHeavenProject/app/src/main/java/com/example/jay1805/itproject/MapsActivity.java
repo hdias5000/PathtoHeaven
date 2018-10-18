@@ -652,10 +652,10 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 double newLatitude = 0;
                 double newLongitude = 0;
                 for (DataSnapshot childSnapshot: dataSnapshot.getChildren()){
-                    if (childSnapshot.getKey().toString().equals("latitude")){
+                    if (childSnapshot.getKey().equals("latitude")){
                         newLatitude = Double.parseDouble(childSnapshot.getValue().toString());
                     }
-                    if (childSnapshot.getKey().toString().equals("longitude")){
+                    if (childSnapshot.getKey().equals("longitude")){
                         newLongitude = Double.parseDouble(childSnapshot.getValue().toString());
                     }
                 }
@@ -674,8 +674,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                     markerOfElderly.remove();
                 }
 
-                Log.d("Coord", "lat is: " +newLatitude);
-                Log.d("Coord", "long is: " +newLongitude);
+//                Log.d("Coord", "lat is: " +newLatitude);
+//                Log.d("Coord", "long is: " +newLongitude);
                 locationOfElderly= new LatLng(newLatitude,newLongitude);
 
                 setMarkerForElderlyPerson();
