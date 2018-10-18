@@ -122,14 +122,12 @@
                 android:id="@+id/endCallButton"/>
 
             <LinearLayout
-                android:layout_width="346dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
-                android:layout_marginStart="19dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="19dp"
                 android:layout_weight="5"
                 android:background="@color/grey_300">
 

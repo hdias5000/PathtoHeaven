@@ -149,6 +149,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     HashMap<String,Integer> panelHeight;
 
     String currentPanel;
+    String previousPanel="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -377,7 +378,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                     ///////////////////change button when this is pressed
                                     modeOfTransport = mode;
                                     LatLng curLoc = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
-                                    setDestinationMarker(dest);
+                                    setDestinationMarker(dest,true);
                                     findRoute(curLoc,dest);
                                 }
                             }
@@ -453,12 +454,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         });
     }
 
-    private void setDestinationMarker(LatLng dest){
+    private void setDestinationMarker(LatLng dest,boolean zoom){
         destMarkerOptions = new MarkerOptions();
         destMarkerOptions.position(dest);
         destMarkerOptions.title("Your search results");
         destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-        destinationMarker = map.addMarker(destMarkerOptions, dest);
+        destinationMarker = map.addMarker(destMarkerOptions, dest,zoom);
     }
 
     private void gpsSharing() {
@@ -697,7 +698,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         mo.position(locationOfElderly);
         mo.title("Location of Elderly");
         mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-        markerOfElderly = map.addMarker(mo,locationOfElderly);
+        markerOfElderly = map.addMarker(mo,locationOfElderly, true);
     }
 
 
@@ -756,7 +757,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             case R.id.B_to:
 //                removeRoute();
                 map.clearMap();
-                destinationMarker = map.addMarker(destMarkerOptions,currentDestination);
+                destinationMarker = map.addMarker(destMarkerOptions,currentDestination, true);
                 LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
                 findRoute(location,currentDestination);
 //                while (!getDirectionsData.isSuccess()){
@@ -779,7 +780,10 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData, new OnEventListener() {
             @Override
             public void onSuccess(Object object) {
-                map.showEntireRoute(curr,dest);
+                if (!isEnRoute){
+
+                    map.showEntireRoute(curr,dest);
+                }
                 currentRouteLocation = currentLocation;
                 printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
             }
@@ -835,8 +839,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 }else{
                     isEnRoute=true;
                     enRoute.setText("Terminate");
-                    map.zoomToLocation(currentLocation.getCurrentLocation());
-                    map.updateCameraBearing(currentLocation.getBearing());
+                    map.currentLocationZoom(currentLocation.getCurrentLocation());
+//                    map.updateCameraBearing(currentLocation.getBearing());
                 }
             }
         });
@@ -874,14 +878,16 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                     currentLocation.changeCurrentLocation(lastKnownLoc);
                 }
                 if (isEnRoute){
-                    map.zoomToLocation(currentLocation.getCurrentLocation());
-                    map.updateCameraBearing(lastKnownLoc.getBearing());
-                    map.showLocation(new LatLng(lastKnownLoc.getLatitude(),lastKnownLoc.getLongitude()));
+                    map.currentLocationZoom(currentLocation.getCurrentLocation());
+//                    map.updateCameraBearing(lastKnownLoc.getBearing());
+//                    map.showLocation(new LatLng(lastKnownLoc.getLatitude(),lastKnownLoc.getLongitude()));
                     Location prevLoc = new Location("");
                     prevLoc.setLatitude(currentRouteLocation.latitude);
                     prevLoc.setLongitude(currentRouteLocation.longitude);
                     if (prevLoc.distanceTo(lastKnownLoc)>10){
-                        isEnRoute = false;
+//                        isEnRoute = false;
+                        map.clearMap();
+                        setDestinationMarker(currentDestination,false);
                         findRoute(currentLocation.getCurrentLocation(),new LatLng(currentDestination.latitude,currentDestination.longitude));
                     }
 //                map.updateCameraBearing(currentLocation.getBearing());
@@ -951,7 +957,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             public void onClick(View view) {
                 map.clearMap();
                 setMarkerForElderlyPerson();
-                setDestinationMarker(currentDestination);
+                setDestinationMarker(currentDestination,true);
                 findRoute(locationOfElderly, currentDestination);
                 sendRouteInfo = new HashMap<String,String>();
                 sendRouteInfo.put("destLat",currentDestination.latitude);
@@ -1066,7 +1072,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 map.clearMap();
                 currentDestination = latLngLoc;
 
-                setDestinationMarker(currentDestination);
+                setDestinationMarker(currentDestination,true);
 
                 modeOfTransport = "walking";
 
@@ -1113,7 +1119,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         setPanelHeight();
                         map.clearMap();
                         currentLocation.showCurrentLocation();
-                        map.showLocation(currentLocation.getCurrentLocation());
+                        map.zoomToLocation(currentLocation.getCurrentLocation());
                         modeOfTransport = "driving";
                         isEnRoute = false;
                     }
@@ -1206,7 +1212,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                     //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
 
 
-                                    markers.put(map.addMarker(mo,volLatLng), childsnapshot.getKey());
+                                    markers.put(map.addMarker(mo,volLatLng, true), childsnapshot.getKey());
                                     currentVolunteerName = "";
                                 }
                             }
@@ -1369,15 +1375,29 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         w.getLocationOnScreen(scrcoords);
 //            float x = event.getRawX() + w.getLeft() - scrcoords[0];
         float y = event.getRawY() + w.getTop() - scrcoords[1];
-
-        if (event.getAction()!=MotionEvent.ACTION_BUTTON_PRESS &&event.getAction()==MotionEvent.ACTION_UP&&event.getAction()!=MotionEvent.ACTION_MOVE&&event.getAction()!=MotionEvent.ACTION_BUTTON_RELEASE&&y>1500){
+        int condition = slidingLayout.getPanelHeight();
+        if (event.getAction()!=MotionEvent.ACTION_BUTTON_PRESS &&event.getAction()==MotionEvent.ACTION_UP&&event.getAction()!=MotionEvent.ACTION_MOVE&&event.getAction()!=MotionEvent.ACTION_BUTTON_RELEASE&&y>(2220-(condition+500))&&y<(2220-condition)){
             Log.d("touch","button press");
-            if (currentPanel.equals("menu")){
-                if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
-                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-                }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
-                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-                }
+//            if (currentPanel.equals("menu")||currentPanel.equals("routeInitial")){
+//                if (currentPanel.equals("routeInitial")){
+
+//                    currentPanel = "menu";
+//                    previousPanel = "routeInitial";
+//                    showCurrentSlider();
+//                    setPanelHeight();
+//                }else if (previousPanel.equals("routeInitial")&&currentPanel.equals("menu")){
+//                    previousPanel = "menu";
+//                    currentPanel = "routeInitial";
+//                    showCurrentSlider();
+//                    setPanelHeight();
+//                }else
+                    if (currentPanel.equals("menu")){
+                    if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                    }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
+                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    }
+//                }
             }
         }
 

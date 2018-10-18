@@ -82,6 +82,8 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(camPos));
     }
 
+
+
     public void zoomToLocation(LatLng location){
 
         Log.d("CameraMap","work pwease");
@@ -90,9 +92,15 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 17.0f));
     }
 
-    public Marker addMarker(MarkerOptions markerOptions, LatLng latLng){
+    public void currentLocationZoom(LatLng location){
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 20.0f));
+    }
 
-        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+    public Marker addMarker(MarkerOptions markerOptions, LatLng latLng, boolean zoom){
+        if (zoom){
+
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+        }
         return mMap.addMarker(markerOptions);
 //        mMap.animateCamera(CameraUpdateFactory.zoomTo(10));
     }
