@@ -1,12 +1,11 @@
 package com.example.jay1805.itproject;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -65,19 +64,17 @@ public class TimerActivity extends AppCompatActivity{
                         child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("accepted").addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        if(dataSnapshot.getValue().equals("call")){
+                        if(dataSnapshot.getValue().equals("true")){
                             cancel();
-                            Toast.makeText(TimerActivity.this, "Please wait while the volunteer is calling you...", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(TimerActivity.this, "The volunteer has connected with you!!!", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent("Start Listener for Cancel Connection");
+                            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                             finish();
-                        }
-                        else if (dataSnapshot.getValue().equals("chat")){
-                            cancel();
-                            Toast.makeText(TimerActivity.this, "Please wait while the volunteer is connecting with you through chat..", Toast.LENGTH_SHORT).show();
-                            finish();
-
                         }
                         else if (dataSnapshot.getValue().equals("false")){
                             Toast.makeText(TimerActivity.this, "Volunteer cancelled request. Please try again. ", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent("Make Null");
+                            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                             cancel();
                             finish();
                         }

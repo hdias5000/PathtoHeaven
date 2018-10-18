@@ -24,6 +24,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="#616161"
+                android:onClick="onClick"
                 app:srcCompat="@drawable/ic_directions_walk_white_24dp"
                 tools:background="@color/grey_700"
                 tools:ignore="VectorDrawableCompat"
@@ -35,6 +36,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@color/blue_A400"
+                android:onClick="onClick"
                 app:srcCompat="@drawable/ic_directions_car_white_24dp"
                 tools:ignore="VectorDrawableCompat"
                 android:onClick="onClick"/>
@@ -45,6 +47,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@color/blue_A400"
+                android:onClick="onClick"
                 app:srcCompat="@drawable/ic_directions_bike_white_24dp"
                 tools:ignore="VectorDrawableCompat"
                 android:onClick="onClick"/>
@@ -55,6 +58,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@color/blue_A400"
+                android:onClick="onClick"
                 app:srcCompat="@drawable/ic_directions_transit_white_24dp"
                 tools:ignore="VectorDrawableCompat"
                 android:onClick="onClick"/>

@@ -110,6 +110,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     private double volLongi=0;
     private String currentVolunteerName;
 
+    private boolean volunteerMode = false;
+
 
     private HashMap<Marker, String> markers;
 
@@ -140,7 +142,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     LatLng currentDestination;
 
-    HashMap sendRouteInfo = null;
+    HashMap sendRouteInfo = new HashMap<String,String>();
     String shareIDOfElder = "";
     String nameOfElderly = "Elderly";
     Marker markerOfElderly;
@@ -234,9 +236,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                elderlyID = dataSnapshot.getValue().toString();
+                                    elderlyID = dataSnapshot.getValue().toString();
                                     Intent intent = new Intent(getApplicationContext(),NotificationActivity.class);
                                     intent.putExtra("elderlyID",elderlyID);
+                                    java.util.Map map = new HashMap<>();
+                                    final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                    map.put("Requested", "False");
+                                    userDB.updateChildren(map);
                                     startActivity(intent);
                                 }
 
@@ -246,12 +252,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                 }
                                 });
 
-//                        java.util.Map map = new HashMap<>();
-//                        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-//
-////                        map.put("Requested", "False");
-////                        map.put("ElderlyIDRequested","");
-//                        userDB.updateChildren(map);
                     }
 
 //
@@ -321,6 +321,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             case "helpRoute":
                 currentPanelLayout = findViewById(R.id.helpRoute);
                 break;
+            case "volunteer":
+                currentPanelLayout = findViewById(R.id.volunteerLayout);
+                break;
         }
         if (currentPanelLayout!=null){
 
@@ -347,10 +350,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         LinearLayout sos = findViewById(R.id.sosSlider);
         LinearLayout help = findViewById(R.id.help);
         LinearLayout helpRoute = findViewById(R.id.helpRoute);
+        LinearLayout volunteer = findViewById(R.id.volunteerLayout);
         route.setVisibility(View.GONE);
         sos.setVisibility(View.GONE);
         help.setVisibility(View.GONE);
         helpRoute.setVisibility(View.GONE);
+        volunteer.setVisibility(View.GONE);
 //        slidingLayout.setPanelHeight(120);
     }
 
@@ -360,6 +365,36 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     private void setUpBroadcastReceivers() {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        Log.d("WORK","Work Bitch");
+                        FirebaseDatabase.getInstance().getReference().child("user").
+                                child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("accepted").setValue("null");
+                    }
+                }, new IntentFilter("Make Null"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        FirebaseDatabase.getInstance().getReference().child("user").
+                                child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("accepted").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.getValue().toString().equals("false")){
+                                    makeToast("Volunteer has Disconnected.");
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                }, new IntentFilter("Start Listener for Cancel Connection"));
+
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
                     @Override
@@ -474,6 +509,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 setPanelHeight();
             }
         });
+        final LinearLayout volunteerLayout = (LinearLayout)findViewById(R.id.volunteerSliderLayout);
+        helpRouteLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("volunteer",volunteerLayout.getHeight());
+                setPanelHeight();
+            }
+        });
     }
 
     private void setDestinationMarker(LatLng dest,boolean zoom){
@@ -489,6 +531,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         String userID;
         Intent intent = getIntent();
         if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID") && intent.getExtras().containsKey("userID")) {
+            currentPanel = "help";
+            showCurrentSlider();
             sendRouteInfo = new HashMap<String,String>();
             shareIDOfElder = intent.getExtras().getString("Share ID");
             userID = intent.getExtras().getString("userID");
@@ -496,8 +540,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             System.out.println(userID);
             System.out.println("Share ID is: " + shareIDOfElder);
             Log.d("SHAREID", shareIDOfElder);
-            currentPanel = "help";
-            showCurrentSlider();
 
             FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareIDOfElder).addValueEventListener(new ValueEventListener() {
                 @Override
@@ -521,21 +563,38 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             });
 
         }
+        if (intent.hasExtra("elderlyID") && intent.getExtras().containsKey("elderlyID")){
+            userID = intent.getExtras().getString("elderlyID");
+            elderlyID =userID;
+            currentPanel = "volunteer";
+            showCurrentSlider();
+            volunteerMode = true;
+            setInitialInfoForHelp(userID);
+            showElderlyLocationForVolunteer(elderlyID);
+        }
     }
 
-    private void setInitialInfoForHelp(final String elderlyID) {
+    private void showElderlyLocationForVolunteer(String elderlyID) {
+//        String currentUserId;
+        DatabaseReference userRef;
 
-        ImageButton callHelper;
-        ImageButton chatHelper;
-        ImageButton callHelperRoute;
-        ImageButton chatHelperRoute;
-        final ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
-        final ArrayList<String> ToUserChatIDs = new ArrayList<String>();
-
-        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                nameOfElderly = dataSnapshot.getValue().toString();
+                double newLatitude = 0;
+                double newLongitude = 0;
+                newLatitude = Double.parseDouble(dataSnapshot.child("latitude").getValue().toString());
+
+                newLongitude = Double.parseDouble(dataSnapshot.child("longitude").getValue().toString());
+
+                if (markerOfElderly!=null){
+                    markerOfElderly.remove();
+                }
+
+                locationOfElderly= new LatLng(newLatitude,newLongitude);
+
+                setMarkerForElderlyPerson();
+                map.zoomToLocation(locationOfElderly);
             }
 
             @Override
@@ -543,6 +602,42 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
             }
         });
+
+
+    }
+
+    private void setInitialInfoForHelp(final String elderlyID) {
+
+        ImageButton callHelper;
+        ImageButton chatHelper;
+
+        ImageButton callHelperRoute;
+        ImageButton chatHelperRoute;
+        ImageButton callHelperV;
+        ImageButton chatHelperV;
+
+        final ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
+        final ArrayList<String> ToUserChatIDs = new ArrayList<String>();
+
+        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                nameOfElderly = dataSnapshot.getValue().toString();
+                Log.d("NAME", nameOfElderly);
+                TextView nameTextView = findViewById(R.id.nameHelp);
+                nameTextView.setText(nameOfElderly);
+                TextView nameTextView1 = findViewById(R.id.nameHelpRoute);
+                nameTextView1.setText(nameOfElderly);
+                TextView VnameTextView = findViewById(R.id.Vname);
+                VnameTextView.setText(nameOfElderly);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
         TextView nameTextView = findViewById(R.id.nameHelp);
         nameTextView.setText(nameOfElderly);
         nameTextView = findViewById(R.id.nameHelpRoute);
@@ -552,6 +647,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         chatHelper = findViewById(R.id.chatButtonHelp);
         callHelperRoute = findViewById(R.id.callButtonHelpRoute);
         chatHelperRoute = findViewById(R.id.chatButtonHelpRoute);
+        callHelperV = findViewById(R.id.VcallButtonHelp);
+        chatHelperV = findViewById(R.id.VchatButtonHelp);
+
 
         FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -572,7 +670,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             public void onClick(View v) {
                 Call call = getSinchServiceInterface().callUser(elderlyID);
                 String callId = call.getCallId();
-
                 Intent callScreen = new Intent(v.getContext(), CallScreenActivity.class);
                 callScreen.putExtra(SinchService.CALL_ID, callId);
                 startActivity(callScreen);
@@ -581,6 +678,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         callHelper.setOnClickListener(callListener);
         callHelperRoute.setOnClickListener(callListener);
+
+        callHelperV.setOnClickListener(callListener);
 
 
         View.OnClickListener chatListener = new View.OnClickListener() {
@@ -636,6 +735,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 );}};
         chatHelper.setOnClickListener(chatListener);
         chatHelperRoute.setOnClickListener(chatListener);
+        chatHelperV.setOnClickListener(chatListener);
 
 
     }
@@ -674,11 +774,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                     markerOfElderly.remove();
                 }
 
-//                Log.d("Coord", "lat is: " +newLatitude);
-//                Log.d("Coord", "long is: " +newLongitude);
+
                 locationOfElderly= new LatLng(newLatitude,newLongitude);
 
                 setMarkerForElderlyPerson();
+                map.zoomToLocation(locationOfElderly);
 
 //                hideSliders();
 //                slidingLayout.setPanelHeight(240);
@@ -715,61 +815,61 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     ///////////////////////////////////////////////////////
 
-//    private void PlaceVolunteerMarkerOnMap() {
-//
-//        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-//                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
-//                    {
-//
-//                        // getting volunteers' coordinates
-//                        if (volunteersnapshot.getKey().equals("Volunteer") && volunteersnapshot.getValue().toString().equals("Yes")) {
-//                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
-//                            {
-//                                if (volunteersnapshot2.getKey().equals("latitude")) {
-//                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
-//                                }
-//                                if (volunteersnapshot2.getKey().equals("longitude")) {
-//                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
-//
-//                                }
-//                                if (volunteersnapshot2.getKey().equals("name")) {
-//                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
-//                                }
-//
-//
-//                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
-//                                {
-//                                    System.out.println("current vol: "+currentVolunteerName);
-//                                    MarkerOptions mo = new MarkerOptions();
-//                                    LatLng volLatLng = new LatLng(volLat,volLongi);
-//
-//                                    mo.position(volLatLng);
-//                                    mo.title(currentVolunteerName);
-//                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
-//                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
-//
-//
-//                                    markers.put(map.addMarker(mo,volLatLng), childsnapshot.getKey());
-//                                    currentVolunteerName = "";
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//
-//                }
-//                map.setListOfVolunteers(markers);
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
-//    }
+    private void PlaceVolunteerMarkerOnMap() {
+
+        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
+                    {
+
+                        // getting volunteers' coordinates
+                        if (volunteersnapshot.getKey().equals("Volunteer") && volunteersnapshot.getValue().toString().equals("Yes")) {
+                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
+                            {
+                                if (volunteersnapshot2.getKey().equals("latitude")) {
+                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
+                                }
+                                if (volunteersnapshot2.getKey().equals("longitude")) {
+                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
+
+                                }
+                                if (volunteersnapshot2.getKey().equals("name")) {
+                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
+                                }
+
+
+                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
+                                {
+                                    System.out.println("current vol: "+currentVolunteerName);
+                                    MarkerOptions mo = new MarkerOptions();
+                                    LatLng volLatLng = new LatLng(volLat,volLongi);
+
+                                    mo.position(volLatLng);
+                                    mo.title(currentVolunteerName);
+                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
+                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
+
+
+                                    markers.put(map.addMarker(mo,volLatLng,true), childsnapshot.getKey());
+                                    currentVolunteerName = "";
+                                }
+                            }
+                        }
+                    }
+
+
+                }
+                map.setListOfVolunteers(markers);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
     ////////////////////////////////////////////////////////
 //    private View.OnClickListener onHideListener() {
 //        return new View.OnClickListener() {
@@ -846,19 +946,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     public void onClick(View v) {
 
         switch (v.getId()) {
-
-//            case R.id.B_Hospital:
-//                showNearbyPlaces("hospital",latitude,longitude);
-//                break;
-//
-//            case R.id.B_Restaurant:
-//                showNearbyPlaces("restaurant",latitude,longitude);
-//                break;
-//
-//            case R.id.B_School:
-//                showNearbyPlaces("school",latitude,longitude);
-//                break;
-
             case R.id.B_to:
 //                removeRoute();
                 map.clearMap();
@@ -869,8 +956,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 //
 //                }
 //                getDirectionsData
-
                 break;
+
             case R.id.B_RouteToElder:
                 map.clearMap();
                 setMarkerForElderlyPerson();
@@ -897,6 +984,22 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 sendRouteInfo.put("destLat",currentDestination.latitude);
                 sendRouteInfo.put("destLon",currentDestination.longitude);
                 sendRouteInfo.put("mode",modeOfTransport);
+                break;
+            case R.id.B_bike:
+                setBackgroundForModesOfTransport(R.id.B_bike);
+                modeOfTransport = "bicycling";
+                break;
+            case R.id.B_car:
+                setBackgroundForModesOfTransport(R.id.B_car);
+                modeOfTransport = "driving";
+                break;
+            case R.id.B_walk:
+                setBackgroundForModesOfTransport(R.id.B_walk);
+                modeOfTransport = "walking";
+                break;
+            case R.id.B_transit:
+                setBackgroundForModesOfTransport(R.id.B_transit);
+                modeOfTransport = "transit";
                 break;
 
         }
@@ -1058,8 +1161,17 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private void setButtonListeners(){
         sosButtonListener();
-        modesOfTransportListeners();
-
+//        modesOfTransportListeners();
+        ImageButton cancelVolunteer = findViewById(R.id.cancelConnectionButton);
+        cancelVolunteer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent mapScreen = new Intent(getApplicationContext(), MapsActivity.class);
+                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("false");
+                FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").setValue("False");
+                startActivity(mapScreen);
+            }
+        });
     }
 
     private void sosButtonListener() {
@@ -1093,6 +1205,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 //        routeToElderlyButton.setOnClickListener(alrightalrightalright);
 //        Button routeToElderlyButton1 = findViewById(R.id.B_RouteToElder1);
 //        routeToElderlyButton1.setOnClickListener(alrightalrightalright);
+
 
 //        Button elderToDestination = findViewById(R.id.B_ElderToDestination);
 //        elderToDestination.setOnClickListener(new View.OnClickListener() {
@@ -1135,41 +1248,41 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 //        }
 //    };
 
-    private void modesOfTransportListeners() {
-        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
-        button_Walk.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                setBackgroundForModesOfTransport(button_Walk);
-                modeOfTransport = "walking";
-            }
-        });
-        final ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
-        button_Drive.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
+//    private void modesOfTransportListeners() {
+//        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
+//        button_Walk.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                setBackgroundForModesOfTransport(button_Walk);
+//                modeOfTransport = "walking";
+//            }
+//        });
+//        final ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
+//        button_Drive.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//
+//                setBackgroundForModesOfTransport(button_Drive);
+//                modeOfTransport = "driving";
+//            }
+//        });
+//        final ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
+//        button_Bike.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//
+//                setBackgroundForModesOfTransport(button_Bike);
+//                modeOfTransport = "bicycling";
+//            }
+//        });
+//        final ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
+//        button_Transit.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//
+//                setBackgroundForModesOfTransport(button_Transit);
+//                modeOfTransport = "transit";
+//            }
+//        });
+//    }
 
-                setBackgroundForModesOfTransport(button_Drive);
-                modeOfTransport = "driving";
-            }
-        });
-        final ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
-        button_Bike.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                setBackgroundForModesOfTransport(button_Bike);
-                modeOfTransport = "bicycling";
-            }
-        });
-        final ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
-        button_Transit.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                setBackgroundForModesOfTransport(button_Transit);
-                modeOfTransport = "transit";
-            }
-        });
-    }
-
-    private void setBackgroundForModesOfTransport(ImageButton selectedButton){
+    private void setBackgroundForModesOfTransport(Integer selectedButton){
         final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
         ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
         ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
@@ -1178,7 +1291,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         button_Drive.setBackgroundResource(R.color.blue_A400);
         button_Transit.setBackgroundResource(R.color.blue_A400);
         button_Bike.setBackgroundResource(R.color.blue_A400);
-        selectedButton.setBackgroundResource(R.color.grey_700);
+        ImageButton button = (ImageButton) findViewById(selectedButton);
+        button.setBackgroundResource(R.color.grey_700);
 
     }
 
@@ -1207,7 +1321,10 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                SosButton.setVisibility(View.VISIBLE);
+                if (!helpMode){
+
+                    SosButton.setVisibility(View.VISIBLE);
+                }
                 currentLocation.hideCurrentLocation();
                 final LatLng latLngLoc = place.getLatLng();
                 if(marker!=null){
@@ -1257,8 +1374,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         placeAutocompleteFragment.setText("");
                         view.setVisibility(View.GONE);
                         LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
-                        enRouteLayout.setVisibility(View.INVISIBLE);
-                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                        enRouteLayout.setVisibility(View.GONE);
+//                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
                         currentPanel = "menu";
                         showCurrentSlider();
 //                        setPanelHeight();
@@ -1320,61 +1437,61 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     ///////////////////////////////////////////////////////
 
-    private void PlaceVolunteerMarkerOnMap() {
-
-        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
-                    {
-
-                        // getting volunteers' coordinates
-                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
-                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
-                            {
-                                if (volunteersnapshot2.getKey().equals("latitude")) {
-                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
-                                }
-                                if (volunteersnapshot2.getKey().equals("longitude")) {
-                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
-
-                                }
-                                if (volunteersnapshot2.getKey().equals("name")) {
-                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
-                                }
-
-
-                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
-                                {
-                                    System.out.println("current vol: "+currentVolunteerName);
-                                    MarkerOptions mo = new MarkerOptions();
-                                    LatLng volLatLng = new LatLng(volLat,volLongi);
-
-                                    mo.position(volLatLng);
-                                    mo.title(currentVolunteerName);
-                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
-                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
-
-
-                                    markers.put(map.addMarker(mo,volLatLng, true), childsnapshot.getKey());
-                                    currentVolunteerName = "";
-                                }
-                            }
-                        }
-                    }
-
-
-                }
-                map.setListOfVolunteers(markers);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
+//    private void PlaceVolunteerMarkerOnMap() {
+//
+//        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+//                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
+//                    {
+//
+//                        // getting volunteers' coordinates
+//                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
+//                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
+//                            {
+//                                if (volunteersnapshot2.getKey().equals("latitude")) {
+//                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
+//                                }
+//                                if (volunteersnapshot2.getKey().equals("longitude")) {
+//                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
+//
+//                                }
+//                                if (volunteersnapshot2.getKey().equals("name")) {
+//                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
+//                                }
+//
+//
+//                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
+//                                {
+//                                    System.out.println("current vol: "+currentVolunteerName);
+//                                    MarkerOptions mo = new MarkerOptions();
+//                                    LatLng volLatLng = new LatLng(volLat,volLongi);
+//
+//                                    mo.position(volLatLng);
+//                                    mo.title(currentVolunteerName);
+//                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
+//                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
+//
+//
+//                                    markers.put(map.addMarker(mo,volLatLng, true), childsnapshot.getKey());
+//                                    currentVolunteerName = "";
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//
+//                }
+//                map.setListOfVolunteers(markers);
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
+//    }
 
     private void getContactList() {
         String isoPrefix = getCountryIso();

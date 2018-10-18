@@ -179,7 +179,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
                                     notification.put("type","help");
                                     ////////////////change to my name
                                     notification.put("name",name);
-                                    notification.put("message","Click Here For Nudes");
+                                    notification.put("message","Click Here to Help");
                                     notification.put("shareID",shareID);
                                     notification.put("userID",userID);
                                     notification.put("notificationKey",userList.get(position).getNotificationKey());
