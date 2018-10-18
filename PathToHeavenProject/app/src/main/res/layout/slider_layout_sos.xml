@@ -8,32 +8,36 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="70dp"
         android:orientation="horizontal"
         android:gravity="center"
-        android:id="@+id/menuLayout">
+        android:id="@+id/menuLayout"
+        android:background="@drawable/menu_border">
 
         <Button
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:textColor="@color/white"
-            android:backgroundTint="@color/blue_600"
+            android:background="@drawable/curved_edges_button"
             android:text="Profile"
-            android:layout_marginRight="50dp"
+            android:textSize="16dp"
+            android:layout_marginRight="40dp"
             android:id="@+id/profileButton"/>
         <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
             android:textColor="@color/white"
-            android:backgroundTint="@color/blue_600"
+            android:textSize="14dp"
+            android:background="@drawable/curved_edges_button"
             android:text="Volunteers"
             android:id="@+id/volunteersButton"/>
         <Button
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:textColor="@color/white"
-            android:backgroundTint="@color/blue_600"
-            android:layout_marginLeft="50dp"
+            android:textSize="16dp"
+            android:background="@drawable/curved_edges_button"
+            android:layout_marginLeft="40dp"
             android:text="Logout"
             android:id="@+id/logoutButton"/>
 

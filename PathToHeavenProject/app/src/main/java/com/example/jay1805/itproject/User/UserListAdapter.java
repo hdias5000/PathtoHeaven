@@ -77,7 +77,15 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserLi
     @Override
     public void onBindViewHolder(@NonNull final UserListViewHolder holder, final int position) {
 
-        holder.mName.setText(userList.get(position).getName());
+        int index = userList.get(position).getName().indexOf(" ");
+
+        String UserName = userList.get(position).getName();
+
+        if(index > 0) {
+            UserName = userList.get(position).getName().substring(0, index);
+        }
+
+        holder.mName.setText(UserName);
         holder.mPhone.setText(userList.get(position).getPhone());
 
         holder.chatButton.setOnClickListener(new View.OnClickListener() {
