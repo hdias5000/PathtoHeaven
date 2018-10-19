@@ -418,6 +418,20 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                             public void onClick(View view) {
                                 Intent intent = new Intent("STOP GPS");
                                 LocalBroadcastManager.getInstance(view.getContext()).sendBroadcast(intent);
+                                SosButton.setVisibility(View.GONE);
+                                placeAutocompleteFragment.setText("");
+                                view.setVisibility(View.GONE);
+
+                                LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
+                                enRouteLayout.setVisibility(View.GONE);
+
+                                currentPanel = "menu";
+                                showCurrentSlider();
+
+                                map.zoomToLocation(currentLocation.getCurrentLocation());
+                                modeOfTransport = "walking";
+                                isEnRoute = false;
+
                                 stopButton.setVisibility(View.GONE);
                                 map.clearMap();
                                 currentLocation.showCurrentLocation();
@@ -434,7 +448,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                     String mode = dataSnapshot.child("mode").getValue().toString();
                                     ///////////////////change button when this is pressed
                                     modeOfTransport = mode;
+                                    map.clearMap();
                                     LatLng curLoc = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                                    currentDestination = dest;
+                                    SosButton.setVisibility(View.VISIBLE);
+                                    currentPanel = "routeInitial";
+                                    showCurrentSlider();
                                     setDestinationMarker(dest,true);
                                     findRoute(curLoc,dest);
                                 }
@@ -1324,6 +1343,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 if (!helpMode){
 
                     SosButton.setVisibility(View.VISIBLE);
+//                    currentPanel = "routeInitial";
+//                    showCurrentSlider();
                 }
                 currentLocation.hideCurrentLocation();
                 final LatLng latLngLoc = place.getLatLng();
@@ -1382,7 +1403,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         map.clearMap();
                         currentLocation.showCurrentLocation();
                         map.zoomToLocation(currentLocation.getCurrentLocation());
-                        modeOfTransport = "driving";
+                        modeOfTransport = "walking";
                         isEnRoute = false;
                     }
                 });
