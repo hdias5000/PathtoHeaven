@@ -115,17 +115,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private HashMap<Marker, String> markers;
 
-//    LatLng currentDestination;
-//    Marker marker;
-//    Marker markerOfElderly;
 
-    ////////////////////////////////////////
     private SlidingUpPanelLayout slidingLayout;
     private FloatingActionButton SosButton;
     private Button VolunteersButton;
     private Button ProfileButton;
     private Button LogoutButton;
-    ///////////////////////////////////////
+
 
     private Marker destinationMarker;
     private MarkerOptions destMarkerOptions;
@@ -207,13 +203,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
            @Override
            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-               if (getSinchServiceInterface() != null) {
-                   Log.d("Sinch", "NIT NULL");
-                   System.out.println("SinchService is not null");
-               } else {
-                   Log.d("Sinch", "YEEt NULL");
-                   System.out.println("SinchService is null");
-               }
                userListViewAdapter = new UserListAdapter(userList, getSinchServiceInterface(), slidingLayout);
                userListView.setAdapter(userListViewAdapter);
                getContactList();
@@ -230,7 +219,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.getValue()!=null) {
-                    System.out.println("###############DATASNAPSHOT: " + dataSnapshot.getValue().toString());
                     if (dataSnapshot.getValue().toString().equals("True")) {
                         FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("ElderlyIDRequested").addListenerForSingleValueEvent(new ValueEventListener() {
 
@@ -274,10 +262,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         VolunteersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-                //startActivity(new Intent(getApplicationContext(),MapsActivity.class));
                 PlaceVolunteerMarkerOnMap();
-
             }
         });
 
@@ -303,6 +288,28 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
 
     }
+///////////////////////////////////////////////MENU, SLIDING PANEL
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        View w = getCurrentFocus();
+        int scrcoords[] = new int[2];
+        w.getLocationOnScreen(scrcoords);
+        float y = event.getRawY() + w.getTop() - scrcoords[1];
+        int condition = slidingLayout.getPanelHeight();
+        if (event.getAction()!=MotionEvent.ACTION_BUTTON_PRESS &&event.getAction()==MotionEvent.ACTION_UP&&event.getAction()!=MotionEvent.ACTION_MOVE&&event.getAction()!=MotionEvent.ACTION_BUTTON_RELEASE&&y>(2220-(condition+500))&&y<(2220-condition)){
+            if (currentPanel.equals("menu")){
+                if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
+                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
+                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                }
+            }
+        }
+
+
+        boolean ret = super.dispatchTouchEvent(event);
+        return ret;
+    }
 
     private void showCurrentSlider(){
         hideSliders();
@@ -312,7 +319,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 currentPanelLayout = findViewById(R.id.sosSlider);
                 break;
             case "routeInitial":
-                Log.d("Lay", "showing current slider");
                 currentPanelLayout = findViewById(R.id.route);
                 break;
             case "help":
@@ -326,10 +332,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 break;
         }
         if (currentPanelLayout!=null){
-
             currentPanelLayout.setVisibility(View.VISIBLE);
             slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-//            setPanelHeight();
             findPanelHeights();
         }
 
@@ -337,8 +341,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     private void setPanelHeight() {
         if (panelHeight.containsKey(currentPanel)){
-            Log.d("Lay", "setting correct height");
-            Log.d("Lay", "showing current slider"+panelHeight.get(currentPanel));
             slidingLayout.setPanelHeight(panelHeight.get(currentPanel));
         }else{
             slidingLayout.setPanelHeight(144);
@@ -356,12 +358,48 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         help.setVisibility(View.GONE);
         helpRoute.setVisibility(View.GONE);
         volunteer.setVisibility(View.GONE);
-//        slidingLayout.setPanelHeight(120);
     }
 
+    private void findPanelHeights(){
+        final LinearLayout initialRouteLayout = (LinearLayout)findViewById(R.id.initialRouteLayout);
+        initialRouteLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("routeInitial",initialRouteLayout.getHeight());
+                setPanelHeight();
+            }
+        });
 
+        final LinearLayout menuLayout = (LinearLayout)findViewById(R.id.menuLayout);
+        menuLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("menu",menuLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+        final LinearLayout helpLayout = (LinearLayout)findViewById(R.id.helpLayout);
+        helpLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("help",helpLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+        final LinearLayout helpRouteLayout = (LinearLayout)findViewById(R.id.helpRouteLayout);
+        helpRouteLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("helpRoute",helpRouteLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+        final LinearLayout volunteerLayout = (LinearLayout)findViewById(R.id.volunteerSliderLayout);
+        helpRouteLayout.post(new Runnable(){
+            public void run(){
+                panelHeight.put("volunteer",volunteerLayout.getHeight());
+                setPanelHeight();
+            }
+        });
+    }
 
-
+////////////////////////////////BROADCAST
     private void setUpBroadcastReceivers() {
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
@@ -369,31 +407,10 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-                        Log.d("WORK","Work Bitch");
                         FirebaseDatabase.getInstance().getReference().child("user").
                                 child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("accepted").setValue("null");
                     }
                 }, new IntentFilter("Make Null"));
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                new BroadcastReceiver() {
-                    @Override
-                    public void onReceive(Context context, Intent intent) {
-                        FirebaseDatabase.getInstance().getReference().child("user").
-                                child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("accepted").addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.getValue().toString().equals("false")){
-                                    makeToast("Volunteer has Disconnected.");
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        });
-                    }
-                }, new IntentFilter("Start Listener for Cancel Connection"));
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
@@ -477,7 +494,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             mAudioPlayer = new AudioPlayer(getApplicationContext());
             mCallId = intent.getStringExtra(SinchService.CALL_ID);
             System.out.println("mcallis is in receiver "+mCallId);
-            Log.d("CALLST",mCallId);
             if(mCallId!=null) {
                 endCallButton.setVisibility(View.VISIBLE);
             }
@@ -489,53 +505,251 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     };
 
 
+////////////////////////////////////////////////////////MAPS
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just add a marker near Sydney, Australia.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            map = new Map(googleMap,getApplicationContext());
+            currentLocation = new CurrentLocation(map);
+            askForCurrentLocation();
+        }
 
-    private void findPanelHeights(){
-        final LinearLayout initialRouteLayout = (LinearLayout)findViewById(R.id.initialRouteLayout);
-        initialRouteLayout.post(new Runnable(){
-            public void run(){
-                panelHeight.put("routeInitial",initialRouteLayout.getHeight());
-                Log.d("Lay", "finding slider height");
-                setPanelHeight();
-            }
-        });
-        /////////////////////when distance,duration is implemented
-//        final LinearLayout routeLayout = (LinearLayout)findViewById(R.id.initialRouteLayout);
-//        routeLayout.post(new Runnable(){
-//            public void run(){
-//                panelHeight.put("routeFull",routeLayout.getHeight());
-//            }
-//        });
+        if (mapView != null &&
+                mapView.findViewById(Integer.parseInt("1")) != null) {
+            // Get the button view
+            View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+            // and next place it, on bottom right (as Google Maps app)
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
+                    locationButton.getLayoutParams();
+            // position on right bottom
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
+            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+            layoutParams.setMargins(0, 0, 30, 1500);
+        }
 
-        final LinearLayout menuLayout = (LinearLayout)findViewById(R.id.menuLayout);
-        menuLayout.post(new Runnable(){
-            public void run(){
-                panelHeight.put("menu",menuLayout.getHeight());
-                setPanelHeight();
-            }
-        });
-        final LinearLayout helpLayout = (LinearLayout)findViewById(R.id.helpLayout);
-        helpLayout.post(new Runnable(){
-            public void run(){
-                panelHeight.put("help",helpLayout.getHeight());
-                setPanelHeight();
-            }
-        });
-        final LinearLayout helpRouteLayout = (LinearLayout)findViewById(R.id.helpRouteLayout);
-        helpRouteLayout.post(new Runnable(){
-            public void run(){
-                panelHeight.put("helpRoute",helpRouteLayout.getHeight());
-                setPanelHeight();
-            }
-        });
-        final LinearLayout volunteerLayout = (LinearLayout)findViewById(R.id.volunteerSliderLayout);
-        helpRouteLayout.post(new Runnable(){
-            public void run(){
-                panelHeight.put("volunteer",volunteerLayout.getHeight());
-                setPanelHeight();
-            }
-        });
     }
+
+    private void loadMapFragment() {
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapView = mapFragment.getView();
+        mapFragment.getMapAsync(this);
+    }
+
+    private void gettingPermissions() {
+        if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MapsActivity.this,
+                    new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
+                    1);
+        }
+    }
+
+
+//////////////////////////////////////////////////////CURRENT LOCATION
+    private void askForCurrentLocation() {
+        Intent intent = new Intent("SEND GPS");
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            String message = intent.getStringExtra("Status");
+            Bundle b = intent.getBundleExtra("Location");
+            lastKnownLoc = (Location) b.getParcelable("Location");
+            if (lastKnownLoc != null) {
+                if (currentLocation.getCurrentLocation()==null){
+                    currentLocation.changeCurrentLocation(lastKnownLoc);
+                    map.zoomToLocation(currentLocation.getCurrentLocation());
+                }else{
+                    currentLocation.changeCurrentLocation(lastKnownLoc);
+                }
+                if (isEnRoute){
+                    map.currentLocationZoom(currentLocation.getCurrentLocation());
+                    Location prevLoc = new Location("");
+                    prevLoc.setLatitude(currentRouteLocation.latitude);
+                    prevLoc.setLongitude(currentRouteLocation.longitude);
+                    if (prevLoc.distanceTo(lastKnownLoc)>10){
+//                        isEnRoute = false;
+                        map.clearMap();
+                        setDestinationMarker(currentDestination,false);
+                        findRoute(currentLocation.getCurrentLocation(),new LatLng(currentDestination.latitude,currentDestination.longitude));
+                    }
+                }
+            }
+        }
+    };
+
+    //////////////////////////////////////////////////////////////////ROUTE
+
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+            case R.id.B_to:
+                map.clearMap();
+                destinationMarker = map.addMarker(destMarkerOptions,currentDestination, true);
+                LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                findRoute(location,currentDestination);
+                break;
+
+            case R.id.B_RouteToElder:
+                map.clearMap();
+                setMarkerForElderlyPerson();
+                LatLng location_current = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                findRoute(location_current,locationOfElderly);
+                sendRouteInfo = new HashMap<String,String>();
+                sendRouteInfo.put("destLat",location_current.latitude);
+                sendRouteInfo.put("destLon",location_current.longitude);
+                sendRouteInfo.put("mode",modeOfTransport);
+                break;
+            case R.id.B_SendRoute:
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference ref = database.getReference().child("gps-sharing").child(shareIDOfElder);
+                java.util.Map hashMap = new HashMap<>();
+                hashMap.put("route",sendRouteInfo);
+                ref.updateChildren(hashMap);
+                break;
+            case R.id.B_ElderToDestination:
+                map.clearMap();
+                setMarkerForElderlyPerson();
+                setDestinationMarker(currentDestination,true);
+                findRoute(locationOfElderly, currentDestination);
+                sendRouteInfo = new HashMap<String,String>();
+                sendRouteInfo.put("destLat",currentDestination.latitude);
+                sendRouteInfo.put("destLon",currentDestination.longitude);
+                sendRouteInfo.put("mode",modeOfTransport);
+                break;
+            case R.id.B_bike:
+                setBackgroundForModesOfTransport(R.id.B_bike);
+                modeOfTransport = "bicycling";
+                break;
+            case R.id.B_car:
+                setBackgroundForModesOfTransport(R.id.B_car);
+                modeOfTransport = "driving";
+                break;
+            case R.id.B_walk:
+                setBackgroundForModesOfTransport(R.id.B_walk);
+                modeOfTransport = "walking";
+                break;
+            case R.id.B_transit:
+                setBackgroundForModesOfTransport(R.id.B_transit);
+                modeOfTransport = "transit";
+                break;
+
+        }
+
+    }
+    private void findRoute(final LatLng currentLocation, final LatLng currentDestination){
+        final LatLng curr = currentLocation;
+        final LatLng dest = currentDestination;
+        Object dataTransfer[] = new Object[3];
+        String url = urlCreator.getDirectionsUrl(currentLocation.latitude, currentLocation.longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
+        currentRouteData = new RouteData();
+        GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData, new OnEventListener() {
+            @Override
+            public void onSuccess(Object object) {
+                if (!isEnRoute){
+                    map.showEntireRoute(curr,dest);
+                }
+                currentRouteLocation = currentLocation;
+                printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                makeToast("Route Not Found");
+            }
+        });
+        dataTransfer[0] = map;
+        dataTransfer[1] = url;
+        dataTransfer[2] = currentDestination;
+        getDirectionsData.execute(dataTransfer);
+        sendMessageToActivity(url, currentDestination);
+        route = getDirectionsData.getRoute();
+    }
+
+    private ArrayList change(ArrayList step){
+        ArrayList <HashMap> stepUpdated = new ArrayList<>();
+
+        for (int i=0;i<step.size();i++){
+            HashMap info = (HashMap) step.get(i);
+            String str = info.get("Maneuver").toString().replaceAll("-","_");
+            String drawable = "direction_"+str;
+            int resID =getResources().getIdentifier(drawable, "drawable", getPackageName());
+            info.put("manRes", Integer.toString(resID));
+            stepUpdated.add(info);
+        }
+        return stepUpdated;
+    }
+
+    private void setBackgroundForModesOfTransport(Integer selectedButton){
+        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
+        ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
+        ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
+        ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
+        button_Walk.setBackgroundResource(R.color.blue_A400);
+        button_Drive.setBackgroundResource(R.color.blue_A400);
+        button_Transit.setBackgroundResource(R.color.blue_A400);
+        button_Bike.setBackgroundResource(R.color.blue_A400);
+        ImageButton button = (ImageButton) findViewById(selectedButton);
+        button.setBackgroundResource(R.color.grey_700);
+    }
+
+    ///////////////////////add route information
+
+    private void printRouteInfo(HashMap<String,String> routeInformation, ArrayList stepInformation) {
+        LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
+        enRouteLayout.setVisibility(View.VISIBLE);
+        findPanelHeights();
+        TextView distDur = findViewById(R.id.distanceDuration);
+        String summary="Path Information";
+        if (routeInformation.containsKey("Summary")){
+            summary = routeInformation.get("Summary");
+        }
+        distDur.setText(summary+":- "+routeInformation.get("Distance")+"("+routeInformation.get("Duration")+")");
+        final Button enRoute = findViewById(R.id.enRoute);
+        enRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isEnRoute){
+                    isEnRoute = false;
+                    map.showEntireRoute(currentLocation.getCurrentLocation(),currentDestination);
+                    enRoute.setText("En Route");
+                }else{
+                    isEnRoute=true;
+                    enRoute.setText("Terminate");
+                    map.currentLocationZoom(currentLocation.getCurrentLocation());
+                }
+            }
+        });
+        ArrayList newSteps = change(stepInformation);
+        DirectionsView = findViewById(R.id.List_Directions);
+        DirectionsView.setNestedScrollingEnabled(false);
+        DirectionsView.setHasFixedSize(false);
+        DirectionsViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
+        DirectionsView.setLayoutManager(DirectionsViewLayoutManager);
+        DirectionsViewAdapter = new DirectionsViewAdapter(newSteps);
+        DirectionsView.setAdapter(DirectionsViewAdapter);
+    }
+
+    private BroadcastReceiver onRouteSuccess = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
+        }
+    };
+
 
     private void setDestinationMarker(LatLng dest,boolean zoom){
         destMarkerOptions = new MarkerOptions();
@@ -544,6 +758,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
         destinationMarker = map.addMarker(destMarkerOptions, dest,zoom);
     }
+//////////////////////////////////////////////////////GPS SHARING AND ROUTE SHARING
 
     private void gpsSharing() {
 
@@ -556,10 +771,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             shareIDOfElder = intent.getExtras().getString("Share ID");
             userID = intent.getExtras().getString("userID");
             setInitialInfoForHelp(userID);
-            System.out.println(userID);
-            System.out.println("Share ID is: " + shareIDOfElder);
-            Log.d("SHAREID", shareIDOfElder);
-
             FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareIDOfElder).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -593,36 +804,45 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         }
     }
 
-    private void showElderlyLocationForVolunteer(String elderlyID) {
-//        String currentUserId;
-        DatabaseReference userRef;
+    private void setGPSSharing(String shareID){
 
-        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).addValueEventListener(new ValueEventListener() {
+        // Get a reference to our posts
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID);
+        ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 double newLatitude = 0;
                 double newLongitude = 0;
-                newLatitude = Double.parseDouble(dataSnapshot.child("latitude").getValue().toString());
+                for (DataSnapshot childSnapshot: dataSnapshot.getChildren()){
+                    if (childSnapshot.getKey().equals("latitude")){
+                        newLatitude = Double.parseDouble(childSnapshot.getValue().toString());
+                    }
+                    if (childSnapshot.getKey().equals("longitude")){
+                        newLongitude = Double.parseDouble(childSnapshot.getValue().toString());
+                    }
+                }
 
-                newLongitude = Double.parseDouble(dataSnapshot.child("longitude").getValue().toString());
-
+                helpMode = true;
                 if (markerOfElderly!=null){
                     markerOfElderly.remove();
                 }
+
 
                 locationOfElderly= new LatLng(newLatitude,newLongitude);
 
                 setMarkerForElderlyPerson();
                 map.zoomToLocation(locationOfElderly);
+
+
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                makeToast("Tracking has Stopped");
+                helpMode = false;
+                startActivity(new Intent(getApplicationContext(), MapsActivity.class));
             }
         });
-
-
     }
 
     private void setInitialInfoForHelp(final String elderlyID) {
@@ -642,7 +862,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 nameOfElderly = dataSnapshot.getValue().toString();
-                Log.d("NAME", nameOfElderly);
                 TextView nameTextView = findViewById(R.id.nameHelp);
                 nameTextView.setText(nameOfElderly);
                 TextView nameTextView1 = findViewById(R.id.nameHelpRoute);
@@ -706,50 +925,50 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             public void onClick(View v) {
                 FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").addListenerForSingleValueEvent(
                         new ValueEventListener() {
-                              @Override
-                              public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                  String chatIDKey = null;
+                                String chatIDKey = null;
 
-                                  for (DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
-                                      ToUserChatIDs.add(childSnapShot.getKey());
-                                  }
+                                for (DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
+                                    ToUserChatIDs.add(childSnapShot.getKey());
+                                }
 
-                                  Boolean chatExists = false;
-                                  for(String MyChatIDs : CurrentUserChatIDs) {
-                                      for(String ToChatIDs : ToUserChatIDs) {
-                                          if(MyChatIDs.equals(ToChatIDs)) {
-                                              chatIDKey = MyChatIDs;
-                                              chatExists = true;
-                                          }
-                                      }
-                                  }
+                                Boolean chatExists = false;
+                                for(String MyChatIDs : CurrentUserChatIDs) {
+                                    for(String ToChatIDs : ToUserChatIDs) {
+                                        if(MyChatIDs.equals(ToChatIDs)) {
+                                            chatIDKey = MyChatIDs;
+                                            chatExists = true;
+                                        }
+                                    }
+                                }
 
-                                  if(chatExists.equals(false)) {
-                                      String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
-                                      CurrentUserChatIDs.add(key);
-                                      ToUserChatIDs.add(key);
-                                      chatIDKey = key;
-                                      FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("chat").child(key).setValue(true);
-                                      FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").child(key).setValue(true);
-                                  }
+                                if(chatExists.equals(false)) {
+                                    String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+                                    CurrentUserChatIDs.add(key);
+                                    ToUserChatIDs.add(key);
+                                    chatIDKey = key;
+                                    FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("chat").child(key).setValue(true);
+                                    FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").child(key).setValue(true);
+                                }
 
-                                  else {
-                                      Toast.makeText(getApplicationContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
-                                  }
+                                else {
+                                    Toast.makeText(getApplicationContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
+                                }
 
-                                  Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
-                                  Bundle bundle = new Bundle();
-                                  bundle.putString("chatID", chatIDKey);
-                                  intent.putExtras(bundle);
-                                  getApplicationContext().startActivity(intent);
+                                Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
+                                Bundle bundle = new Bundle();
+                                bundle.putString("chatID", chatIDKey);
+                                intent.putExtras(bundle);
+                                getApplicationContext().startActivity(intent);
 
-                              }
+                            }
 
-                              @Override
-                              public void onCancelled(@NonNull DatabaseError databaseError) {
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                              }
+                            }
                         }
                 );}};
         chatHelper.setOnClickListener(chatListener);
@@ -759,67 +978,43 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
-    private void setGPSSharing(String shareID){
+    private void setMarkerForElderlyPerson(){
+        MarkerOptions mo = new MarkerOptions();
+        mo.position(locationOfElderly);
+        mo.title("Location of Elderly");
+        mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        markerOfElderly = map.addMarker(mo,locationOfElderly, true);
+    }
 
-        // Get a reference to our posts
-//            if (FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID) != null) {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID);
-//                if ((ref.child("latitude") != null) && (ref.child("longitude") != null)){
-        ref.addValueEventListener(new ValueEventListener() {
+///////////////////////////////////////////////////////////VOLUNTEERS
+
+    private void showElderlyLocationForVolunteer(String elderlyID) {
+
+        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 double newLatitude = 0;
                 double newLongitude = 0;
-                for (DataSnapshot childSnapshot: dataSnapshot.getChildren()){
-                    if (childSnapshot.getKey().equals("latitude")){
-                        newLatitude = Double.parseDouble(childSnapshot.getValue().toString());
-                    }
-                    if (childSnapshot.getKey().equals("longitude")){
-                        newLongitude = Double.parseDouble(childSnapshot.getValue().toString());
-                    }
-                }
+                newLatitude = Double.parseDouble(dataSnapshot.child("latitude").getValue().toString());
 
-                helpMode = true;
-//
-//                            Log.d("Coord", "lat is: " +newLatitude);
-//                            Log.d("Coord", "long is: " +newLongitude);
-//                            LatLng latLng = new LatLng(newLatitude,newLongitude);
-//                            MarkerOptions mo = new MarkerOptions();
-//                            mo.position(latLng);
-//                            mo.title("Location of Elderly");
-//                            mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer));
-//                            markerOfElderly = map.addMarker(mo,latLng);
+                newLongitude = Double.parseDouble(dataSnapshot.child("longitude").getValue().toString());
+
                 if (markerOfElderly!=null){
                     markerOfElderly.remove();
                 }
-
 
                 locationOfElderly= new LatLng(newLatitude,newLongitude);
 
                 setMarkerForElderlyPerson();
                 map.zoomToLocation(locationOfElderly);
-
-//                hideSliders();
-//                slidingLayout.setPanelHeight(240);
-//                LinearLayout route = findViewById(R.id.help);
-//                route.setVisibility(View.VISIBLE);
-//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                makeToast("Tracking has Stopped");
-                helpMode = false;
-                startActivity(new Intent(getApplicationContext(), MapsActivity.class));
+
             }
         });
-//                } else{
-//                    makeToast("missing coordinates");
-//                }
-//            } else{
-//                makeToast("String don't exist.");
-//            }
+
 
     }
 
@@ -832,10 +1027,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         userDB.updateChildren(hmap);
     }
 
-    ///////////////////////////////////////////////////////
-
     private void PlaceVolunteerMarkerOnMap() {
-
         FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -889,267 +1081,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             }
         });
     }
-    ////////////////////////////////////////////////////////
-//    private View.OnClickListener onHideListener() {
-//        return new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                //hide sliding layout
-//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-////                btnShow.setVisibility(View.VISIBLE);
-//            }
-//        }
-//    }
-    private void setMarkerForElderlyPerson(){
-        MarkerOptions mo = new MarkerOptions();
-        mo.position(locationOfElderly);
-        mo.title("Location of Elderly");
-        mo.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-        markerOfElderly = map.addMarker(mo,locationOfElderly, true);
-    }
-
-
-
-//    private void initializeRecyclerView() {
-//
-//        userListView = findViewById(R.id.userList);
-//        userListView.setNestedScrollingEnabled(false);
-//        userListView.setHasFixedSize(false);
-//        userListViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
-//        userListView.setLayoutManager(userListViewLayoutManager);
-//        if(getSinchServiceInterface()!=null) {
-//            Log.d("Sinch","NIT NULL");
-//            System.out.println("SinchService is not null");
-//        }
-//        else {
-//            Log.d("Sinch","YEEt NULL");
-//            System.out.println("SinchService is null");
-//        }
-//        userListViewAdapter = new UserListAdapter(userList);
-//        userListView.setAdapter(userListViewAdapter);
-//    }
-
-    ////////////////////////////////////////////////////////
-//    private View.OnClickListener onHideListener() {
-//        return new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                //hide sliding layout
-////                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-////                btnShow.setVisibility(View.VISIBLE);
-//            }
-//        };
-//    }
-    ///////////////////////////////////////////////////////
-
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-//    @Override
-//    public void onMapReady(GoogleMap googleMap) {
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//            map = new Map(googleMap, getApplicationContext());
-//            currentLocation = new CurrentLocation(map);
-//            askForCurrentLocation();
-//        }
-//
-//    }
-
-    public void onClick(View v) {
-
-        switch (v.getId()) {
-            case R.id.B_to:
-//                removeRoute();
-                map.clearMap();
-                destinationMarker = map.addMarker(destMarkerOptions,currentDestination, true);
-                LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
-                findRoute(location,currentDestination);
-//                while (!getDirectionsData.isSuccess()){
-//
-//                }
-//                getDirectionsData
-                break;
-
-            case R.id.B_RouteToElder:
-                map.clearMap();
-                setMarkerForElderlyPerson();
-                LatLng location_current = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
-                findRoute(location_current,locationOfElderly);
-                sendRouteInfo = new HashMap<String,String>();
-                sendRouteInfo.put("destLat",location_current.latitude);
-                sendRouteInfo.put("destLon",location_current.longitude);
-                sendRouteInfo.put("mode",modeOfTransport);
-                break;
-            case R.id.B_SendRoute:
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference ref = database.getReference().child("gps-sharing").child(shareIDOfElder);
-                java.util.Map hashMap = new HashMap<>();
-                hashMap.put("route",sendRouteInfo);
-                ref.updateChildren(hashMap);
-                break;
-            case R.id.B_ElderToDestination:
-                map.clearMap();
-                setMarkerForElderlyPerson();
-                setDestinationMarker(currentDestination,true);
-                findRoute(locationOfElderly, currentDestination);
-                sendRouteInfo = new HashMap<String,String>();
-                sendRouteInfo.put("destLat",currentDestination.latitude);
-                sendRouteInfo.put("destLon",currentDestination.longitude);
-                sendRouteInfo.put("mode",modeOfTransport);
-                break;
-            case R.id.B_bike:
-                setBackgroundForModesOfTransport(R.id.B_bike);
-                modeOfTransport = "bicycling";
-                break;
-            case R.id.B_car:
-                setBackgroundForModesOfTransport(R.id.B_car);
-                modeOfTransport = "driving";
-                break;
-            case R.id.B_walk:
-                setBackgroundForModesOfTransport(R.id.B_walk);
-                modeOfTransport = "walking";
-                break;
-            case R.id.B_transit:
-                setBackgroundForModesOfTransport(R.id.B_transit);
-                modeOfTransport = "transit";
-                break;
-
-        }
-
-    }
-
-    private void findRoute(final LatLng currentLocation, final LatLng currentDestination){
-        final LatLng curr = currentLocation;
-        final LatLng dest = currentDestination;
-        Object dataTransfer[] = new Object[3];
-        String url = urlCreator.getDirectionsUrl(currentLocation.latitude, currentLocation.longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
-        Log.d("LOL",url);
-        currentRouteData = new RouteData();
-        GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData, new OnEventListener() {
-            @Override
-            public void onSuccess(Object object) {
-                if (!isEnRoute){
-
-                    map.showEntireRoute(curr,dest);
-                }
-                currentRouteLocation = currentLocation;
-                printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                makeToast("Route Not Found");
-            }
-        });
-        dataTransfer[0] = map;
-        dataTransfer[1] = url;
-        dataTransfer[2] = currentDestination;
-        getDirectionsData.execute(dataTransfer);
-        sendMessageToActivity(url, currentDestination);
-        route = getDirectionsData.getRoute();
-    }
-
-    private ArrayList change(ArrayList step){
-        ArrayList <HashMap> stepUpdated = new ArrayList<>();
-
-        for (int i=0;i<step.size();i++){
-            HashMap info = (HashMap) step.get(i);
-            String str = info.get("Maneuver").toString().replaceAll("-","_");
-            String drawable = "direction_"+str;
-            int resID =getResources().getIdentifier(drawable, "drawable", getPackageName());
-            System.out.println("Jay is shit "+ drawable);
-            info.put("manRes", Integer.toString(resID));
-            stepUpdated.add(info);
-        }
-        return stepUpdated;
-    }
-
-
-    ///////////////////////add route information
-    private void printRouteInfo(HashMap<String,String> routeInformation, ArrayList stepInformation) {
-        LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
-        enRouteLayout.setVisibility(View.VISIBLE);
-        findPanelHeights();
-        TextView distDur = findViewById(R.id.distanceDuration);
-        String summary="Path Information";
-        if (routeInformation.containsKey("Summary")){
-            summary = routeInformation.get("Summary");
-        }
-        distDur.setText(summary+":- "+routeInformation.get("Distance")+"("+routeInformation.get("Duration")+")");
-        final Button enRoute = findViewById(R.id.enRoute);
-        enRoute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (isEnRoute){
-                    isEnRoute = false;
-                    map.showEntireRoute(currentLocation.getCurrentLocation(),currentDestination);
-                    enRoute.setText("En Route");
-                }else{
-                    isEnRoute=true;
-                    enRoute.setText("Terminate");
-                    map.currentLocationZoom(currentLocation.getCurrentLocation());
-//                    map.updateCameraBearing(currentLocation.getBearing());
-                }
-            }
-        });
-        ArrayList newSteps = change(stepInformation);
-        DirectionsView = findViewById(R.id.List_Directions);
-        DirectionsView.setNestedScrollingEnabled(false);
-        DirectionsView.setHasFixedSize(false);
-        DirectionsViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
-        DirectionsView.setLayoutManager(DirectionsViewLayoutManager);
-        DirectionsViewAdapter = new DirectionsViewAdapter(newSteps);
-        DirectionsView.setAdapter(DirectionsViewAdapter);
-    }
-
-    private BroadcastReceiver onRouteSuccess = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
-        }
-    };
-
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Get extra data included in the Intent
-            String message = intent.getStringExtra("Status");
-            Bundle b = intent.getBundleExtra("Location");
-            lastKnownLoc = (Location) b.getParcelable("Location");
-            if (lastKnownLoc != null) {
-                Log.d("BS","I don't believe it"+lastKnownLoc.getLongitude());
-                if (currentLocation.getCurrentLocation()==null){
-                    currentLocation.changeCurrentLocation(lastKnownLoc);
-                    map.zoomToLocation(currentLocation.getCurrentLocation());
-                }else{
-                    currentLocation.changeCurrentLocation(lastKnownLoc);
-                }
-                if (isEnRoute){
-                    map.currentLocationZoom(currentLocation.getCurrentLocation());
-//                    map.updateCameraBearing(lastKnownLoc.getBearing());
-//                    map.showLocation(new LatLng(lastKnownLoc.getLatitude(),lastKnownLoc.getLongitude()));
-                    Location prevLoc = new Location("");
-                    prevLoc.setLatitude(currentRouteLocation.latitude);
-                    prevLoc.setLongitude(currentRouteLocation.longitude);
-                    if (prevLoc.distanceTo(lastKnownLoc)>10){
-//                        isEnRoute = false;
-                        map.clearMap();
-                        setDestinationMarker(currentDestination,false);
-                        findRoute(currentLocation.getCurrentLocation(),new LatLng(currentDestination.latitude,currentDestination.longitude));
-                    }
-//                map.updateCameraBearing(currentLocation.getBearing());
-                }
-            }
-        }
-    };
+////////////////////////////////////////////////////////HELPER FUNCTIONS
 
     private void sendMessageToActivity(String url, LatLng dest) {
         Intent intent = new Intent("New Route");
@@ -1161,26 +1093,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-//    private void showNearbyPlaces(String tag, double latitude, double longitude){
-//        GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
-//        Object dataTransfer[] = new Object[2];
-//        map.clearMap();
-//        String url = urlCreator.getUrl(latitude, longitude, tag);
-//        dataTransfer[0] = map;
-//        dataTransfer[1] = url;
-//
-//        getNearbyPlacesData.execute(dataTransfer);
-//        makeToast("Showing Nearby "+tag);
-//
-//    }
-
     public void makeToast(String message){
         Toast.makeText(MapsActivity.this, message, Toast.LENGTH_LONG).show();
     }
 
     private void setButtonListeners(){
         sosButtonListener();
-//        modesOfTransportListeners();
         ImageButton cancelVolunteer = findViewById(R.id.cancelConnectionButton);
         cancelVolunteer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1211,124 +1129,11 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                     currentPanel = "menu";
                     showCurrentSlider();
                 }
-//                setPanelHeight();
-//                hideSliders();
-//                LinearLayout helpSlider = findViewById(R.id.sosSlider);
-//                helpSlider.setVisibility(View.VISIBLE);
-//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             }
         });
-
-
-//        Button routeToElderlyButton = findViewById(R.id.B_RouteToElder);
-//        routeToElderlyButton.setOnClickListener(alrightalrightalright);
-//        Button routeToElderlyButton1 = findViewById(R.id.B_RouteToElder1);
-//        routeToElderlyButton1.setOnClickListener(alrightalrightalright);
-
-
-//        Button elderToDestination = findViewById(R.id.B_ElderToDestination);
-//        elderToDestination.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                map.clearMap();
-//                setMarkerForElderlyPerson();
-//                setDestinationMarker(currentDestination,true);
-//                findRoute(locationOfElderly, currentDestination);
-//                sendRouteInfo = new HashMap<String,String>();
-//                sendRouteInfo.put("destLat",currentDestination.latitude);
-//                sendRouteInfo.put("destLon",currentDestination.longitude);
-//                sendRouteInfo.put("mode",modeOfTransport);
-//            }
-//        });
-
-//        Button sendRoute = findViewById(R.id.B_SendRoute);
-//        sendRoute.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                FirebaseDatabase database = FirebaseDatabase.getInstance();
-//                DatabaseReference ref = database.getReference().child("gps-sharing").child(shareIDOfElder);
-//                java.util.Map map = new HashMap<>();
-//                map.put("route",sendRouteInfo);
-//                ref.updateChildren(map);
-//            }
-//        });
     }
 
-//    View.OnClickListener alrightalrightalright = new View.OnClickListener() {
-//        @Override
-//        public void onClick(View view) {
-//            map.clearMap();
-//            setMarkerForElderlyPerson();
-//            LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
-//            findRoute(location,locationOfElderly);
-//            sendRouteInfo.put("destLat",location.latitude);
-//            sendRouteInfo.put("destLon",location.longitude);
-//            sendRouteInfo.put("mode",modeOfTransport);
-//        }
-//    };
-
-//    private void modesOfTransportListeners() {
-//        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
-//        button_Walk.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//                setBackgroundForModesOfTransport(button_Walk);
-//                modeOfTransport = "walking";
-//            }
-//        });
-//        final ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
-//        button_Drive.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//
-//                setBackgroundForModesOfTransport(button_Drive);
-//                modeOfTransport = "driving";
-//            }
-//        });
-//        final ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
-//        button_Bike.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//
-//                setBackgroundForModesOfTransport(button_Bike);
-//                modeOfTransport = "bicycling";
-//            }
-//        });
-//        final ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
-//        button_Transit.setOnClickListener(new View.OnClickListener() {
-//            public void onClick(View v) {
-//
-//                setBackgroundForModesOfTransport(button_Transit);
-//                modeOfTransport = "transit";
-//            }
-//        });
-//    }
-
-    private void setBackgroundForModesOfTransport(Integer selectedButton){
-        final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
-        ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
-        ImageButton button_Transit = (ImageButton) findViewById(R.id.B_transit);
-        ImageButton button_Bike = (ImageButton) findViewById(R.id.B_bike);
-        button_Walk.setBackgroundResource(R.color.blue_A400);
-        button_Drive.setBackgroundResource(R.color.blue_A400);
-        button_Transit.setBackgroundResource(R.color.blue_A400);
-        button_Bike.setBackgroundResource(R.color.blue_A400);
-        ImageButton button = (ImageButton) findViewById(selectedButton);
-        button.setBackgroundResource(R.color.grey_700);
-
-    }
-
-    private void askForCurrentLocation() {
-        Intent intent = new Intent("SEND GPS");
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-    }
-
-
-    private void gettingPermissions() {
-        if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MapsActivity.this,
-                    new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
-                    1);
-        }
-    }
-
+//////////////////////////////////////////////////////////SEARCH
     private void createAutoCompleteSearch() {
         placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
@@ -1336,15 +1141,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         EditText SearchInput = placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input);
         SearchInput.setHintTextColor(getResources().getColor(R.color.grey_700));
-        
+
         placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
                 if (!helpMode){
-
                     SosButton.setVisibility(View.VISIBLE);
-//                    currentPanel = "routeInitial";
-//                    showCurrentSlider();
                 }
                 currentLocation.hideCurrentLocation();
                 final LatLng latLngLoc = place.getLatLng();
@@ -1358,23 +1160,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
                 modeOfTransport = "walking";
 
-//                hideSliders();
-
                 if (helpMode){
                     currentPanel = "helpRoute";
                     showCurrentSlider();
-//                    slidingLayout.setPanelHeight(400);
-//                    LinearLayout helpRouteSlider = findViewById(R.id.helpRoute);
-//                    helpRouteSlider.setVisibility(View.VISIBLE);
                 }else {
                     currentPanel = "routeInitial";
                     showCurrentSlider();
-//                    LinearLayout routeSlider = findViewById(R.id.route);
-//                    routeSlider.setVisibility(View.VISIBLE);
                 }
-
-
-//                slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
 
             }
 
@@ -1388,18 +1180,14 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        // example : way to access view from PlaceAutoCompleteFragment
-                        // ((EditText) autocompleteFragment.getView()
-                        // .findViewById(R.id.place_autocomplete_search_input)).setText("");
+                        //way to access view from PlaceAutoCompleteFragment
                         SosButton.setVisibility(View.GONE);
                         placeAutocompleteFragment.setText("");
                         view.setVisibility(View.GONE);
                         LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
                         enRouteLayout.setVisibility(View.GONE);
-//                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
                         currentPanel = "menu";
                         showCurrentSlider();
-//                        setPanelHeight();
                         map.clearMap();
                         currentLocation.showCurrentLocation();
                         map.zoomToLocation(currentLocation.getCurrentLocation());
@@ -1409,111 +1197,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 });
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            map = new Map(googleMap,getApplicationContext());
-            currentLocation = new CurrentLocation(map);
-            askForCurrentLocation();
-        }
-
-        if (mapView != null &&
-                mapView.findViewById(Integer.parseInt("1")) != null) {
-            // Get the button view
-            View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
-            // and next place it, on bottom right (as Google Maps app)
-            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
-                    locationButton.getLayoutParams();
-            // position on right bottom
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, 0);
-            layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-            layoutParams.setMargins(0, 0, 30, 1500);
-        }
-
-    }
-    private void loadMapFragment() {
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapView = mapFragment.getView();
-        mapFragment.getMapAsync(this);
-    }
-
-//    private void createVolunteerChildrenInDB() {
-//        java.util.Map hmap = new HashMap<>();
-//        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-//        hmap.put("Requested", "False");
-//        hmap.put("ElderlyIDRequested","");
-//        userDB.updateChildren(hmap);
-//    }
-
-    ///////////////////////////////////////////////////////
-
-//    private void PlaceVolunteerMarkerOnMap() {
-//
-//        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-//                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
-//                    {
-//
-//                        // getting volunteers' coordinates
-//                        if (volunteersnapshot.getKey().equals("User Type") && volunteersnapshot.getValue().toString().equals("Helper")) {
-//                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
-//                            {
-//                                if (volunteersnapshot2.getKey().equals("latitude")) {
-//                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
-//                                }
-//                                if (volunteersnapshot2.getKey().equals("longitude")) {
-//                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
-//
-//                                }
-//                                if (volunteersnapshot2.getKey().equals("name")) {
-//                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
-//                                }
-//
-//
-//                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
-//                                {
-//                                    System.out.println("current vol: "+currentVolunteerName);
-//                                    MarkerOptions mo = new MarkerOptions();
-//                                    LatLng volLatLng = new LatLng(volLat,volLongi);
-//
-//                                    mo.position(volLatLng);
-//                                    mo.title(currentVolunteerName);
-//                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
-//                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
-//
-//
-//                                    markers.put(map.addMarker(mo,volLatLng, true), childsnapshot.getKey());
-//                                    currentVolunteerName = "";
-//                                }
-//                            }
-//                        }
-//                    }
-//
-//
-//                }
-//                map.setListOfVolunteers(markers);
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
-//    }
-
+/////////////////////////////////////////////////////////////MENU N OTHER STUFF ..............................
     private void getContactList() {
         String isoPrefix = getCountryIso();
         Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
@@ -1592,9 +1276,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         return CountryToPhonePrefix.getPhone(ISO);
 
     }
-   
-
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+
         ImageView bmImage;
 
         public DownloadImageTask(ImageView bmImage) {
@@ -1613,10 +1296,10 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             }
             return mIcon11;
         }
-
         protected void onPostExecute(Bitmap result) {
             bmImage.setImageBitmap(result);
         }
+
     }
 
     @Override
@@ -1649,90 +1332,14 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         endCallButton.setVisibility(View.GONE);
 //        finish();
     }
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent event) {
-        Log.d("touch","something");
 
-        View w = getCurrentFocus();
-        int scrcoords[] = new int[2];
-        w.getLocationOnScreen(scrcoords);
-//            float x = event.getRawX() + w.getLeft() - scrcoords[0];
-        float y = event.getRawY() + w.getTop() - scrcoords[1];
-        int condition = slidingLayout.getPanelHeight();
-        if (event.getAction()!=MotionEvent.ACTION_BUTTON_PRESS &&event.getAction()==MotionEvent.ACTION_UP&&event.getAction()!=MotionEvent.ACTION_MOVE&&event.getAction()!=MotionEvent.ACTION_BUTTON_RELEASE&&y>(2220-(condition+500))&&y<(2220-condition)){
-            Log.d("touch","button press");
-//
-//                if (currentPanel.equals("routeInitial")){
-//                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-//                    currentPanel = "menu";
-//                    previousPanel = "routeInitial";
-//                    showCurrentSlider();
-////                    setPanelHeight();
-////                    findPanelHeights();
-//                }else if (previousPanel.equals("routeInitial")&&currentPanel.equals("menu")){
-//                    slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-//                    previousPanel = "menu";
-//                    currentPanel = "routeInitial";
-//                    showCurrentSlider();
-////                    setPanelHeight();
-////                    findPanelHeights();
-//                }else
-                    if (currentPanel.equals("menu")){
-                    if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
-                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-                    }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
-                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-                    }
-//                }
-            }
-        }
-
-        View v = getCurrentFocus();
-
-
-//            Log.d("touch","y is"+y);
-//            if (event.getAction() == MotionEvent.ACTION_UP
-//                    && (x < w.getLeft() || x >= w.getRight() || y < w.getTop() || y > w
-//                    .getBottom())) {
-//                    Log.d("touch","somethinghjbhjhjbhj");
-////                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-////                imm.hideSoftInputFromWindow(getWindow().getCurrentFocus()
-////                        .getWindowToken(), 0);
-//            }
-
-        boolean ret = super.dispatchTouchEvent(event);
-        return ret;
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Log.d("touch","c'est magnifique");
-        switch (event.getAction()){
-            case MotionEvent.EDGE_BOTTOM:
-                Log.d("touch","c'est magnifiqueee");
-                if (currentPanel.equals("menu")){
-                    if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
-                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-                    }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
-                        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-                    }
-                }
-                break;
-
-        }
-
-
-        return super.onTouchEvent(event);
-    }
 
     private class SinchCallListener implements CallListener {
 
         @Override
         public void onCallEnded(Call call) {
-            Log.d("LOLOL","works for on call ended");
 
             CallEndCause cause = call.getDetails().getEndCause();
-            Log.d(TAG, "Call ended. Reason: " + cause.toString());
             mAudioPlayer.stopProgressTone();
             setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
             String endMsg = "Call ended: " + call.getDetails().toString();
@@ -1743,15 +1350,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
         @Override
         public void onCallEstablished(Call call) {
-            Log.d("LOLOL","works for on call established");
-            Log.d(TAG, "Call established");
             mAudioPlayer.stopProgressTone();
             setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
         }
 
         @Override
         public void onCallProgressing(Call call) {
-            Log.d(TAG, "Call progressing");
             mAudioPlayer.playProgressTone();
         }
 

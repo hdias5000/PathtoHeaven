@@ -12,7 +12,6 @@ import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -33,17 +32,14 @@ public class SensorService extends Service implements com.google.android.gms.loc
     private Location lastSharedGPSLoc;
     private Location lastSharedForVolunteer;
     private GoogleApiClient client;
-    Context appContext;
     private String sharingID;
     private boolean share = false;
 
     private String currentUserId;
     private DatabaseReference userRef;
 
-
     private Location currentLocation = null;
 
-    //    private static final String TAG = SensorService.class.getSimpleName();
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -119,7 +115,6 @@ public class SensorService extends Service implements com.google.android.gms.loc
         Intent intent = new Intent("GPS ID");
         intent.putExtra("ID", sharingID);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        System.out.println("Actual Sharing ID:    "+sharingID);
         updateLocation();
         share = true;
     }
@@ -134,7 +129,6 @@ public class SensorService extends Service implements com.google.android.gms.loc
         DatabaseReference ref = database.getReference().child("gps-sharing").child(sharingID);
         Map map = new HashMap<>();
 
-        ////////////////check if location exists
         lastSharedGPSLoc = currentLocation;
 
         map.put("latitude", Double.toString(currentLocation.getLatitude()));
@@ -168,9 +162,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
 
 
     private void makeUseOfNewLocation(Location location){
-        Log.d("LOCATION3","result");
         if (location != null) {
-            Log.d("LOCATION","C'est bien.");
             currentLocation = location;
             uploadLocation();
             sendMessageToActivity(currentLocation, "");
@@ -200,22 +192,18 @@ public class SensorService extends Service implements com.google.android.gms.loc
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.i("EXIT", "ondestroy!");
         Intent broadcastIntent = new Intent("HD.RestartSensor");
         sendBroadcast(broadcastIntent);
         if (client!=null){
-
             LocationServices.FusedLocationApi.removeLocationUpdates(client,  this);
         }
     }
 
     @Override
     public void onLocationChanged(Location location) {
-//        Log.d("LOC","Start Location Tracking");
         if (currentLocation==null){
             makeUseOfNewLocation(location);
         } else if ((location.getLatitude() != currentLocation.getLatitude()) || (location.getLongitude() != currentLocation.getLongitude())){
@@ -232,7 +220,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
         locationRequest.setFastestInterval(1000); // in milliseconds
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-// 4. Register your listener
+    // 4. Register your listener
         LocationServices.FusedLocationApi.requestLocationUpdates(client, locationRequest, this);
     }
 
