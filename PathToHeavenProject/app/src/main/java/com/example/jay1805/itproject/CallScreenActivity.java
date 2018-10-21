@@ -109,6 +109,9 @@ public class CallScreenActivity extends BaseActivity {
         if (call != null) {
             call.addCallListener(new SinchCallListener());
 
+            if(call.getRemoteUserId()==null) throw new AssertionError("RemoteUserId cannot be null");
+
+
             FirebaseDatabase.getInstance().getReference().child("user").child(call.getRemoteUserId()).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {

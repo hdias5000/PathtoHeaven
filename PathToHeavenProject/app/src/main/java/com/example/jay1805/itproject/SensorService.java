@@ -78,6 +78,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+        if (client==null) throw new AssertionError("client cannot be null");
 
         client.connect();
 

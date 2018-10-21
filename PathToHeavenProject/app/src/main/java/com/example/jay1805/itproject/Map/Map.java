@@ -74,7 +74,8 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
 
     //Implemented for next iteration.//
     public void updateCameraBearing(float bearing) {
-        if ( mMap == null) return;
+        if (mMap==null) throw new AssertionError("map was not created");
+
         Log.d("CameraMap","Bearings");
 
         CameraPosition camPos = CameraPosition
@@ -142,6 +143,7 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
     //Allows user to clicks on volunteer and a timer starts for the volunteer to accept.//
     @Override
     public boolean onMarkerClick(Marker marker) {
+        if (listOfVolunteers==null) throw new AssertionError("listOfVolunteers is null");
 
         if(listOfVolunteers!=null){
             for(Marker m:listOfVolunteers.keySet()){

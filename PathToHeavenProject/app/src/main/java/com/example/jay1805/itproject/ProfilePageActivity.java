@@ -151,6 +151,18 @@ public class ProfilePageActivity extends AppCompatActivity {
         });
     }
 
+
+    public void formNotEmpty()
+    {
+
+        if (nameOfUser.getText().toString()=="") throw new AssertionError("nameOfUser cannot be empty");
+        if (dateEditText.getText().toString()=="") throw new AssertionError("dateEditText cannot be empty");
+        if (HomeAddress.getText().toString()=="") throw new AssertionError("HomeAddress cannot be empty");
+        if (rb.getText().toString()=="") throw new AssertionError("rb cannot be empty");
+
+
+    }
+
     String selectedImageUri;
 
     @Override
@@ -175,6 +187,7 @@ public class ProfilePageActivity extends AppCompatActivity {
 
     private void InputingToDatabase() {
         final Map userMap= new HashMap<>();
+        formNotEmpty();
         if(!HomeAddress.getText().toString().isEmpty()) {
             userMap.put("Home Address", HomeAddress.getText().toString());
         }

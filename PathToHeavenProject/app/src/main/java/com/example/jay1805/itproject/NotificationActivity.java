@@ -78,7 +78,7 @@ public class NotificationActivity extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot!=null) {
                     elderlyID = dataSnapshot.getValue().toString();
-
+                    if (elderlyID=="") throw new AssertionError("elderlyID is empty");
 
 
 
@@ -91,7 +91,7 @@ public class NotificationActivity extends AppCompatActivity {
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             if (dataSnapshot != null) {
                                 elderlyName = dataSnapshot.getValue().toString();
-
+                                if (elderlyName=="") throw new AssertionError("elderlyName is empty");
 
                                 Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
                                 intent.putExtra("elderlyName",elderlyName);
