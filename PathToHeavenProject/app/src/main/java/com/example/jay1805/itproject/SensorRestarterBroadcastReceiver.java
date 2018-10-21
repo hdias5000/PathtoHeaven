@@ -1,3 +1,5 @@
+//This class is used to restart the GPS Location Service(SensorService) if it ever stopped.//
+
 package com.example.jay1805.itproject;
 
 import android.content.BroadcastReceiver;

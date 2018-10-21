@@ -63,7 +63,7 @@ public class LaunchGPSActivity extends AppCompatActivity {
         //Notify the user that tracking has been enabled//
         Toast.makeText(this, "GPS tracking enabled", Toast.LENGTH_SHORT).show();
 
-        //Close MainActivity//
+        //Close ThisActivity//
         finish();
     }
 }
