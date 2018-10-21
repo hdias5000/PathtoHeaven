@@ -493,7 +493,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
             mAudioPlayer = new AudioPlayer(getApplicationContext());
             mCallId = intent.getStringExtra(SinchService.CALL_ID);
-            System.out.println("mcallis is in receiver "+mCallId);
             if(mCallId!=null) {
                 endCallButton.setVisibility(View.VISIBLE);
             }

@@ -6,9 +6,10 @@ public class URLCreator {
 
     private static final int PROXIMITY_RADIUS = 10000;
 
-
+    //This creates the URL for the api to find out the directions from one locstion to another.//
     public String getDirectionsUrl(double latitude, double longitude, double endLatitude,double endLongitude,String mode){
-        StringBuilder googleDirectionsUrl = new StringBuilder("https://maps.googleapis.com/maps/api/directions/json?");
+        StringBuilder googleDirectionsUrl = new
+                StringBuilder("https://maps.googleapis.com/maps/api/directions/json?");
         googleDirectionsUrl.append("origin="+latitude+","+longitude);
         googleDirectionsUrl.append("&destination="+endLatitude+","+endLongitude);
         googleDirectionsUrl.append("&mode="+mode);
@@ -17,8 +18,11 @@ public class URLCreator {
         return googleDirectionsUrl.toString();
     }
 
+    //This function would be used if nearby places was implemented, this is a simple addition and
+    // extension to our project.//
     public String getUrl(double latitude, double longitude, String nearbyPlace){
-        StringBuilder googlePlaceURL = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        StringBuilder googlePlaceURL = new
+                StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
         googlePlaceURL.append("location="+latitude+","+longitude);
         googlePlaceURL.append("&radius="+PROXIMITY_RADIUS);
         googlePlaceURL.append("&type="+nearbyPlace);
