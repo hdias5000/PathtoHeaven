@@ -1,5 +1,8 @@
 package com.example.jay1805.itproject.User;
 
+/**
+ * User Objects that store all the information about the user
+ */
 public class UserObject {
 
     String name, phone, uid,notificationKey;

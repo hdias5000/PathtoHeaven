@@ -3,6 +3,10 @@ package com.example.jay1805.itproject.Utilities;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Just to ensure that even if the user doesn't enter the country code while typing his/her phone
+ * number, this class will do it for you.
+ */
 public class CountryToPhonePrefix {
     public static String getPhone(String code) {
         return country2phone.get(code.toUpperCase());

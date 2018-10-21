@@ -7,6 +7,10 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
+/**
+ * Defining JSON objects that create notifications for messages and help. This class also send the
+ * notification to the person who has the notificationKey mentioned in the JSON object.
+ */
 public class SendNotifications {
     public SendNotifications(HashMap<String,String> nInformation) {
         String type = nInformation.get("type");
@@ -17,7 +21,6 @@ public class SendNotifications {
                 message = nInformation.get("message");
                 heading = nInformation.get("heading");
                 String chatID = nInformation.get("chatID");
-                System.out.println("ChatID is : " + chatID);
 
                 try {
                     JSONObject notificationContent = new JSONObject(
@@ -34,7 +37,6 @@ public class SendNotifications {
             case "help":
                 String shareID = nInformation.get("shareID");
                 heading = new String(nInformation.get("name")+" needs your Help!!");
-                System.out.println(heading+"  lolol  "+ nInformation.get("name"));
                 message = nInformation.get("message");
                 String uid = nInformation.get("userID");
 

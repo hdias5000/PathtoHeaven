@@ -14,6 +14,11 @@ import com.example.jay1805.itproject.R;
 
 import java.util.ArrayList;
 
+/**
+ * This class is the adapter for the media sent recycler view which appears in main bar in
+ * ChatActivity. This adapter lets you send media through chats directly from the chat
+ * activity.
+ */
 public class MediaAdapter extends RecyclerView.Adapter<MediaAdapter.MediaViewHolder>{
 
     ArrayList<String> mediaList;

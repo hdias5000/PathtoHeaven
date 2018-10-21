@@ -17,7 +17,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -36,6 +35,10 @@ import com.onesignal.OneSignal;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+/**
+ * This activity lists all the chats that the current user has. They are listed vertically with the
+ * names of the person they are chatting with.
+ */
 public class ChatMainPageActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private RecyclerView chatListView;
@@ -51,12 +54,12 @@ public class ChatMainPageActivity extends AppCompatActivity implements Navigatio
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_main_page);
 
-        myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+        myDrawerLayout = findViewById(R.id.drawer);
         myToggle = new ActionBarDrawerToggle(ChatMainPageActivity.this, myDrawerLayout, R.string.open, R.string.close);
         myDrawerLayout.addDrawerListener(myToggle);
         myToggle.syncState();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_viewID);
+        NavigationView navigationView = findViewById(R.id.navigation_viewID);
         navigationView.setNavigationItemSelectedListener(this);
         View headerView = navigationView.getHeaderView(0);
         final ImageView myProfileImage = headerView.findViewById(R.id.headerImage);
@@ -94,6 +97,7 @@ public class ChatMainPageActivity extends AppCompatActivity implements Navigatio
         getUserChatList();
     }
 
+    //Class for printing an image from a given URL
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         ImageView bmImage;
 
@@ -119,6 +123,7 @@ public class ChatMainPageActivity extends AppCompatActivity implements Navigatio
         }
     }
 
+    //Next two classes are for the menu; when an item in the menu is selected
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(myToggle.onOptionsItemSelected(item)) {
@@ -145,7 +150,7 @@ public class ChatMainPageActivity extends AppCompatActivity implements Navigatio
         }
 
         if (id == R.id.FindUser) {
-            startActivityForResult(new Intent(getApplicationContext(), FindUserActivity.class), 1);
+
         }
 
         if (id == R.id.Logout) {
@@ -161,6 +166,7 @@ public class ChatMainPageActivity extends AppCompatActivity implements Navigatio
         return false;
     }
 
+    //This class creates a list of people you are chatting with and notifies the chat list adapter
     private void getUserChatList() {
         DatabaseReference userChatDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("chat");
         userChatDB.addValueEventListener(new ValueEventListener() {
@@ -191,6 +197,7 @@ public class ChatMainPageActivity extends AppCompatActivity implements Navigatio
         });
     }
 
+    //Initializing the chat list recycler view
     private void initializeRecyclerView() {
         chatListView = findViewById(R.id.chatList);
         chatListView.setNestedScrollingEnabled(false);
@@ -201,6 +208,7 @@ public class ChatMainPageActivity extends AppCompatActivity implements Navigatio
         chatListView.setAdapter(chatListViewAdapter);
     }
 
+    //Getting contacts permissions
     private void getPermissions() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

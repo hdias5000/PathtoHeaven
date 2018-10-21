@@ -5,8 +5,6 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -27,6 +25,10 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class allows the user to view their profile and also allows them to view their profile picture.
+ * Further, it also allows them to change the state of their volunteer mode on and off at anytime.
+ */
 public class MyProfileActivity extends AppCompatActivity {
 
     private ImageView ProfilePic;
@@ -36,8 +38,6 @@ public class MyProfileActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TextView UserType;
     private TextView PhoneNumber;
-    private DrawerLayout myDrawerLayout;
-    private ActionBarDrawerToggle myToggle;
     private Switch isVolunteer;
     private Button submit;
 
@@ -49,7 +49,6 @@ public class MyProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_profile);
 
-
         ProfilePic = findViewById(R.id.profilePic);
         Name = findViewById(R.id.theActualName);
         DoB = findViewById(R.id.theRealDOB);
@@ -60,12 +59,10 @@ public class MyProfileActivity extends AppCompatActivity {
         submit = (Button) findViewById(R.id.submitMyProfile);
         progressBar = findViewById(R.id.progressBar);
 
-
         currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
         userRef = FirebaseDatabase.getInstance().getReference().child("user").child(currentUserUid);
 
         final Map userMap= new HashMap<>();
-
 
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -121,15 +118,12 @@ public class MyProfileActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if(isVolunteer.isChecked())
                 {
-                    System.out.println("inside hereeeeeeeeeeeee ifffffffffffff");
                     userMap.put("Volunteer","Yes");
                     userMap.put("Requested", "False");
                     userMap.put("ElderlyIDRequested","");
                 }
                 else
                 {
-                    System.out.println("inside hereeeeeeeeeeeee elseeeeeeeeeeeee");
-
                     userMap.put("Volunteer","No");
                     userMap.put("accepted","null");
 
@@ -141,6 +135,7 @@ public class MyProfileActivity extends AppCompatActivity {
 
     }
 
+    //Class for printing an image from a given URL
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         ImageView bmImage;
 

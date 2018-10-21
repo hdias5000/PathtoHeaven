@@ -14,6 +14,11 @@ import com.stfalcon.frescoimageviewer.ImageViewer;
 
 import java.util.ArrayList;
 
+/**
+ * This class is the adapter for the messages recycler view which appears in the chats in
+ * ChatActivity. This adapter lets you see all teh messages you sent to someone in the Chat
+ * activity.
+ */
 public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
     private static final int VIEW_TYPE_ME = 1;

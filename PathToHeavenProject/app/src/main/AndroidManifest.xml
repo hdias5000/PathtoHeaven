@@ -49,7 +49,6 @@
         <activity android:name=".LoginActivity" />
         <activity android:name=".MapsActivity" />
         <activity android:name=".ChatMainPageActivity" />
-        <activity android:name=".FindUserActivity" />
         <activity android:name=".MainActivity" />
         <activity
             android:name=".ChatActivity"

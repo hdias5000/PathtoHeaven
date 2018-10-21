@@ -4,12 +4,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -36,6 +34,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Login activity is used to create a user for our application. The auth credentials we used is a
+ * phone and opt option. We are creating the users in firebase Authorization. We are also saving user
+ * details in the firebase database
+ */
 public class LoginActivity extends BaseActivity implements SinchService.StartFailedListener {
 
     private EditText mPhoneNumber, mCode;
@@ -110,6 +113,7 @@ public class LoginActivity extends BaseActivity implements SinchService.StartFai
 
     }
 
+    //Inputting user details in the database and signing in
     private void signInWithPhoneAuthCredential(PhoneAuthCredential phoneAuthCredential) {
         FirebaseAuth.getInstance().signInWithCredential(phoneAuthCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
@@ -155,6 +159,7 @@ public class LoginActivity extends BaseActivity implements SinchService.StartFai
         });
     }
 
+    //Starting sinch call listener when user is logged in
     private void userIsLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         // to double check user has logged in

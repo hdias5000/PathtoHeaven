@@ -1,8 +1,6 @@
 package com.example.jay1805.itproject.Chat;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -22,8 +20,11 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-import static com.example.jay1805.itproject.R.color.blue_100;
-
+/**
+ * This class is the adapter for the chat list recycler view which appears in the sliding layout in
+ * MapsActivity. This adapter lets you chat with anyone in your contacts directly from the maps
+ * activity.
+ */
 public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatListViewHolder>{
 
     ArrayList<ChatObject> ChatList;

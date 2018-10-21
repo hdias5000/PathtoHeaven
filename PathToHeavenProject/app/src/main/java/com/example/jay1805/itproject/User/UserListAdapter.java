@@ -33,6 +33,11 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * This class is the adapter for the user list recycler view which appears in the sliding layout in
+ * MapsActivity. This adapter lets you call, chat and ask help from someone directly from the maps
+ * activity.
+ */
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserListViewHolder>{
 
     SinchService.SinchServiceInterface sinchServiceInterface;

@@ -14,9 +14,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sinch.android.rtc.SinchError;
 
+/**
+ * This is the launcher activity of our application. It is the source of starting all the required
+ * services. Further, if the user has already logged in, it takes you directly to the MapsActivity.
+ * Otherwise, it takes you to the LoginActivity.
+ */
 public class OpenActivity extends BaseActivity implements SinchService.StartFailedListener{
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +39,6 @@ public class OpenActivity extends BaseActivity implements SinchService.StartFail
                     while(getSinchServiceInterface()==null) {
 
                     }
-                    if(getSinchServiceInterface()!=null) {
-                        System.out.println("THE SINCH SERVICE IS NOT NULL");
-                    }
-                    else {
-                        System.out.println("THE SINCH SERVICE IS NULL");
-                    }
-//                    startActivity(new Intent(getApplicationContext(),MapsActivity.class));
                     finish();
                 }
 
@@ -58,8 +54,7 @@ public class OpenActivity extends BaseActivity implements SinchService.StartFail
         }
     }
 
-
-
+    //Starting sinch call listener when user is logged in
     private void userIsLoggedIn() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         // to double check user has logged in
@@ -82,13 +77,12 @@ public class OpenActivity extends BaseActivity implements SinchService.StartFail
 
     }
 
+    //starting the MapsActivity when the Sinch listener is established
     @Override
     public void onStarted() {
-        Log.d("Sinch","STARTED please work");
+        Log.d("Sinch","STARTED");
         Intent intent = new Intent(this, MapsActivity.class);
-        //intent.putExtra(SinchService.CALL_ID, "");
         intent.putExtra("called", "no");
         startActivity(intent);
-        //startActivity(new Intent(getApplicationContext(),MapsActivity.class));
     }
 }

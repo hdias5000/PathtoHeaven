@@ -50,9 +50,7 @@ public class NotificationActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
-                        System.out.println("\n Elderly ud: "+elderlyID);
                         FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("false");
-                        System.out.println("\n DUST TILL DAWN!!!!!!!!!!! "+FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").toString());
                         FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").setValue("False");
                         // do nothing
                         startActivity(new Intent(getApplicationContext(), MapsActivity.class));
@@ -65,13 +63,11 @@ public class NotificationActivity extends AppCompatActivity {
     }
 
     private void getUserDetails() {
-        System.out.println("User id is + " + FirebaseAuth.getInstance().getCurrentUser().getUid());
         volunteerDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
         volunteerDB.child("ElderlyIDRequested").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot!=null) {
-                    System.out.println("\nHELLO ITS ME: "+dataSnapshot.getValue().toString()+"\n");
                     elderlyID = dataSnapshot.getValue().toString();
 
 
@@ -85,7 +81,6 @@ public class NotificationActivity extends AppCompatActivity {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             if (dataSnapshot != null) {
-                                System.out.println("\nHELLO ITS ME AGAIN: " + dataSnapshot.getValue().toString() + "\n");
                                 elderlyName = dataSnapshot.getValue().toString();
 
 

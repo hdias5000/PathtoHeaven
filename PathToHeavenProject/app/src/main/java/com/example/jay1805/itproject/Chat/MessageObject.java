@@ -2,6 +2,10 @@ package com.example.jay1805.itproject.Chat;
 
 import java.util.ArrayList;
 
+/**
+ * The message object stores all the relevant information of any particular messages. Especially
+ * the information that is also being stored int he database about the user.
+ */
 public class MessageObject {
 
     Boolean isGPSShared;

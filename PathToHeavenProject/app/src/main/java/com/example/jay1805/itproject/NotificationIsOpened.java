@@ -12,6 +12,11 @@ import com.onesignal.OneSignal;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * This class takes care of any notification opened. There are two types of notifications.
+ * When the message notification is opened, they are redirected to the particular chat activity.
+ * When the help notification is opened they are connected with the elderly person through maps.
+ */
 class NotificationIsOpened implements OneSignal.NotificationOpenedHandler {
     private final Context context;
 
