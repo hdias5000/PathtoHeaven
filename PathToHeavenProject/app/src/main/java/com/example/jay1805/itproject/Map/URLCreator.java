@@ -1,3 +1,4 @@
+//Class is used to find the URL for API requests.//
 package com.example.jay1805.itproject.Map;
 
 import android.util.Log;
@@ -6,7 +7,7 @@ public class URLCreator {
 
     private static final int PROXIMITY_RADIUS = 10000;
 
-    //This creates the URL for the api to find out the directions from one locstion to another.//
+    //This creates the URL for the api to find out the directions from one location to another.//
     public String getDirectionsUrl(double latitude, double longitude, double endLatitude,double endLongitude,String mode){
         StringBuilder googleDirectionsUrl = new
                 StringBuilder("https://maps.googleapis.com/maps/api/directions/json?");

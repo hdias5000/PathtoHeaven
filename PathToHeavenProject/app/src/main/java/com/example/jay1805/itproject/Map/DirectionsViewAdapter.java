@@ -16,8 +16,14 @@ import com.example.jay1805.itproject.R;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class DirectionsViewAdapter extends RecyclerView.Adapter<DirectionsViewAdapter.DirectionsViewHolder> {
+/**
+ * This is the adapter that is created for the directions that are to be displayed when one searches
+ * for a route. The major elements of this adapter are the directions and the route images.
+ */
+public class DirectionsViewAdapter
+        extends RecyclerView.Adapter<DirectionsViewAdapter.DirectionsViewHolder> {
 
+    //stepInformation contains all route information
     private ArrayList<HashMap> stepInformation;
 
     public DirectionsViewAdapter(ArrayList<HashMap> stepInformation) {
@@ -28,39 +34,21 @@ public class DirectionsViewAdapter extends RecyclerView.Adapter<DirectionsViewAd
     @Override
     public DirectionsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        View layoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_directions, null, false);
-        DirectionsViewAdapter.DirectionsViewHolder rcv = new DirectionsViewAdapter.DirectionsViewHolder(layoutView);
+        View layoutView = LayoutInflater.from(parent.getContext()).
+                inflate(R.layout.item_directions, null, false);
+        DirectionsViewAdapter.DirectionsViewHolder rcv = new
+                DirectionsViewAdapter.DirectionsViewHolder(layoutView);
         return rcv;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void onBindViewHolder(@NonNull DirectionsViewHolder holder, int position) {
-//        R.drawable.direction_turn_left;
-//        String str = stepInformation.get(position).get("Maneuver").toString().replaceAll("-","_");
-//        Uri otherPath = Uri.parse("android.resource://"+R.class.getPackage().getName()+"/" +"res/drawable/direction_close.png");
-
-//        File imgFile = new File(otherPath.toString());
-//        Log.d("Path","./drawable/direction_"+str+".png");
-
-//        String drawable = "direction_turn_left.png";
-//        AppCompatActivity activity = new AppCompatActivity();
-        System.out.println("Hasitha is a shit: " + Integer.parseInt((String) stepInformation.get(position).get("manRes")));
-//        int resID = ((AppCompatActivity)activity).getResources().getIdentifier(drawable, "drawable", "com.example.jay1805.itproject");
-        holder.maneuver.setImageResource(Integer.parseInt((String) stepInformation.get(position).get("manRes")));
+        holder.maneuver.setImageResource(Integer.parseInt((String) stepInformation.
+                get(position).get("manRes")));
         holder.maneuver.setBackgroundResource(R.color.white);
-//        holder.maneuver.set
-
-//        if(imgFile.exists()){
-//            Log.d("Path","IN");
-//
-//            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-//
-//            holder.maneuver.setImageBitmap(myBitmap);
-//
-//        }
-
-        holder.instruction.setText(Html.fromHtml((String) stepInformation.get(position).get("Instructions"),Html.FROM_HTML_MODE_LEGACY).toString());
+        holder.instruction.setText(Html.fromHtml((String) stepInformation.get(position).
+                get("Instructions"),Html.FROM_HTML_MODE_LEGACY).toString());
     }
 
     @Override

@@ -1,3 +1,6 @@
+//This class is used to read a provided URL and create a HTML connection to download the resulting
+// response.
+
 package com.example.jay1805.itproject.Map;
 
 import android.util.Log;

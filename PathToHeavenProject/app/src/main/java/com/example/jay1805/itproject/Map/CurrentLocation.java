@@ -1,3 +1,5 @@
+//This class stores and returns data regarding the current location.//
+
 package com.example.jay1805.itproject.Map;
 
 import android.location.Location;
@@ -19,9 +21,6 @@ public class CurrentLocation {
         this.showCurrentLocation = true;
         this.lastLocation = null;
     }
-
-
-
 
 
     public void changeCurrentLocation(Location location) {

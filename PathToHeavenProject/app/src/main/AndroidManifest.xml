@@ -49,7 +49,6 @@
         <activity android:name=".LoginActivity" />
         <activity android:name=".MapsActivity" />
         <activity android:name=".ChatMainPageActivity" />
-        <activity android:name=".MainActivity" />
         <activity
             android:name=".ChatActivity"
             android:theme="@style/Theme.Transparent" />
@@ -76,7 +75,6 @@
         <activity android:name=".ProfilePageActivity" />
         <activity android:name=".MyProfileActivity" />
         <activity android:name=".NotificationActivity" />
-        <activity android:name=".VolunteerRedirect" />
     </application>
 
 </manifest>

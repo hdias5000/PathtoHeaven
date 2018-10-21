@@ -1,4 +1,19 @@
+/**TEAM PATH TO HEAVEN
+ * Authors:
+ *  - Hasitha Dias:   789929
+ *  - Jay Parikh:     864675
+ *  - Anupama Sodhi:  791288
+ *  - Kushagra Gupta: 804729
+ *  - Manindra Arora: 827703
+ * **/
+
 package com.example.jay1805.itproject;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
+import android.util.Log;
 
 import com.sinch.android.rtc.ClientRegistration;
 import com.sinch.android.rtc.Sinch;
@@ -8,12 +23,6 @@ import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallClient;
 import com.sinch.android.rtc.calling.CallClientListener;
-
-import android.app.Service;
-import android.content.Intent;
-import android.os.Binder;
-import android.os.IBinder;
-import android.util.Log;
 
 import java.util.Map;
 

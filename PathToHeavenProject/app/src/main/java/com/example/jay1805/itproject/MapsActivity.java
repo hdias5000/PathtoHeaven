@@ -1,3 +1,14 @@
+/**TEAM PATH TO HEAVEN
+ * Authors:
+ *  - Hasitha Dias:   789929
+ *  - Jay Parikh:     864675
+ *  - Anupama Sodhi:  791288
+ *  - Kushagra Gupta: 804729
+ *  - Manindra Arora: 827703
+ * **/
+
+//This class manages everything regarding the major UI elements dealing with the appication.//
+
 package com.example.jay1805.itproject;
 
 import android.Manifest;
@@ -79,56 +90,62 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     static final String TAG = MapsActivity.class.getSimpleName();
 
+    //variables about current location
     private CurrentLocation currentLocation;
     private Map map;
     private View mapView;
     private Location lastKnownLoc;
     private LatLng currentRouteLocation;
 
+    //variables for calling
     private AudioPlayer mAudioPlayer;
     private String mCallId;
     private FloatingActionButton endCallButton;
 
+
     private String elderlyID;
+
+    //variables for showing directions
     private RecyclerView DirectionsView;
     private RecyclerView.Adapter DirectionsViewAdapter;
     private RecyclerView.LayoutManager DirectionsViewLayoutManager;
 
     private PlaceAutocompleteFragment placeAutocompleteFragment;
 
+    //variables for showing contacts list
     private RecyclerView userListView;
     private RecyclerView.Adapter userListViewAdapter;
     private RecyclerView.LayoutManager userListViewLayoutManager;
-
     public ArrayList<UserObject> contactList;
-
     ArrayList<UserObject> userList;
 
     private URLCreator urlCreator;
 
+    //variables used with volunteers
     private double volLat=0;
     private double volLongi=0;
     private String currentVolunteerName;
-
     private boolean volunteerMode = false;
 
 
     private HashMap<Marker, String> markers;
 
-
+    //variables for the menu
     private SlidingUpPanelLayout slidingLayout;
+    HashMap<String,Integer> panelHeight;
+    String currentPanel;
+    String previousPanel="";
     private FloatingActionButton SosButton;
     private Button VolunteersButton;
     private Button ProfileButton;
     private Button LogoutButton;
 
-
+    //variables for destination,route
     private Marker destinationMarker;
     private MarkerOptions destMarkerOptions;
     private List<Polyline> route;
-
+    LatLng currentDestination;
     private RouteData currentRouteData;
-
     private String modeOfTransport;
 
     private boolean helpMode;
@@ -136,159 +153,44 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     Marker marker;
 
 
-    LatLng currentDestination;
-
+    //info needed for help/gps sharing
     HashMap sendRouteInfo = new HashMap<String,String>();
     String shareIDOfElder = "";
     String nameOfElderly = "Elderly";
     Marker markerOfElderly;
-
     LatLng locationOfElderly;
 
-    HashMap<String,Integer> panelHeight;
-
-    String currentPanel;
-    String previousPanel="";
-
+//////////////////MAIN FUNCTION//////////////////
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
-        isEnRoute = false;
-        currentPanel = "menu";
-        panelHeight = new HashMap<>();
-        findPanelHeights();
-        showCurrentSlider();
-        helpMode = false;
-        //set layout slide listener
 
-        OneSignal.startInit(this).setNotificationOpenedHandler(new NotificationIsOpened(getApplicationContext())).init();
-        OneSignal.setSubscription(true);
-        OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
-            @Override
-            public void idsAvailable(String userId, String registrationId) {
-
-                FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("notificationKey").setValue(userId);
-            }
-        });
-        OneSignal.setInFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification);
-
-        markers = new HashMap<Marker, String>();
+        initializingVariables();
 
         gettingPermissions();
-        createVolunteerChildrenInDB();
-        createAutoCompleteSearch();
         loadMapFragment();
+        createAutoCompleteSearch();
+
+        findPanelHeights();
+        showCurrentSlider();
+        contactListInMenu();
+
+        startingOneSignal();
+
+        createVolunteerChildrenInDB();
+        listenerForVolunteerRequest();
+
         gpsSharing();
+
         setUpBroadcastReceivers();
         setButtonListeners();
-
-        urlCreator = new URLCreator();
-        lastKnownLoc = null;
-
-        VolunteersButton = findViewById(R.id.volunteersButton);
-        ProfileButton = findViewById(R.id.profileButton);
-        LogoutButton = findViewById(R.id.logoutButton);
-
-        contactList = new ArrayList<>();
-        userList = new ArrayList<>();
-        //initializeRecyclerView();
-        userListView = findViewById(R.id.userList);
-        userListView.setNestedScrollingEnabled(false);
-        userListView.setHasFixedSize(false);
-        userListViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
-        userListView.setLayoutManager(userListViewLayoutManager);
-
-        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
-           @Override
-           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-               userListViewAdapter = new UserListAdapter(userList, getSinchServiceInterface(), slidingLayout);
-               userListView.setAdapter(userListViewAdapter);
-               getContactList();
-           }
-
-           @Override
-           public void onCancelled(@NonNull DatabaseError databaseError) {
-
-           }
-       });
-
-
-        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getValue()!=null) {
-                    if (dataSnapshot.getValue().toString().equals("True")) {
-                        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("ElderlyIDRequested").addListenerForSingleValueEvent(new ValueEventListener() {
-
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                    elderlyID = dataSnapshot.getValue().toString();
-                                    Intent intent = new Intent(getApplicationContext(),NotificationActivity.class);
-                                    intent.putExtra("elderlyID",elderlyID);
-                                    java.util.Map map = new HashMap<>();
-                                    final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-                                    map.put("Requested", "False");
-                                    userDB.updateChildren(map);
-                                    startActivity(intent);
-                                }
-
-                                @Override
-                                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                }
-                                });
-
-                    }
-
-//
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-        endCallButton = findViewById(R.id.endCallButton);
-        endCallButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                endCall();
-            }
-        });
-
-        VolunteersButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                PlaceVolunteerMarkerOnMap();
-            }
-        });
-
-        ProfileButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), MyProfileActivity.class));
-            }
-        });
-
-        LogoutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FirebaseAuth.getInstance().signOut();
-                // make sure the user is who he says he is
-                Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
-                intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
-                finish();
-                return;
-            }
-        });
-
-
     }
-///////////////////////////////////////////////MENU, SLIDING PANEL
+
+
+//////////////////MENU AND SLIDING PANEL//////////////////
+
+    //Enables menu to open and close on touch at the bottom of the screen.//
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         View w = getCurrentFocus();
@@ -296,11 +198,14 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         w.getLocationOnScreen(scrcoords);
         float y = event.getRawY() + w.getTop() - scrcoords[1];
         int condition = slidingLayout.getPanelHeight();
-        if (event.getAction()!=MotionEvent.ACTION_BUTTON_PRESS &&event.getAction()==MotionEvent.ACTION_UP&&event.getAction()!=MotionEvent.ACTION_MOVE&&event.getAction()!=MotionEvent.ACTION_BUTTON_RELEASE&&y>(2220-(condition+500))&&y<(2220-condition)){
+        if (event.getAction()!=MotionEvent.ACTION_BUTTON_PRESS &&event.getAction()==MotionEvent.
+                ACTION_UP&&event.getAction()!=MotionEvent.ACTION_MOVE&&event.getAction()!=MotionEvent.ACTION_BUTTON_RELEASE&&y>(2220-(condition+500))&&y<(2220-condition)){
             if (currentPanel.equals("menu")){
-                if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.COLLAPSED)){
+                if (slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.
+                        COLLAPSED)){
                     slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-                }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.HIDDEN)){
+                }else if(slidingLayout.getPanelState().equals(SlidingUpPanelLayout.PanelState.
+                        HIDDEN)){
                     slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
                 }
             }
@@ -311,6 +216,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         return ret;
     }
 
+    //Shows the needed slider.//
     private void showCurrentSlider(){
         hideSliders();
         LinearLayout currentPanelLayout = null;
@@ -339,6 +245,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
+    //Sets the panel height for the current slider.//
     private void setPanelHeight() {
         if (panelHeight.containsKey(currentPanel)){
             slidingLayout.setPanelHeight(panelHeight.get(currentPanel));
@@ -347,6 +254,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         }
     }
 
+    //Hides all other sliders to display the correct one.//
     private void hideSliders(){
         LinearLayout route = findViewById(R.id.route);
         LinearLayout sos = findViewById(R.id.sosSlider);
@@ -360,6 +268,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         volunteer.setVisibility(View.GONE);
     }
 
+    //Finds panel height using the heights for the layouts.//
     private void findPanelHeights(){
         final LinearLayout initialRouteLayout = (LinearLayout)findViewById(R.id.initialRouteLayout);
         initialRouteLayout.post(new Runnable(){
@@ -399,19 +308,26 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         });
     }
 
-////////////////////////////////BROADCAST
+
+//////////////////BROADCAST RECEIVERS//////////////////
+
     private void setUpBroadcastReceivers() {
+        //Broadcast receiver for location updates.//
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mMessageReceiver, new IntentFilter("GPSLocationUpdates"));
+
+        //Broadcast receiver for when volunteer disconnected.//
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
                         FirebaseDatabase.getInstance().getReference().child("user").
-                                child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("accepted").setValue("null");
+                                child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                                child("accepted").setValue("null");
                     }
                 }, new IntentFilter("Make Null"));
 
+        //Broadcast receiver for making a toast.//
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
                     @Override
@@ -421,9 +337,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                     }
                 }, new IntentFilter("Make Toast"));
 
+        //Broadcast receiver for when route is successfully displayed on maps.//
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 onRouteSuccess, new IntentFilter("RouteSuccess"));
 
+        //Broadcast receiver for when sharing ID is created. Creates stop GPS sharing button,
+        // listener. sets the panels and add a firebase listener for when route gets added,
+        // to be displayed.//
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 new BroadcastReceiver() {
                     @Override
@@ -434,7 +354,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                             @Override
                             public void onClick(View view) {
                                 Intent intent = new Intent("STOP GPS");
-                                LocalBroadcastManager.getInstance(view.getContext()).sendBroadcast(intent);
+                                LocalBroadcastManager.getInstance(view.getContext()).
+                                        sendBroadcast(intent);
                                 SosButton.setVisibility(View.GONE);
                                 placeAutocompleteFragment.setText("");
                                 view.setVisibility(View.GONE);
@@ -455,18 +376,23 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                             }
                         });
                         String shareID = intent.getStringExtra("ID");
-                        FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID).child("route").addValueEventListener(new ValueEventListener() {
+                        FirebaseDatabase.getInstance().getReference().child("gps-sharing").
+                                child(shareID).child("route").addValueEventListener(
+                                        new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.exists()){
-                                    double latitude = Double.parseDouble(dataSnapshot.child("destLat").getValue().toString());
-                                    double longitude = Double.parseDouble(dataSnapshot.child("destLon").getValue().toString());
+                                    double latitude = Double.parseDouble(dataSnapshot.
+                                            child("destLat").getValue().toString());
+                                    double longitude = Double.parseDouble(dataSnapshot.
+                                            child("destLon").getValue().toString());
                                     LatLng dest = new LatLng(latitude,longitude);
                                     String mode = dataSnapshot.child("mode").getValue().toString();
                                     ///////////////////change button when this is pressed
                                     modeOfTransport = mode;
                                     map.clearMap();
-                                    LatLng curLoc = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                                    LatLng curLoc = new LatLng(currentLocation.getLatitude(),
+                                            currentLocation.getLongitude());
                                     currentDestination = dest;
                                     SosButton.setVisibility(View.VISIBLE);
                                     currentPanel = "routeInitial";
@@ -483,10 +409,13 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                         });
                     }
                 }, new IntentFilter("GPS ID"));
+
+        //Broadcast receiver for when call is created.//
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 callInMaps, new IntentFilter("Call ID"));
     }
 
+    //Broadcast receiver for call receivers within maps.//
     BroadcastReceiver callInMaps = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -504,19 +433,20 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     };
 
 
-////////////////////////////////////////////////////////MAPS
+//////////////////INTIALISING MAPS//////////////////
+
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
      * If Google Play services is not installed on the device, the user will be prompted to install
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
+     * It also moves the current location button to required position.
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
             map = new Map(googleMap,getApplicationContext());
             currentLocation = new CurrentLocation(map);
             askForCurrentLocation();
@@ -525,7 +455,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         if (mapView != null &&
                 mapView.findViewById(Integer.parseInt("1")) != null) {
             // Get the button view
-            View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).getParent()).findViewById(Integer.parseInt("2"));
+            View locationButton = ((View) mapView.findViewById(Integer.parseInt("1")).
+                    getParent()).findViewById(Integer.parseInt("2"));
             // and next place it, on bottom right (as Google Maps app)
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
                     locationButton.getLayoutParams();
@@ -537,6 +468,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
+    //Loads the map onto the fragment.//
     private void loadMapFragment() {
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -545,21 +477,40 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         mapFragment.getMapAsync(this);
     }
 
+    //Gets permission to use all services.//
     private void gettingPermissions() {
-        if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.
+                RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || ContextCompat.
+                checkSelfPermission(MapsActivity.this, android.Manifest.permission.
+                        READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED || ContextCompat.
+                checkSelfPermission(MapsActivity.this, android.Manifest.permission.
+                        ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(MapsActivity.this, android.Manifest.
+                        permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.
+                        WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED || ContextCompat.
+                checkSelfPermission(MapsActivity.this, Manifest.permission.READ_CONTACTS) !=
+                PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MapsActivity.this,
-                    new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.READ_PHONE_STATE,android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
+                    new String[]{android.Manifest.permission.RECORD_AUDIO, android.Manifest.
+                            permission.READ_PHONE_STATE,android.Manifest.permission.
+                            ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
                     1);
         }
     }
 
 
-//////////////////////////////////////////////////////CURRENT LOCATION
+//////////////////CURRENT LOCATION//////////////////
+
+    //Sends broadcast to ask for current location from sensor service.//
     private void askForCurrentLocation() {
         Intent intent = new Intent("SEND GPS");
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    //Sets the current location when new location is received and updates the route if moved
+    // more than 10m.//
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -583,29 +534,33 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 //                        isEnRoute = false;
                         map.clearMap();
                         setDestinationMarker(currentDestination,false);
-                        findRoute(currentLocation.getCurrentLocation(),new LatLng(currentDestination.latitude,currentDestination.longitude));
+                        findRoute(currentLocation.getCurrentLocation(),new LatLng(
+                                currentDestination.latitude,currentDestination.longitude));
                     }
                 }
             }
         }
     };
 
-    //////////////////////////////////////////////////////////////////ROUTE
+//////////////////ROUTE//////////////////
 
+    //Handles all on click events regarding route.//
     public void onClick(View v) {
 
         switch (v.getId()) {
             case R.id.B_to:
                 map.clearMap();
                 destinationMarker = map.addMarker(destMarkerOptions,currentDestination, true);
-                LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                LatLng location = new LatLng(currentLocation.getLatitude(),currentLocation.
+                        getLongitude());
                 findRoute(location,currentDestination);
                 break;
 
             case R.id.B_RouteToElder:
                 map.clearMap();
                 setMarkerForElderlyPerson();
-                LatLng location_current = new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude());
+                LatLng location_current = new LatLng(currentLocation.getLatitude(),currentLocation.
+                        getLongitude());
                 findRoute(location_current,locationOfElderly);
                 sendRouteInfo = new HashMap<String,String>();
                 sendRouteInfo.put("destLat",location_current.latitude);
@@ -614,7 +569,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 break;
             case R.id.B_SendRoute:
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference ref = database.getReference().child("gps-sharing").child(shareIDOfElder);
+                DatabaseReference ref = database.getReference().child("gps-sharing").
+                        child(shareIDOfElder);
                 java.util.Map hashMap = new HashMap<>();
                 hashMap.put("route",sendRouteInfo);
                 ref.updateChildren(hashMap);
@@ -649,20 +605,26 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         }
 
     }
+
+    //Finds and displays the route.//
     private void findRoute(final LatLng currentLocation, final LatLng currentDestination){
         final LatLng curr = currentLocation;
         final LatLng dest = currentDestination;
         Object dataTransfer[] = new Object[3];
-        String url = urlCreator.getDirectionsUrl(currentLocation.latitude, currentLocation.longitude, currentDestination.latitude, currentDestination.longitude, modeOfTransport);
+        String url = urlCreator.getDirectionsUrl(currentLocation.latitude, currentLocation.
+                longitude, currentDestination.latitude, currentDestination.longitude,
+                modeOfTransport);
         currentRouteData = new RouteData();
-        GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData, new OnEventListener() {
+        GetDirectionsData getDirectionsData = new GetDirectionsData(currentRouteData,
+                new OnEventListener() {
             @Override
             public void onSuccess(Object object) {
                 if (!isEnRoute){
                     map.showEntireRoute(curr,dest);
                 }
                 currentRouteLocation = currentLocation;
-                printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
+                printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.
+                        getStepInformation());
             }
 
             @Override
@@ -678,6 +640,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         route = getDirectionsData.getRoute();
     }
 
+    //Changes the maneuver symbols to obtain the correct symbol.//
     private ArrayList change(ArrayList step){
         ArrayList <HashMap> stepUpdated = new ArrayList<>();
 
@@ -692,6 +655,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         return stepUpdated;
     }
 
+    //Changes the background to show selection.//
     private void setBackgroundForModesOfTransport(Integer selectedButton){
         final ImageButton button_Walk = (ImageButton) findViewById(R.id.B_walk);
         ImageButton button_Drive = (ImageButton) findViewById(R.id.B_car);
@@ -705,9 +669,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         button.setBackgroundResource(R.color.grey_700);
     }
 
-    ///////////////////////add route information
-
-    private void printRouteInfo(HashMap<String,String> routeInformation, ArrayList stepInformation) {
+    //Shows distance, duration and the directions for the route.//
+    private void printRouteInfo(HashMap<String,String> routeInformation, ArrayList stepInformation){
         LinearLayout enRouteLayout = findViewById(R.id.enRouteLayout);
         enRouteLayout.setVisibility(View.VISIBLE);
         findPanelHeights();
@@ -716,7 +679,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         if (routeInformation.containsKey("Summary")){
             summary = routeInformation.get("Summary");
         }
-        distDur.setText(summary+":- "+routeInformation.get("Distance")+"("+routeInformation.get("Duration")+")");
+        distDur.setText(summary+":- "+routeInformation.get("Distance")+"("+routeInformation.
+                get("Duration")+")");
         final Button enRoute = findViewById(R.id.enRoute);
         enRoute.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -736,41 +700,50 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         DirectionsView = findViewById(R.id.List_Directions);
         DirectionsView.setNestedScrollingEnabled(false);
         DirectionsView.setHasFixedSize(false);
-        DirectionsViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.VERTICAL, false);
+        DirectionsViewLayoutManager = new LinearLayoutManager(getApplicationContext(),
+                LinearLayout.VERTICAL, false);
         DirectionsView.setLayoutManager(DirectionsViewLayoutManager);
         DirectionsViewAdapter = new DirectionsViewAdapter(newSteps);
         DirectionsView.setAdapter(DirectionsViewAdapter);
     }
 
+    //Calls necessary function when correct route is found and displayed.//
     private BroadcastReceiver onRouteSuccess = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.getStepInformation());
+            printRouteInfo(currentRouteData.getRouteInformation(),currentRouteData.
+                    getStepInformation());
         }
     };
 
-
+    //Sets a red marker for the destination.//
     private void setDestinationMarker(LatLng dest,boolean zoom){
         destMarkerOptions = new MarkerOptions();
         destMarkerOptions.position(dest);
         destMarkerOptions.title("Your search results");
-        destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        destMarkerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.
+                HUE_RED));
         destinationMarker = map.addMarker(destMarkerOptions, dest,zoom);
     }
-//////////////////////////////////////////////////////GPS SHARING AND ROUTE SHARING
 
+
+//////////////////GPS AND ROUTE SHARING//////////////////
+
+    //Finds whether in help or volunteer mode and sets the correct slider accordingly.//
     private void gpsSharing() {
 
         String userID;
         Intent intent = getIntent();
-        if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID") && intent.getExtras().containsKey("userID")) {
+        if (intent.hasExtra("Share ID") && intent.getExtras().containsKey("Share ID") &&
+                intent.getExtras().containsKey("userID")) {
             currentPanel = "help";
             showCurrentSlider();
             sendRouteInfo = new HashMap<String,String>();
             shareIDOfElder = intent.getExtras().getString("Share ID");
             userID = intent.getExtras().getString("userID");
             setInitialInfoForHelp(userID);
-            FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareIDOfElder).addValueEventListener(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("gps-sharing").
+                    child(shareIDOfElder).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()){
@@ -803,10 +776,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         }
     }
 
+    //Adds the listener to find when current location of elderly changes.//
     private void setGPSSharing(String shareID){
 
         // Get a reference to our posts
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("gps-sharing").child(shareID);
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("gps-sharing").
+                child(shareID);
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -844,6 +819,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         });
     }
 
+    //Sets the listeners for the call and chat buttons for all types of sliders.//
     private void setInitialInfoForHelp(final String elderlyID) {
 
         ImageButton callHelper;
@@ -857,7 +833,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         final ArrayList<String> CurrentUserChatIDs = new ArrayList<String>();
         final ArrayList<String> ToUserChatIDs = new ArrayList<String>();
 
-        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("name").
+                addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 nameOfElderly = dataSnapshot.getValue().toString();
@@ -888,7 +865,9 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         chatHelperV = findViewById(R.id.VchatButtonHelp);
 
 
-        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("chat").addListenerForSingleValueEvent(new ValueEventListener() {
+        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.
+                getInstance().getCurrentUser().getUid()).child("chat").
+                addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot childSnapShot : dataSnapshot.getChildren()) {
@@ -922,7 +901,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         View.OnClickListener chatListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").addListenerForSingleValueEvent(
+                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).
+                        child("chat").addListenerForSingleValueEvent(
                         new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -944,19 +924,26 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                                 }
 
                                 if(chatExists.equals(false)) {
-                                    String key = FirebaseDatabase.getInstance().getReference().child("chat").push().getKey();
+                                    String key = FirebaseDatabase.getInstance().getReference().
+                                            child("chat").push().getKey();
                                     CurrentUserChatIDs.add(key);
                                     ToUserChatIDs.add(key);
                                     chatIDKey = key;
-                                    FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("chat").child(key).setValue(true);
-                                    FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("chat").child(key).setValue(true);
+                                    FirebaseDatabase.getInstance().getReference().child("user").
+                                            child(FirebaseAuth.getInstance().getUid()).
+                                            child("chat").child(key).setValue(true);
+                                    FirebaseDatabase.getInstance().getReference().child("user").
+                                            child(elderlyID).child("chat").child(key).
+                                            setValue(true);
                                 }
 
                                 else {
-                                    Toast.makeText(getApplicationContext(), "Chat Already Exists", Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getApplicationContext(),
+                                            "Chat Already Exists", Toast.LENGTH_LONG).show();
                                 }
 
-                                Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
+                                Intent intent = new Intent(getApplicationContext(),
+                                        ChatActivity.class);
                                 Bundle bundle = new Bundle();
                                 bundle.putString("chatID", chatIDKey);
                                 intent.putExtras(bundle);
@@ -977,6 +964,7 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
     }
 
+    //Creates green marker to show location of the elderly person.//
     private void setMarkerForElderlyPerson(){
         MarkerOptions mo = new MarkerOptions();
         mo.position(locationOfElderly);
@@ -985,102 +973,22 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         markerOfElderly = map.addMarker(mo,locationOfElderly, true);
     }
 
-///////////////////////////////////////////////////////////VOLUNTEERS
 
-    private void showElderlyLocationForVolunteer(String elderlyID) {
+//////////////////HELPER FUNCTIONS//////////////////
 
-        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                double newLatitude = 0;
-                double newLongitude = 0;
-                newLatitude = Double.parseDouble(dataSnapshot.child("latitude").getValue().toString());
-
-                newLongitude = Double.parseDouble(dataSnapshot.child("longitude").getValue().toString());
-
-                if (markerOfElderly!=null){
-                    markerOfElderly.remove();
-                }
-
-                locationOfElderly= new LatLng(newLatitude,newLongitude);
-
-                setMarkerForElderlyPerson();
-                map.zoomToLocation(locationOfElderly);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
+    private void initializingVariables() {
+        helpMode = false;
+        slidingLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
+        isEnRoute = false;
+        currentPanel = "menu";
+        panelHeight = new HashMap<>();
+        markers = new HashMap<Marker, String>();
+        urlCreator = new URLCreator();
+        lastKnownLoc = null;
 
     }
 
-    private void createVolunteerChildrenInDB() {
-        java.util.Map hmap = new HashMap<>();
-        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        hmap.put("Requested", "False");
-        hmap.put("ElderlyIDRequested","");
-        hmap.put("accepted","null");
-        userDB.updateChildren(hmap);
-    }
-
-    private void PlaceVolunteerMarkerOnMap() {
-        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
-                    {
-
-                        // getting volunteers' coordinates
-                        if (volunteersnapshot.getKey().equals("Volunteer") && volunteersnapshot.getValue().toString().equals("Yes")) {
-                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
-                            {
-                                if (volunteersnapshot2.getKey().equals("latitude")) {
-                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().toString());
-                                }
-                                if (volunteersnapshot2.getKey().equals("longitude")) {
-                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().toString());
-
-                                }
-                                if (volunteersnapshot2.getKey().equals("name")) {
-                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
-                                }
-
-
-                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
-                                {
-                                    MarkerOptions mo = new MarkerOptions();
-                                    LatLng volLatLng = new LatLng(volLat,volLongi);
-
-                                    mo.position(volLatLng);
-                                    mo.title(currentVolunteerName);
-                                    mo.icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_volunteer2));
-                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
-
-
-                                    markers.put(map.addMarker(mo,volLatLng,true), childsnapshot.getKey());
-                                    currentVolunteerName = "";
-                                }
-                            }
-                        }
-                    }
-
-
-                }
-                map.setListOfVolunteers(markers);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-////////////////////////////////////////////////////////HELPER FUNCTIONS
-
+    //Broadcasting message.//
     private void sendMessageToActivity(String url, LatLng dest) {
         Intent intent = new Intent("New Route");
         // You can also include some extra data.
@@ -1095,20 +1003,68 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         Toast.makeText(MapsActivity.this, message, Toast.LENGTH_LONG).show();
     }
 
+    //Setting all button listeners.//
     private void setButtonListeners(){
+        menuListeners();
         sosButtonListener();
         ImageButton cancelVolunteer = findViewById(R.id.cancelConnectionButton);
         cancelVolunteer.setOnClickListener(new View.OnClickListener() {
             @Override
+
             public void onClick(View view) {
                 Intent mapScreen = new Intent(getApplicationContext(), MapsActivity.class);
-                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).child("accepted").setValue("false");
-                FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Requested").setValue("False");
+                FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).
+                        child("accepted").setValue("false");
+                FirebaseDatabase.getInstance().getReference().child("user").
+                        child(FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                        child("Requested").setValue("False");
                 startActivity(mapScreen);
             }
         });
     }
 
+    //Button listeners for buttons on the menu.//
+    private void menuListeners() {
+        VolunteersButton = findViewById(R.id.volunteersButton);
+        ProfileButton = findViewById(R.id.profileButton);
+        LogoutButton = findViewById(R.id.logoutButton);
+        endCallButton = findViewById(R.id.endCallButton);
+        endCallButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                endCall();
+            }
+        });
+
+        VolunteersButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PlaceVolunteerMarkerOnMap();
+            }
+        });
+
+        ProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), MyProfileActivity.class));
+            }
+        });
+
+        LogoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                // make sure the user is who he says he is
+                Intent intent = new Intent(getApplicationContext(),LoginActivity.class);
+                intent.addFlags(intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return;
+            }
+        });
+    }
+
+    //Setting initial the SOS button to make the sliding layout appear/disappear.//
     private void sosButtonListener() {
         slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
         SosButton = findViewById(R.id.floatingButton);
@@ -1131,13 +1087,19 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         });
     }
 
-//////////////////////////////////////////////////////////SEARCH
+
+//////////////////SEARCH//////////////////
+    //Creates the autocomplete fragment. Sets the sliders accordingly.
+    // Takes required actions for autocomplete is closed.//
     private void createAutoCompleteSearch() {
-        placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+        placeAutocompleteFragment = (PlaceAutocompleteFragment)getFragmentManager().
+                findFragmentById(R.id.place_autocomplete_fragment);
 
-        placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").build());
+        placeAutocompleteFragment.setFilter(new AutocompleteFilter.Builder().setCountry("AU").
+                build());
 
-        EditText SearchInput = placeAutocompleteFragment.getView().findViewById(R.id.place_autocomplete_search_input);
+        EditText SearchInput = placeAutocompleteFragment.getView().
+                findViewById(R.id.place_autocomplete_search_input);
         SearchInput.setHintTextColor(getResources().getColor(R.color.grey_700));
 
         placeAutocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -1170,7 +1132,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
             @Override
             public void onError(Status status) {
-                Toast.makeText(MapsActivity.this, ""+status.toString(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MapsActivity.this, ""+status.toString(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -1195,13 +1158,63 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                 });
     }
 
-/////////////////////////////////////////////////////////////MENU N OTHER STUFF ..............................
+
+//////////////////SETTING UP CONTACT LIST AND CALLS//////////////////
+
+    //Starting one signal services.//
+    private void startingOneSignal() {
+        OneSignal.startInit(this).setNotificationOpenedHandler(new
+                NotificationIsOpened(getApplicationContext())).init();
+        OneSignal.setSubscription(true);
+        OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
+            @Override
+            public void idsAvailable(String userId, String registrationId) {
+
+                FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.
+                        getInstance().getCurrentUser().getUid()).child("notificationKey").
+                        setValue(userId);
+            }
+        });
+        OneSignal.setInFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification);
+    }
+
+    private void contactListInMenu() {
+        contactList = new ArrayList<>();
+        userList = new ArrayList<>();
+        //initializeRecyclerView();
+        userListView = findViewById(R.id.userList);
+        userListView.setNestedScrollingEnabled(false);
+        userListView.setHasFixedSize(false);
+        userListViewLayoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayout.
+                VERTICAL, false);
+        userListView.setLayoutManager(userListViewLayoutManager);
+
+        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(
+                new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                userListViewAdapter = new UserListAdapter(userList, getSinchServiceInterface(),
+                        slidingLayout);
+                userListView.setAdapter(userListViewAdapter);
+                getContactList();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     private void getContactList() {
         String isoPrefix = getCountryIso();
-        Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+        Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.
+                CONTENT_URI, null, null, null, null);
         while (phones.moveToNext()) {
-            String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-            String phone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            String name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.
+                    Phone.DISPLAY_NAME));
+            String phone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.
+                    Phone.NUMBER));
 
             phone = phone.replace(" ", "");
             phone = phone.replace("-", "");
@@ -1233,10 +1246,12 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
                             name = childSnapshot.child("name").getValue().toString();
                         }
                         if(childSnapshot.child("notificationKey").getValue() != null) {
-                            myNotificationKey = childSnapshot.child("notificationKey").getValue().toString();
+                            myNotificationKey = childSnapshot.child("notificationKey").getValue().
+                                    toString();
                         }
 
-                        UserObject mUser = new UserObject(name, phone, childSnapshot.getKey(), myNotificationKey);
+                        UserObject mUser = new UserObject(name, phone, childSnapshot.getKey(),
+                                myNotificationKey);
                         for(UserObject mContactIterator : contactList) {
                             if(mContactIterator.getPhone().equals(phone)) {
                                 mUser.setName(mContactIterator.getName());
@@ -1261,7 +1276,8 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     private String getCountryIso() {
         String ISO = null;
 
-        TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+        TelephonyManager telephonyManager = (TelephonyManager) getApplicationContext().
+                getSystemService(getApplicationContext().TELEPHONY_SERVICE);
 
         if(telephonyManager.getNetworkCountryIso() != null) {
             if(telephonyManager.getNetworkCountryIso().toString().equals("")) {
@@ -1359,6 +1375,158 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
         public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
             // Send a push through your push provider here, e.g. GCM
         }
+    }
+
+//////////////////VOLUNTEERS//////////////////
+
+    private void listenerForVolunteerRequest() {
+        FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.
+                getInstance().getCurrentUser().getUid()).child("Requested").addValueEventListener(
+                        new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue()!=null) {
+                    if (dataSnapshot.getValue().toString().equals("True")) {
+                        FirebaseDatabase.getInstance().getReference().child("user").child(
+                                FirebaseAuth.getInstance().getCurrentUser().getUid()).
+                                child("ElderlyIDRequested").addListenerForSingleValueEvent(
+                                        new ValueEventListener() {
+
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                elderlyID = dataSnapshot.getValue().toString();
+                                Intent intent = new Intent(getApplicationContext(),
+                                        NotificationActivity.class);
+                                intent.putExtra("elderlyID",elderlyID);
+                                java.util.Map map = new HashMap<>();
+                                final DatabaseReference userDB = FirebaseDatabase.getInstance().
+                                        getReference().child("user").child(FirebaseAuth.
+                                        getInstance().getCurrentUser().getUid());
+                                map.put("Requested", "False");
+                                userDB.updateChildren(map);
+                                startActivity(intent);
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
+                    }
+
+//
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void showElderlyLocationForVolunteer(String elderlyID) {
+
+        FirebaseDatabase.getInstance().getReference().child("user").child(elderlyID).
+                addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                double newLatitude = 0;
+                double newLongitude = 0;
+                newLatitude = Double.parseDouble(dataSnapshot.child("latitude").getValue().
+                        toString());
+
+                newLongitude = Double.parseDouble(dataSnapshot.child("longitude").getValue().
+                        toString());
+
+                if (markerOfElderly!=null){
+                    markerOfElderly.remove();
+                }
+
+                locationOfElderly= new LatLng(newLatitude,newLongitude);
+
+                setMarkerForElderlyPerson();
+                map.zoomToLocation(locationOfElderly);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+    }
+
+    private void createVolunteerChildrenInDB() {
+        java.util.Map hmap = new HashMap<>();
+        final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().
+                child("user").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        hmap.put("Requested", "False");
+        hmap.put("ElderlyIDRequested","");
+        hmap.put("accepted","null");
+        userDB.updateChildren(hmap);
+    }
+
+    private void PlaceVolunteerMarkerOnMap() {
+        FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(
+                new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
+                    for(DataSnapshot volunteersnapshot : childsnapshot.getChildren())
+                    {
+
+                        // getting volunteers' coordinates
+                        if (volunteersnapshot.getKey().equals("Volunteer") && volunteersnapshot.
+                                getValue().toString().equals("Yes")) {
+                            for(DataSnapshot volunteersnapshot2 : childsnapshot.getChildren())
+                            {
+                                if (volunteersnapshot2.getKey().equals("latitude")) {
+                                    volLat = Double.parseDouble(volunteersnapshot2.getValue().
+                                            toString());
+                                }
+                                if (volunteersnapshot2.getKey().equals("longitude")) {
+                                    volLongi = Double.parseDouble(volunteersnapshot2.getValue().
+                                            toString());
+
+                                }
+                                if (volunteersnapshot2.getKey().equals("name")) {
+                                    currentVolunteerName = volunteersnapshot2.getValue().toString();
+                                }
+
+
+                                if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
+                                {
+                                    MarkerOptions mo = new MarkerOptions();
+                                    LatLng volLatLng = new LatLng(volLat,volLongi);
+
+                                    mo.position(volLatLng);
+                                    mo.title(currentVolunteerName);
+                                    mo.icon(BitmapDescriptorFactory.
+                                            fromResource(R.mipmap.ic_volunteer2));
+                                    //mo.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person));
+
+
+                                    markers.put(map.addMarker(mo,volLatLng,true),
+                                            childsnapshot.getKey());
+                                    currentVolunteerName = "";
+                                }
+                            }
+                        }
+                    }
+
+
+                }
+                map.setListOfVolunteers(markers);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
 }

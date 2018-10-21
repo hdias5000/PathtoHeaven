@@ -1,3 +1,12 @@
+/**TEAM PATH TO HEAVEN
+ * Authors:
+ *  - Hasitha Dias:   789929
+ *  - Jay Parikh:     864675
+ *  - Anupama Sodhi:  791288
+ *  - Kushagra Gupta: 804729
+ *  - Manindra Arora: 827703
+ * **/
+
 package com.example.jay1805.itproject;
 
 import android.graphics.Bitmap;

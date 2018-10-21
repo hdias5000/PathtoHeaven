@@ -1,3 +1,5 @@
+//Used to display the route corresponding to the given URL.//
+
 package com.example.jay1805.itproject.Map;
 
 import android.graphics.Color;
@@ -21,8 +23,6 @@ public class GetDirectionsData extends AsyncTask<Object,String,String> {
     String googleDirectionsData;
     RouteData routeData;
 
-    String duration,distance;
-
     LatLng latLng;
     private List<Polyline> route;
     private boolean success;
@@ -35,7 +35,7 @@ public class GetDirectionsData extends AsyncTask<Object,String,String> {
         this.mCallBack = callback;
     }
 
-
+    //Url request sent and response found in background of the execute.//
     @Override
     protected String doInBackground(Object... objects) {
         mMap = (Map) objects[0];
@@ -52,6 +52,7 @@ public class GetDirectionsData extends AsyncTask<Object,String,String> {
         return googleDirectionsData;
     }
 
+    //Called to execute from MapsActivity.//
     @Override
     protected void onPostExecute(String s) {
         route = null;
@@ -73,34 +74,10 @@ public class GetDirectionsData extends AsyncTask<Object,String,String> {
         }else{
             mCallBack.onFailure(mException);
         }
-//        if (directionsList != null) {
-//            displayDirection(directionsList);
-//            success = true;
-//        }
-//        }else {
-//            MapsActivity.makeToast("Route Not Found");
-//        }
-
-
-//
-//        if (directionsList!=null){
-//
-//            duration = directionsList.get("duration");
-//            distance = directionsList.get("distance");
-//            address = directionsList.get("address");
-//
-//        }
-//        mMap.clear();
-//        MarkerOptions markerOptions = new MarkerOptions();
-//        markerOptions.position(latLng);
-//        markerOptions.draggable(true);
-//        markerOptions.title(address);
-//        markerOptions.snippet("Duration = "+duration +"; "+"Distance = "+distance);
-//
-//        mMap.addMarker(markerOptions);
-
     }
 
+
+    //Displays the route on the map.//
     public void displayDirection(String[] directionsList){
         int count = directionsList.length;
         for (int i=0;i<count;i++) {
@@ -113,10 +90,7 @@ public class GetDirectionsData extends AsyncTask<Object,String,String> {
         }
     }
 
-    public boolean isSuccess(){
-        return success;
-    }
-
+    //Return the displayed route.//
     public List<Polyline> getRoute() {
         return route;
     }

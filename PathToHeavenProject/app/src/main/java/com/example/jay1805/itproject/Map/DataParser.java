@@ -1,3 +1,5 @@
+//This class extracts information regarding a path to be used/displayed by MapsActivity//
+
 package com.example.jay1805.itproject.Map;
 
 import org.json.JSONArray;
@@ -23,29 +25,7 @@ public class DataParser {
 
     }
 
-//    private HashMap<String,String> getDuration(JSONArray googleDirectionsJson){
-//        HashMap<String,String> googleDirectionsMap = new HashMap<>();
-//        String duration = "";
-//        String distance = "";
-//        String address;
-//
-//        Log.d("json response", googleDirectionsJson.toString());
-//
-//        try {
-//            duration = googleDirectionsJson.getJSONObject(0).getJSONObject("duration").getString("text");
-//            distance = googleDirectionsJson.getJSONObject(0).getJSONObject("distance").getString("text");
-//            address = googleDirectionsJson.getJSONObject(0).getString("end_address");
-//            googleDirectionsMap.put("duration", duration);
-//            googleDirectionsMap.put("distance",distance);
-//            googleDirectionsMap.put("address", address);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//
-//
-//        return googleDirectionsMap;
-//    }
-
+    //Extracting data about each place for NearbyPlaces.//
     private HashMap<String,String> getPlace(JSONObject googlePlaceJson){
         HashMap<String,String> googlePlaceMap = new HashMap<>();
         String placeName = "-NA-";
@@ -81,7 +61,7 @@ public class DataParser {
         return googlePlaceMap;
     }
 
-
+    //Extracting each place from a JSONARRAY of places.//
     private List<HashMap<String,String>> getPlaces(JSONArray jsonArray){
         int count = jsonArray.length();
         List<HashMap<String,String>> placesList = new ArrayList<>();
@@ -98,7 +78,7 @@ public class DataParser {
         return placesList;
     }
 
-
+    //Getting data about directions.//
     public List<HashMap<String,String>> parse (String jsonData){
         JSONArray jsonArray = null;
         JSONObject jsonObject;
@@ -112,6 +92,7 @@ public class DataParser {
         return getPlaces(jsonArray);
     }
 
+    //Getting all basic information about a route from directions response parsing into a Hashmap.//
     public String[] parseDirections(String jsonData){
         JSONArray jsonArray = null;
         JSONObject jsonObject;
@@ -136,6 +117,7 @@ public class DataParser {
         return null;
     }
 
+    //Getting all the data required for an entire path/route.//
     public String[] getPaths(JSONArray jsonArray){
         int count = jsonArray.length();
         String[] polylines = new String[count];
@@ -151,6 +133,7 @@ public class DataParser {
         return polylines;
     }
 
+    //Extracting information regarding each leg/straight line of the route.//
     public String getPath(JSONObject jsonObject){
         String polyline = "";
         HashMap<String,String> stepInfo = new HashMap<>();

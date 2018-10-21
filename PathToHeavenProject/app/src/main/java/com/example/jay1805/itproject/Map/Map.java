@@ -1,21 +1,13 @@
+//Implements all functionalities related to Google Maps.//
+
 package com.example.jay1805.itproject.Map;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import android.view.View;
-import android.widget.Toast;
-
-
-import com.example.jay1805.itproject.ChatActivity;
-import com.example.jay1805.itproject.MapsActivity;
-import com.example.jay1805.itproject.MyProfileActivity;
-import com.example.jay1805.itproject.SinchService;
 import com.example.jay1805.itproject.TimerActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -34,7 +26,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
-import java.util.List;
 
 public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
     private final Context context;
@@ -50,9 +41,9 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
         enableMyLocation();
 
         mMap.setOnMarkerClickListener(this);
-//        mMap.setOnMarkerDragListener(this);
     }
 
+    //Enables current location marker.//
     @SuppressLint("MissingPermission")  // checked before object is created
     public void enableMyLocation(){
         mMap.setMyLocationEnabled(true);
@@ -67,12 +58,8 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
 
     }
 
-    public void showLocation(LatLng pos){
-        mMap.animateCamera(CameraUpdateFactory.newLatLng(pos));
-    }
 
-
-
+    //Shows entire route in camera of map.//
     public void showEntireRoute(LatLng loc1, LatLng loc2){
         Double loc1Lat = loc1.latitude;
         Double loc1Lon = loc1.longitude;
@@ -85,9 +72,10 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,100));
     }
 
+    //Implemented for next iteration.//
     public void updateCameraBearing(float bearing) {
         if ( mMap == null) return;
-        Log.d("CameraMap","work pwleeeeeeease");
+        Log.d("CameraMap","Bearings");
 
         CameraPosition camPos = CameraPosition
                 .builder(
@@ -99,22 +87,20 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
     }
 
 
-
+    //Zooms to marker.//
     public void zoomToLocation(LatLng location){
-
-        Log.d("CameraMap","work pwease");
-//        mMap.moveCamera(CameraUpdateFactory.newLatLng(location));
-//        mMap.animateCamera(CameraUpdateFactory.zoomBy(1));
+        Log.d("CameraMap","Zoom to marker.");
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 17.0f));
     }
 
+    //Zooms into location for enroute.//
     public void currentLocationZoom(LatLng location){
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 20.0f));
     }
 
+    //Adds marker to map.//
     public Marker addMarker(MarkerOptions markerOptions, LatLng latLng, boolean zoom){
         if (zoom){
-
             mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
         }
         return mMap.addMarker(markerOptions);
@@ -123,21 +109,11 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
 
 
 
-    public void removeMarker(Marker marker){
-        marker.remove();
-    }
-
     public Polyline addRoute(PolylineOptions options) {
 
         return mMap.addPolyline(options);
     }
 
-    public void removeRoute(List<Polyline> route){
-        int count = route.size();
-        for (int i=0;i<count;i++) {
-            route.get(i).remove();
-        }
-    }
 
     public void clearMap(){
         mMap.clear();
@@ -146,10 +122,6 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
     public void setListOfVolunteers(HashMap volunteers){
         this.listOfVolunteers = volunteers;
     }
-
-
-
-
 
 
     @Override
@@ -167,6 +139,7 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
 
     }
 
+    //Allows user to clicks on volunteer and a timer starts for the volunteer to accept.//
     @Override
     public boolean onMarkerClick(Marker marker) {
 
@@ -187,28 +160,23 @@ public class Map implements GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerCl
         return false;
     }
 
+    //Initiates the volunteer connection.//
     private void updateRequestedChild(Marker m) {
         final Marker volunteer = m;
         FirebaseDatabase.getInstance().getReference().child("user").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot childsnapshot : dataSnapshot.getChildren()) {
-                    System.out.println("USER ID:  "+childsnapshot.getKey());
                     if(childsnapshot.getKey().equals(listOfVolunteers.get(volunteer))){
                         for(DataSnapshot volunteersnapshot : childsnapshot.getChildren()){
-
-                            System.out.println("Volunteer keys: "+volunteersnapshot.getKey());
                             if(volunteersnapshot.getKey().equals("Requested"))
                             {
-                                System.out.println("@@@@@@@@@@@ inside requested");
                                 java.util.Map map = new HashMap<>();
                                 final DatabaseReference userDB = FirebaseDatabase.getInstance().getReference().child("user").child(childsnapshot.getKey());
                                 System.out.println("^^^^^^^^^^^^"+FirebaseDatabase.getInstance().getReference().child("user").child(childsnapshot.getKey()).toString());
                                 map.put("Requested", "True");
                                 map.put("ElderlyIDRequested", FirebaseAuth.getInstance().getCurrentUser().getUid().toString());
-                                System.out.println("ELDERLY WOO############ :"+childsnapshot.getKey().toString());
                                 userDB.updateChildren(map);
-
                             }
 
                         }

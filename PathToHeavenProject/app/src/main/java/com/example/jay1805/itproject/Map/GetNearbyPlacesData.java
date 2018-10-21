@@ -1,3 +1,5 @@
+//Nearby places, getting data from the URL. Not added to menu due to UI complications.//
+
 package com.example.jay1805.itproject.Map;
 
 import android.os.AsyncTask;
@@ -15,6 +17,7 @@ public class GetNearbyPlacesData extends AsyncTask<Object,String,String> {
     Map mMap;
     String url;
 
+    //Executed in the background of the execute operation.//
     @Override
     protected String doInBackground(Object... objects) {
         mMap = (Map) objects[0];
@@ -30,6 +33,7 @@ public class GetNearbyPlacesData extends AsyncTask<Object,String,String> {
         return googlePlacesData;
     }
 
+    //Used to execute displaying the Nearby places from MapsActivity.//
     @Override
     protected void onPostExecute(String s) {
         List<HashMap<String,String>> nearbyPlaceList = null;
@@ -39,6 +43,7 @@ public class GetNearbyPlacesData extends AsyncTask<Object,String,String> {
         super.onPostExecute(s);
     }
 
+    //SHOW THE LOCATIONS.//
     private void showNearbyPlaces(List<HashMap<String,String>> nearbyPlaceList){
         for (int i=0;i<nearbyPlaceList.size();i++){
             MarkerOptions markerOptions = new MarkerOptions();

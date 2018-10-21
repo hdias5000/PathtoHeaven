@@ -1,3 +1,4 @@
+//This class sets all the data for a particular route that could be accessed by MapsActivity.//
 package com.example.jay1805.itproject.Map;
 
 import java.util.ArrayList;

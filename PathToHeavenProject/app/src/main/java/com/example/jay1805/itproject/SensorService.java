@@ -1,3 +1,15 @@
+/**TEAM PATH TO HEAVEN
+ * Authors:
+ *  - Hasitha Dias:   789929
+ *  - Jay Parikh:     864675
+ *  - Anupama Sodhi:  791288
+ *  - Kushagra Gupta: 804729
+ *  - Manindra Arora: 827703
+ * **/
+
+//This class handles getting all the information regarding getting the current location from
+// location services and also uploading it to firebase when GPS sharing is activated.//
+
 package com.example.jay1805.itproject;
 
 import android.annotation.SuppressLint;
@@ -72,6 +84,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
         return START_STICKY;
     }
 
+    //Starts uploading location onto firebase when current location is available.//
     private BroadcastReceiver startTracking = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -89,6 +102,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    //Removes location from firebase for security purposes.//
     private BroadcastReceiver stopTracking = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -96,6 +110,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
         }
     };
 
+    //Removes location from firebase for security purposes.//
     private void removeSharingFromFirebase(){
         if (share){
             share = false;
@@ -105,6 +120,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
         }
     }
 
+    //Creates a new key for saving location and uploads current location.//
     private void startFirebase(){
         lastSharedGPSLoc = null;
         removeSharingFromFirebase();
@@ -119,6 +135,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
         share = true;
     }
 
+    //Uploads location for GPS sharing - help.//
     private Location updateLocation(){
         if (lastSharedGPSLoc!=null){
             if (lastSharedGPSLoc.distanceTo(currentLocation)<5){
@@ -139,6 +156,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
         return null;
     }
 
+    //Uploads location for volunteer.//
     private Location uploadLocation(){
         if (lastSharedForVolunteer!=null){
             if (lastSharedForVolunteer.distanceTo(currentLocation)<10){
@@ -160,7 +178,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
         return null;
     }
 
-
+    //Uses new location updates.//
     private void makeUseOfNewLocation(Location location){
         if (location != null) {
             currentLocation = location;
@@ -172,6 +190,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
         }
     }
 
+    //Receives ask for current location and sends broadcast.//
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -202,6 +221,7 @@ public class SensorService extends Service implements com.google.android.gms.loc
         }
     }
 
+    //Receives updated location of the current user.//
     @Override
     public void onLocationChanged(Location location) {
         if (currentLocation==null){
