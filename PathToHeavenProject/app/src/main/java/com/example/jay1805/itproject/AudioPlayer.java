@@ -12,6 +12,10 @@ import android.util.Log;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+/**
+ * This class is used to create the ring tones for incoming and outgoing calls. It is also how the
+ * audio of calls is shared between two phones
+ */
 public class AudioPlayer {
 
     static final String LOG_TAG = AudioPlayer.class.getSimpleName();
@@ -28,6 +32,7 @@ public class AudioPlayer {
         this.mContext = context.getApplicationContext();
     }
 
+    //Playing the ringtone
     public void playRingtone() {
         AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
 
@@ -52,6 +57,7 @@ public class AudioPlayer {
         }
     }
 
+    //Stopping the ringtone
     public void stopRingtone() {
         if (mPlayer != null) {
             mPlayer.stop();
@@ -60,6 +66,7 @@ public class AudioPlayer {
         }
     }
 
+    //Playing progress tone
     public void playProgressTone() {
         stopProgressTone();
         try {
@@ -70,6 +77,7 @@ public class AudioPlayer {
         }
     }
 
+    //stopping progress tone
     public void stopProgressTone() {
         if (mProgressTone != null) {
             mProgressTone.stop();

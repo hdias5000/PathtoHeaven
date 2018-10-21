@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toolbar;
 
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -37,21 +36,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         findUserButton = findViewById(R.id.findUser);
         logoutButton = findViewById(R.id.logout_btn);
 
-        myDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
+        myDrawerLayout = findViewById(R.id.drawer);
         myToggle = new ActionBarDrawerToggle(MainActivity.this, myDrawerLayout, R.string.open, R.string.close);
         myDrawerLayout.addDrawerListener(myToggle);
         myToggle.syncState();
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation_viewID);
         navigationView.setNavigationItemSelectedListener(this);
-
-        findUserButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivityForResult(new Intent(getApplicationContext(), FindUserActivity.class), 1);
-            }
-        });
-
 
         mapButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
         if (id == R.id.FindUser) {
-            startActivityForResult(new Intent(getApplicationContext(), FindUserActivity.class), 1);
+
         }
 
         if (id == R.id.Logout) {

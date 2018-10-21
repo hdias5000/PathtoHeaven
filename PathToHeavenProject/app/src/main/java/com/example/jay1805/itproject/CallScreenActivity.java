@@ -34,6 +34,10 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * This is the activity that appears when you call someone. This activity only appears on the side
+ * of the caller, not the one receiving the call
+ */
 public class CallScreenActivity extends BaseActivity {
 
     static final String TAG = CallScreenActivity.class.getSimpleName();
@@ -53,6 +57,7 @@ public class CallScreenActivity extends BaseActivity {
     private String currentUserUid;
     private DatabaseReference userRef;
 
+    //Class for updating the timer of the call (for the duration)
     private class UpdateCallDurationTask extends TimerTask {
 
         @Override
@@ -87,6 +92,7 @@ public class CallScreenActivity extends BaseActivity {
         mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
     }
 
+    //Checks if the service is connected and sets the name of the person you are calling in the screen
     @Override
     public void onServiceConnected() {
         currentUserUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -133,6 +139,7 @@ public class CallScreenActivity extends BaseActivity {
         // User should exit activity by ending call, not by going back.
     }
 
+    //Finishing the activit if the end call button is pressed
     private void endCall() {
         mAudioPlayer.stopProgressTone();
         Call call = getSinchServiceInterface().getCall(mCallId);
@@ -155,6 +162,7 @@ public class CallScreenActivity extends BaseActivity {
         }
     }
 
+    //When the service is connected, this listener is created to check when the call is established and finished
     private class SinchCallListener implements CallListener {
 
         @Override
@@ -175,9 +183,6 @@ public class CallScreenActivity extends BaseActivity {
             mCallState.setText(call.getState().toString());
             setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
             mCallStart = System.currentTimeMillis();
-//            Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-//            intent.putExtra(SinchService.CALL_ID, mCallId);
-//            startActivity(intent);
             Intent intent = new Intent("Call ID");
             intent.putExtra(SinchService.CALL_ID, mCallId);
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
@@ -196,6 +201,7 @@ public class CallScreenActivity extends BaseActivity {
         }
     }
 
+    //Class for printing an image from a given URL
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         ImageView bmImage;
 

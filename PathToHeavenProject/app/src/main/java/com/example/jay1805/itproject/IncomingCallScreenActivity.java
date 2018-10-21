@@ -21,6 +21,10 @@ import com.sinch.android.rtc.calling.CallListener;
 
 import java.util.List;
 
+/**
+ * This is the activity that appears when someone calls the user. This activity only appears on the
+ * side of the receiver, not the one calling
+ */
 public class IncomingCallScreenActivity extends BaseActivity {
 
     static final String TAG = IncomingCallScreenActivity.class.getSimpleName();
@@ -45,6 +49,7 @@ public class IncomingCallScreenActivity extends BaseActivity {
         mCallLocation = getIntent().getStringExtra(SinchService.LOCATION);
     }
 
+    //Checks if the service is connected and sets the name of the person calling you on the screen
     @Override
     protected void onServiceConnected() {
         Call call = getSinchServiceInterface().getCall(mCallId);
@@ -62,23 +67,18 @@ public class IncomingCallScreenActivity extends BaseActivity {
 
                 }
             });
-//            remoteUser.setText(call.getRemoteUserId());
-//            TextView remoteUserLocation = (TextView) findViewById(R.id.remoteUserLocation);
-//            remoteUserLocation.setText("Calling from " + mCallLocation);
         } else {
             Log.e(TAG, "Started with invalid callId, aborting");
             finish();
         }
     }
 
+    //If the user answers the call
     private void answerClicked() {
         mAudioPlayer.stopRingtone();
         Call call = getSinchServiceInterface().getCall(mCallId);
         if (call != null) {
             call.answer();
-//            Intent intent = new Intent(this, MapsActivity.class);
-//            intent.putExtra(SinchService.CALL_ID, mCallId);
-//            startActivity(intent);
             Intent intent = new Intent("Call ID");
             intent.putExtra(SinchService.CALL_ID, mCallId);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
@@ -88,6 +88,7 @@ public class IncomingCallScreenActivity extends BaseActivity {
         }
     }
 
+    //If the user declines the call
     private void declineClicked() {
         mAudioPlayer.stopRingtone();
         Call call = getSinchServiceInterface().getCall(mCallId);
@@ -97,6 +98,7 @@ public class IncomingCallScreenActivity extends BaseActivity {
         finish();
     }
 
+    //When the service is connected, this listener is created to check when the call is established and finished
     private class SinchCallListener implements CallListener {
 
         @Override
@@ -123,6 +125,7 @@ public class IncomingCallScreenActivity extends BaseActivity {
         }
     }
 
+    //OnClick listeners for the answer and decline buttons
     private OnClickListener mClickListener = new OnClickListener() {
         @Override
         public void onClick(View v) {

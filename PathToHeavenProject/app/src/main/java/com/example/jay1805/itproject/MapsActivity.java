@@ -1052,7 +1052,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
 
                                 if(( volLat!=0 && volLongi!=0 && currentVolunteerName!=""))
                                 {
-                                    System.out.println("current vol: "+currentVolunteerName);
                                     MarkerOptions mo = new MarkerOptions();
                                     LatLng volLatLng = new LatLng(volLat,volLongi);
 
@@ -1304,7 +1303,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
     @Override
     public void onServiceConnected() {
         Call call = getSinchServiceInterface().getCall(mCallId);
-        System.out.println("mcallis is "+mCallId);
         if (call != null) {
             call.addCallListener(new SinchCallListener());
         } else {
@@ -1329,7 +1327,6 @@ public class MapsActivity extends BaseActivity implements OnMapReadyCallback {
             call.hangup();
         }
         endCallButton.setVisibility(View.GONE);
-//        finish();
     }
 
 

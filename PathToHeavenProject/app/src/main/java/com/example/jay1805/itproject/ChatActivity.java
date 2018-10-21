@@ -11,13 +11,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -44,14 +41,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This activity is the base for any chat. When someone clicks on chat from menu, this activity is
+ * opened up. The chats are displayed using a recyclerview. All the data from chats is stored in
+ * Firebase Real-Time Database under the chat branch and the chat ID's are also stored under the user
+ */
 public class ChatActivity extends Activity {
 
     private RecyclerView ChatView, MediaView;
     private RecyclerView.Adapter ChatViewAdapter, MediaViewAdapter;
     private RecyclerView.LayoutManager ChatViewLayoutManager, MediaViewLayoutManager;
-    private Button callButton;
-    private DrawerLayout myDrawerLayout;
-    private ActionBarDrawerToggle myToggle;
     ArrayList<MessageObject> messageList;
     String chatID;
     DatabaseReference chatDB;
@@ -59,8 +58,6 @@ public class ChatActivity extends Activity {
     String nameOfSender;
     String notificationKeyOfReciever;
     DatabaseReference myRef;
-    private String chatToId ;
-
     String currentShareID;
 
     @Override
@@ -68,12 +65,14 @@ public class ChatActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        //Passing the ChatID from FireBaseDatabase into the ChatActivity
         chatID = getIntent().getExtras().getString("chatID");
         chatDB = FirebaseDatabase.getInstance().getReference().child("chat").child(chatID);
         nameOfSenderDB = FirebaseDatabase.getInstance().getReference().child("user").child(FirebaseAuth.getInstance().getUid()).child("name");
+        myRef = FirebaseDatabase.getInstance().getReference("user");
+        currentShareID = "";
 
         ImageButton mSend = findViewById(R.id.send);
-        //ImageButton mAddMedia = findViewById(R.id.addMedia);
 
         mSend.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
@@ -83,22 +82,12 @@ public class ChatActivity extends Activity {
             }
         });
 
-        myRef = FirebaseDatabase.getInstance().getReference("user");
-
-//        mAddMedia.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                openGallery();
-//            }
-//        });
-
         initializeMessage();
         initializeMedia();
         getChatMessages();
-
-        currentShareID = "";
     }
 
+    //Class for printing an image from a given URL
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         ImageView bmImage;
 
@@ -124,8 +113,8 @@ public class ChatActivity extends Activity {
         }
     }
 
+    //Chat messages and other relevant information are retrieved here from the firebase database
     private void getChatMessages() {
-
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -136,7 +125,9 @@ public class ChatActivity extends Activity {
                         for (DataSnapshot chatsnapshot: childsnapshot.child("chat").getChildren()) {
 
                             if(chatsnapshot.getKey().equals(chatID)) {
+
                                 notificationKeyOfReciever = childsnapshot.child("notificationKey").getValue().toString();
+
                             }
                         }
                     }
@@ -185,7 +176,6 @@ public class ChatActivity extends Activity {
                         }
                     }
 
-
                     MessageObject myMessage = new MessageObject(dataSnapshot.getKey(), creatorId, creator, text, mediaUrlList, false);
                     if (dataSnapshot.child("isGpsShared").getValue() != null){
                         if(dataSnapshot.child("isGpsShared").getValue().equals("false")) {
@@ -229,63 +219,64 @@ public class ChatActivity extends Activity {
     ArrayList<String> mediaIdList = new ArrayList<>();
     EditText mMessage;
 
+    //This inputs all the data of messages into the Firebase Database
     @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     private void sendMessage() {
         mMessage = findViewById(R.id.messageText);
-            String messageId = chatDB.push().getKey();
-            final DatabaseReference newMessageDB = chatDB.child(messageId);
+        String messageId = chatDB.push().getKey();
+        final DatabaseReference newMessageDB = chatDB.child(messageId);
 
-            final Map newMessageMap = new HashMap<>();
+        final Map newMessageMap = new HashMap<>();
 
-            newMessageMap.put("creatorID", FirebaseAuth.getInstance().getUid());
+        newMessageMap.put("creatorID", FirebaseAuth.getInstance().getUid());
 
-            newMessageMap.put("creator", nameOfSender);
+        newMessageMap.put("creator", nameOfSender);
 
-            newMessageMap.put("isGpsShared", "false");
+        newMessageMap.put("isGpsShared", "false");
 
-            if(!mMessage.getText().toString().isEmpty()) {
-                System.out.println("notificationKey is" + notificationKeyOfReciever);
-                HashMap<String,String> notification = new HashMap();
-                notification.put("type","message");
-                notification.put("message",mMessage.getText().toString());
-                notification.put("heading",nameOfSender);
-                notification.put("notificationKey",notificationKeyOfReciever);
-                notification.put("chatID",chatID);
-                new SendNotifications(notification);
-                newMessageMap.put("text", mMessage.getText().toString());
-            }
+        if(!mMessage.getText().toString().isEmpty()) {
+            HashMap<String,String> notification = new HashMap();
+            notification.put("type","message");
+            notification.put("message",mMessage.getText().toString());
+            notification.put("heading",nameOfSender);
+            notification.put("notificationKey",notificationKeyOfReciever);
+            notification.put("chatID",chatID);
+            new SendNotifications(notification);
+            newMessageMap.put("text", mMessage.getText().toString());
+        }
 
-            if(!mediaUriList.isEmpty()) {
-                for(String mediaUri : mediaUriList) {
-                    String mediaId = newMessageDB.child("media").push().getKey();
-                    mediaIdList.add(mediaId);
-                    final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("chat").child(chatID).child(messageId).child(mediaId);
-                    UploadTask uploadTask = filePath.putFile(Uri.parse(mediaUri));
+        if(!mediaUriList.isEmpty()) {
+            for(String mediaUri : mediaUriList) {
+                String mediaId = newMessageDB.child("media").push().getKey();
+                mediaIdList.add(mediaId);
+                final StorageReference filePath = FirebaseStorage.getInstance().getReference().child("chat").child(chatID).child(messageId).child(mediaId);
+                UploadTask uploadTask = filePath.putFile(Uri.parse(mediaUri));
 
-                    uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                @Override
-                                public void onSuccess(Uri uri) {
-                                    newMessageMap.put("/media/" + mediaIdList.get(totalMediaUploaded) + "/", uri.toString());
-                                    totalMediaUploaded += 1;
+                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                newMessageMap.put("/media/" + mediaIdList.get(totalMediaUploaded) + "/", uri.toString());
+                                totalMediaUploaded += 1;
 
-                                    if(totalMediaUploaded == mediaUriList.size()) {
-                                        updateDatabaseWithNewMessage(newMessageDB, newMessageMap);
-                                    }
+                                if(totalMediaUploaded == mediaUriList.size()) {
+                                    updateDatabaseWithNewMessage(newMessageDB, newMessageMap);
                                 }
-                            });
-                        }
-                    });
-                }
+                            }
+                        });
+                    }
+                });
             }
-            else {
-                if(!mMessage.getText().toString().isEmpty())
-                    updateDatabaseWithNewMessage(newMessageDB, newMessageMap);
-            }
+        }
+        else {
+            if(!mMessage.getText().toString().isEmpty())
+                updateDatabaseWithNewMessage(newMessageDB, newMessageMap);
+        }
     }
 
+    //Updating the database with messages
     private void updateDatabaseWithNewMessage(DatabaseReference newMessageDB, Map newMessageMap) {
         newMessageDB.updateChildren(newMessageMap);
         mMessage.setText(null);
@@ -297,6 +288,7 @@ public class ChatActivity extends Activity {
     int PICK_IMAGE_INTENT = 1;
     ArrayList<String> mediaUriList = new ArrayList<>();
 
+    //Initializing the media recycler view
     private void initializeMedia() {
         mediaUriList = new ArrayList<>();
         MediaView = findViewById(R.id.mediaList);
@@ -308,6 +300,7 @@ public class ChatActivity extends Activity {
         MediaView.setAdapter(MediaViewAdapter);
     }
 
+    //Initializing the message recycler view
     private void initializeMessage() {
         messageList = new ArrayList<>();
         ChatView = findViewById(R.id.recyclerView);
@@ -319,6 +312,7 @@ public class ChatActivity extends Activity {
         ChatView.setAdapter(ChatViewAdapter);
     }
 
+    //Open gallery when media is to be sent
     private void openGallery() {
         Intent intent = new Intent();
         intent.setType("image/*");
