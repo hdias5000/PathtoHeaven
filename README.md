@@ -17,13 +17,11 @@ Helpers: These are the users who are supposed to help the Elderly People.
   
   The testing elements are available in the following locations:
   
-  1)
+  1)ProfilePageActivity
   
-  2)
+  2)NotificationActivity
   
-  3)
+  3)SensorService
   
-  4)
-  
-  5)
- 
+  4)CallScreenActivity
+   
